@@ -12,6 +12,7 @@ import {
 import { useEffect, useState } from "react";
 import { LanguageDropdown } from "../common/language-dropdown";
 import { useCart } from "@/contexts/cart-context";
+import { LanguageSwitcher } from "../common/language-switcher";
 
 type HeaderProps = {
   variant?: "dark" | "light";
@@ -24,10 +25,12 @@ const navItems = [
 
 export function Header({ variant = "light" }: HeaderProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isChangeLanguageOpen, setIsChangeLanguageOpen] = useState(false);
   const { cartCount } = useCart();
 
   const isDark = variant === "dark";
+  const displayCart = cartCount > 0;
 
   return (
     <header className={`sticky left-0 top-0 z-50 w-full transition-all duration-300 ${isDark
@@ -52,23 +55,20 @@ export function Header({ variant = "light" }: HeaderProps) {
             }`}
         >
           {/* Ngôn ngữ */}
-          <div className="relative">
-            <button
-            type="button"
-            className="inline-flex items-center gap-1 transition-opacity hover:opacity-70"
-            onClick={() => setIsChangeLanguageOpen(!isChangeLanguageOpen)}
-          >
-            <Languages className="size-4" />
-            <span>Vi</span>
-            <ChevronDown className="size-3.5" />
-          </button>
-            {isChangeLanguageOpen && <LanguageDropdown />}
-          </div>
+            <LanguageSwitcher
+            onChange={(language) => {
+              console.log(
+                "Ngôn ngữ vừa chọn:",
+                language,
+              );
+            }}
+          />
+
           {/* Giỏ hàng */}
           <button
             onClick={()=>router.push("/checkout")}
             type="button"
-            className="group inline-flex items-center gap-2 transition-opacity hover:opacity-70"
+            className={`group  items-center gap-2 transition-opacity hover:opacity-70 ${displayCart ? "md:inline-flex" : "hidden"}`}
             aria-label={`Giỏ hàng có ${cartCount} sản phẩm`}
           >
             <span className="relative">

@@ -1,26 +1,38 @@
 ﻿"use client";
 
 import Image from "next/image";
+import {
+  useMemo,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
 
+} from "react";
+import { 
+  CheckoutFormState,
+   CheckoutFormErrors, 
+   CheckoutOrderPayload, 
+   CheckoutTotals, 
+   ShippingMethod, 
+   PaymentMethod, 
+   SHIPPING_FEES, 
+   SHIPPING_LABELS, 
+   PAYMENT_LABELS,
+  INITIAL_CHECKOUT_FORM,
+ } from "@/types/checkout";
+ import  { RadioOption }  from "@/components/ui/radio-option";
 import { useCart } from "@/contexts/cart-context";
 import { formatCurrency } from "@/data/menu-items";
 
-type RadioDotProps = {
-  checked?: boolean;
-};
 
-function RadioDot({ checked = false }: RadioDotProps) {
-  return (
-    <span
-      aria-hidden="true"
-      className={`inline-block h-3 w-3 rounded-full border border-tayho-green ${
-        checked ? "bg-tayho-green" : "bg-white"
-      }`}
-    />
-  );
+export interface CheckoutSectionProps {
+  onSubmitOrder?: (
+    order: CheckoutOrderPayload,
+  ) => Promise<void> | void;
 }
-
-export function CheckoutSection() {
+export function CheckoutSection({
+  onSubmitOrder,
+}: CheckoutSectionProps) {
   const {
     cartItems,
     totalPrice,
@@ -28,9 +40,214 @@ export function CheckoutSection() {
     removeFromCart,
   } = useCart();
 
+  const [form, setForm] = useState<CheckoutFormState>(
+    INITIAL_CHECKOUT_FORM,
+  );
+
+  const [formErrors, setFormErrors] =
+    useState<CheckoutFormErrors>({});
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [submitMessage, setSubmitMessage] = useState<
+    string | null
+  >(null);
+
+  /*
+   * Giảm giá hiện đang bằng 0.
+   * Sau này có thể thay bằng giá trị voucher hoặc promotion.
+   */
+  const discountAmount = 0;
+
+  /*
+   * Tự động tính lại khi:
+   * - Sản phẩm hoặc số lượng trong cart thay đổi.
+   * - Người dùng thay đổi hình thức giao hàng.
+   */
+  const totals = useMemo<CheckoutTotals>(() => {
+    const shippingFee =
+      SHIPPING_FEES[form.shippingMethod];
+
+    const grandTotal = Math.max(
+      0,
+      totalPrice + shippingFee - discountAmount,
+    );
+
+    return {
+      subtotal: totalPrice,
+      shippingFee,
+      discount: discountAmount,
+      grandTotal,
+    };
+  }, [totalPrice, form.shippingMethod]);
+
+  function updateFormField<K extends keyof CheckoutFormState>(
+    field: K,
+    value: CheckoutFormState[K],
+  ) {
+    setForm((previousForm) => ({
+      ...previousForm,
+      [field]: value,
+    }));
+
+    setFormErrors((previousErrors) => ({
+      ...previousErrors,
+      [field]: undefined,
+      submit: undefined,
+    }));
+
+    setSubmitMessage(null);
+  }
+
+  function handleTextInputChange(
+    event: ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement
+    >,
+  ) {
+    const { name, value } = event.target;
+
+    const field = name as
+      | "customerName"
+      | "phone"
+      | "address"
+      | "note";
+
+    updateFormField(field, value);
+  }
+
+  function validateCheckoutForm(): CheckoutFormErrors {
+    const errors: CheckoutFormErrors = {};
+
+    const normalizedPhone = form.phone.replace(
+      /[\s.-]/g,
+      "",
+    );
+
+    if (!form.customerName.trim()) {
+      errors.customerName =
+        "Vui lòng nhập tên người đặt hàng.";
+    }
+
+    if (!normalizedPhone) {
+      errors.phone = "Vui lòng nhập số điện thoại.";
+    } else if (
+      !/^(0\d{9}|\+84\d{9})$/.test(normalizedPhone)
+    ) {
+      errors.phone =
+        "Số điện thoại không đúng định dạng.";
+    }
+
+    if (!form.address.trim()) {
+      errors.address =
+        "Vui lòng nhập địa chỉ giao hàng.";
+    }
+
+    return errors;
+  }
+
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault();
+
+    setSubmitMessage(null);
+
+    if (cartItems.length === 0) {
+      setFormErrors({
+        submit:
+          "Giỏ hàng đang trống, không thể tạo đơn hàng.",
+      });
+
+      return;
+    }
+
+    const validationErrors = validateCheckoutForm();
+
+    if (Object.keys(validationErrors).length > 0) {
+      setFormErrors(validationErrors);
+      return;
+    }
+
+    setFormErrors({});
+    setIsSubmitting(true);
+
+    const orderPayload: CheckoutOrderPayload = {
+      customer: {
+        customerName: form.customerName.trim(),
+        phone: form.phone.trim(),
+        address: form.address.trim(),
+        note: form.note.trim(),
+      },
+
+      shipping: {
+        method: form.shippingMethod,
+        label: SHIPPING_LABELS[form.shippingMethod],
+        fee: totals.shippingFee,
+        estimatedDelivery: "Khoảng 1 tiếng",
+      },
+
+      payment: {
+        method: form.paymentMethod,
+        label: PAYMENT_LABELS[form.paymentMethod],
+      },
+
+      items: cartItems.map((item) => ({
+        productId: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        lineTotal: item.price * item.quantity,
+      })),
+
+      totals,
+
+      createdAt: new Date().toISOString(),
+    };
+
+    try {
+      /*
+       * Truyền orderPayload ra ngoài để gọi API.
+       */
+      if (onSubmitOrder) {
+        await onSubmitOrder(orderPayload);
+      } else {
+        /*
+         * Chạy thử khi chưa nối API.
+         */
+        console.log("Checkout order:", orderPayload);
+      }
+
+      setSubmitMessage(
+        "Đơn hàng đã được ghi nhận thành công.",
+      );
+    } catch (error) {
+      console.error("Submit checkout error:", error);
+
+      setFormErrors({
+        submit:
+          "Không thể tạo đơn hàng. Vui lòng thử lại.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  function getInputClass(hasError?: boolean) {
+    return [
+      "h-10 w-full rounded-full border px-4 outline-none transition",
+      "focus:ring-2 focus:ring-[#0f9b55]/20",
+      hasError
+        ? "border-red-500"
+        : "border-[#0f9b55]",
+    ].join(" ");
+  }
+
   return (
     <main className="site-shell food-pattern min-h-screen px-5 py-28 md:px-0">
-      <div className="mx-auto max-w-[730px] space-y-3">
+      <form
+        onSubmit={handleSubmit}
+        className="mx-auto max-w-[730px] space-y-3"
+      >
         {/* Danh sách món trong giỏ hàng */}
         <section className="rounded-lg bg-white p-7 shadow-soft">
           <h1 className="mb-5 text-[18px] font-black text-brand-green">
@@ -39,7 +256,8 @@ export function CheckoutSection() {
 
           {cartItems.length === 0 ? (
             <div className="rounded border border-dashed border-[#9cae9e] p-10 text-center text-[15px] text-[#4b4b4b]">
-              Giỏ hàng trống. Hãy chọn món và thêm vào giỏ hàng để tiếp tục.
+              Giỏ hàng trống. Hãy chọn món và thêm vào
+              giỏ hàng để tiếp tục.
             </div>
           ) : (
             <div>
@@ -68,7 +286,10 @@ export function CheckoutSection() {
                         type="button"
                         aria-label={`Giảm số lượng ${item.name}`}
                         onClick={() =>
-                          updateQuantity(item.id, item.quantity - 1)
+                          updateQuantity(
+                            item.id,
+                            item.quantity - 1,
+                          )
                         }
                         className="flex h-7 w-7 items-center justify-center rounded border border-gray-300"
                       >
@@ -81,7 +302,10 @@ export function CheckoutSection() {
                         type="button"
                         aria-label={`Tăng số lượng ${item.name}`}
                         onClick={() =>
-                          updateQuantity(item.id, item.quantity + 1)
+                          updateQuantity(
+                            item.id,
+                            item.quantity + 1,
+                          )
                         }
                         className="flex h-7 w-7 items-center justify-center rounded border border-gray-300"
                       >
@@ -90,7 +314,9 @@ export function CheckoutSection() {
 
                       <button
                         type="button"
-                        onClick={() => removeFromCart(item.id)}
+                        onClick={() =>
+                          removeFromCart(item.id)
+                        }
                         className="ml-2 text-sm font-bold text-brand-red"
                       >
                         Xóa
@@ -99,7 +325,9 @@ export function CheckoutSection() {
                   </div>
 
                   <div className="self-center text-left text-[16px] font-black text-black sm:text-right">
-                    {formatCurrency(item.price * item.quantity)}
+                    {formatCurrency(
+                      item.price * item.quantity,
+                    )}
                   </div>
                 </article>
               ))}
@@ -113,43 +341,90 @@ export function CheckoutSection() {
             THÔNG TIN ĐẶT HÀNG
           </h2>
 
-          <div className="space-y-2 text-[13px] font-medium text-tayho-greenDark">
+          <div className="space-y-3 text-[13px] font-medium text-tayho-greenDark">
             <label className="block">
-              <span className="sr-only">Tên người đặt hàng</span>
+              <span className="sr-only">
+                Tên người đặt hàng
+              </span>
+
               <input
                 type="text"
                 name="customerName"
+                value={form.customerName}
+                onChange={handleTextInputChange}
                 placeholder="Tên"
-                className="h-10 w-full rounded-full border border-[#0f9b55] px-4"
+                autoComplete="name"
+                className={getInputClass(
+                  Boolean(formErrors.customerName),
+                )}
               />
+
+              {formErrors.customerName && (
+                <span className="mt-1 block px-3 text-xs text-red-500">
+                  {formErrors.customerName}
+                </span>
+              )}
             </label>
 
             <label className="block">
-              <span className="sr-only">Số điện thoại</span>
+              <span className="sr-only">
+                Số điện thoại
+              </span>
+
               <input
                 type="tel"
                 name="phone"
+                value={form.phone}
+                onChange={handleTextInputChange}
                 placeholder="Số điện thoại"
-                className="h-10 w-full rounded-full border border-[#0f9b55] px-4"
+                autoComplete="tel"
+                className={getInputClass(
+                  Boolean(formErrors.phone),
+                )}
               />
+
+              {formErrors.phone && (
+                <span className="mt-1 block px-3 text-xs text-red-500">
+                  {formErrors.phone}
+                </span>
+              )}
             </label>
 
             <label className="block">
-              <span className="sr-only">Địa chỉ giao hàng</span>
+              <span className="sr-only">
+                Địa chỉ giao hàng
+              </span>
+
               <input
                 type="text"
                 name="address"
+                value={form.address}
+                onChange={handleTextInputChange}
                 placeholder="Địa chỉ giao hàng"
-                className="h-10 w-full rounded-full border border-[#0f9b55] px-4"
+                autoComplete="street-address"
+                className={getInputClass(
+                  Boolean(formErrors.address),
+                )}
               />
+
+              {formErrors.address && (
+                <span className="mt-1 block px-3 text-xs text-red-500">
+                  {formErrors.address}
+                </span>
+              )}
             </label>
 
             <label className="block">
-              <span className="sr-only">Ghi chú đơn hàng</span>
+              <span className="sr-only">
+                Ghi chú đơn hàng
+              </span>
+
               <textarea
                 name="note"
+                value={form.note}
+                onChange={handleTextInputChange}
                 placeholder="Nhập yêu cầu của bạn tại đây..."
-                className="h-[120px] w-full resize-none rounded-xl border border-[#0f9b55] px-4 py-3"
+                className="h-[120px] w-full resize-none rounded-xl border border-[#0f9b55] px-4 py-3 outline-none transition focus:ring-2 focus:ring-[#0f9b55]/20"
               />
             </label>
           </div>
@@ -161,24 +436,53 @@ export function CheckoutSection() {
             PHÍ SHIP
           </h2>
 
-          <div className="grid gap-4 text-[13px] md:grid-cols-[1fr_1fr_85px]">
-            <p>Thời gian giao dự kiến: khoảng 1 tiếng</p>
+          <div className="grid gap-4 text-[13px] md:grid-cols-[1fr_1fr_110px]">
+            <p>
+              Thời gian giao dự kiến: khoảng 1 tiếng
+            </p>
 
-            <div className="space-y-2">
-              <label className="flex items-center gap-2">
-                <RadioDot checked />
-                Khoảng cách giao hàng ≤ 5 km
-              </label>
+            <div className="space-y-3">
+              <RadioOption<ShippingMethod>
+                name="shippingMethod"
+                value="within_5km"
+                checked={
+                  form.shippingMethod === "within_5km"
+                }
+                onChange={(value) =>
+                  updateFormField(
+                    "shippingMethod",
+                    value,
+                  )
+                }
+                label={SHIPPING_LABELS.within_5km}
+              />
 
-              <label className="flex items-center gap-2">
-                <RadioDot />
-                Khoảng cách giao hàng &gt; 5 km
-              </label>
+              <RadioOption<ShippingMethod>
+                name="shippingMethod"
+                value="over_5km"
+                checked={
+                  form.shippingMethod === "over_5km"
+                }
+                onChange={(value) =>
+                  updateFormField(
+                    "shippingMethod",
+                    value,
+                  )
+                }
+                label={SHIPPING_LABELS.over_5km}
+              />
             </div>
 
             <div className="text-left font-black md:text-right">
-              <p className="text-tayho-green">Freeship!</p>
-              <p className="mt-2 text-[#9a9a9a]">10.000 ₫</p>
+              {totals.shippingFee === 0 ? (
+                <p className="text-tayho-green">
+                  Freeship!
+                </p>
+              ) : (
+                <p className="text-brand-red">
+                  {formatCurrency(totals.shippingFee)}
+                </p>
+              )}
             </div>
           </div>
         </section>
@@ -189,17 +493,44 @@ export function CheckoutSection() {
             PHƯƠNG THỨC THANH TOÁN
           </h2>
 
-          <div className="grid gap-2 text-[13px] md:grid-cols-2">
-            <label className="flex items-center gap-2">
-              <RadioDot checked />
-              Tiền mặt
-            </label>
+          <div className="grid gap-3 text-[13px] md:grid-cols-2">
+            <RadioOption<PaymentMethod>
+              name="paymentMethod"
+              value="cash"
+              checked={form.paymentMethod === "cash"}
+              onChange={(value) =>
+                updateFormField("paymentMethod", value)
+              }
+              label={PAYMENT_LABELS.cash}
+            />
 
-            <label className="flex items-center gap-2">
-              <RadioDot />
-              Chuyển khoản
-            </label>
+            <RadioOption<PaymentMethod>
+              name="paymentMethod"
+              value="bank_transfer"
+              checked={
+                form.paymentMethod === "bank_transfer"
+              }
+              onChange={(value) =>
+                updateFormField("paymentMethod", value)
+              }
+              label={PAYMENT_LABELS.bank_transfer}
+            />
           </div>
+
+          {form.paymentMethod === "bank_transfer" && (
+            <div className="mt-4 rounded-lg bg-gray-50 p-4 text-[13px] leading-6">
+              <p className="font-bold text-tayho-greenDark">
+                Thông tin chuyển khoản
+              </p>
+
+              <p>Ngân hàng: MB Bank</p>
+              <p>Số tài khoản: 0000000000</p>
+              <p>Chủ tài khoản: TÂY HỒ FOOD</p>
+              <p>
+                Nội dung: Tên khách hàng + số điện thoại
+              </p>
+            </div>
+          )}
         </section>
 
         {/* Chi tiết thanh toán */}
@@ -211,41 +542,67 @@ export function CheckoutSection() {
           <div className="space-y-2 text-[13px]">
             <div className="flex justify-between gap-4">
               <span>Tổng tiền món ăn</span>
-              <strong>{formatCurrency(totalPrice)}</strong>
+              <strong>
+                {formatCurrency(totals.subtotal)}
+              </strong>
             </div>
 
             <div className="flex justify-between gap-4">
               <span>Phí vận chuyển</span>
-              <strong>0 ₫</strong>
+              <strong>
+                {formatCurrency(totals.shippingFee)}
+              </strong>
             </div>
 
             <div className="flex justify-between gap-4">
               <span>Giảm giá</span>
-              <strong>0 ₫</strong>
+              <strong>
+                {formatCurrency(totals.discount)}
+              </strong>
             </div>
 
-            <div className="flex justify-between gap-4 pt-2 font-black">
+            <div className="flex justify-between gap-4 border-t border-gray-200 pt-3 text-[15px] font-black">
               <span>Tổng thanh toán</span>
-              <strong>{formatCurrency(totalPrice)}</strong>
+              <strong>
+                {formatCurrency(totals.grandTotal)}
+              </strong>
             </div>
           </div>
         </section>
 
+        {/* Thông báo */}
+        {formErrors.submit && (
+          <div className="rounded-lg border border-red-300 bg-red-50 p-4 text-sm font-medium text-red-600">
+            {formErrors.submit}
+          </div>
+        )}
+
+        {submitMessage && (
+          <div className="rounded-lg border border-green-300 bg-green-50 p-4 text-sm font-medium text-green-700">
+            {submitMessage}
+          </div>
+        )}
+
         {/* Xác nhận đặt hàng */}
         <div className="flex flex-col items-stretch justify-end gap-5 py-10 text-white sm:flex-row sm:items-center sm:gap-8">
           <strong className="text-[24px]">
-            TỔNG CỘNG: {formatCurrency(totalPrice)}
+            TỔNG CỘNG:{" "}
+            {formatCurrency(totals.grandTotal)}
           </strong>
 
           <button
-            type="button"
-            disabled={cartItems.length === 0}
+            type="submit"
+            disabled={
+              cartItems.length === 0 || isSubmitting
+            }
             className="rounded-md bg-brand-red px-12 py-4 text-[16px] font-black disabled:cursor-not-allowed disabled:opacity-50"
           >
-            ĐẶT ĐƠN
+            {isSubmitting
+              ? "ĐANG XỬ LÝ..."
+              : "ĐẶT ĐƠN"}
           </button>
         </div>
-      </div>
+      </form>
     </main>
   );
 }

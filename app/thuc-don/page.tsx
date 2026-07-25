@@ -4,6 +4,10 @@ import { MenuHero } from "@/components/sections/MenuHero";
 import MenuGrid from "@/components/menu/MenuGrid";
 // Import CTA cuối trang dùng chung.
 import { CTASection } from "@/components/sections/CTASection";
+import { fetchMenu } from "@/lib/mockMenuApi";
+import { FloatingCartBar } from "@/components/menu/floating-cart-bar";
+
+import type { MenuResponse } from "@/types/menu";
 
 // Metadata riêng cho trang thực đơn.
 export const metadata = {
@@ -14,13 +18,16 @@ export const metadata = {
 };
 
 // Trang thực đơn: layout thứ hai theo yêu cầu.
-export default function MenuPage() {
+export default async function MenuPage() {
   // Render page menu bằng component tái sử dụng.
+    const resp: MenuResponse = await fetchMenu();
+  const groups = resp?.data?.menu?.groups || [];
   return (
     <>
       <MenuHero />
  
-      <MenuGrid />
+      <MenuGrid groups={groups} />
+        <FloatingCartBar />
       {/* <CTASection /> */}
     </>
   );
