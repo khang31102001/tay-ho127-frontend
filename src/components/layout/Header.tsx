@@ -13,6 +13,8 @@ import { useEffect, useState } from "react";
 import { LanguageDropdown } from "../common/language-dropdown";
 import { useCart } from "@/contexts/cart-context";
 import { LanguageSwitcher } from "../common/language-switcher";
+import { AuthUser } from "@/types/auth";
+import LoginModal from "../auth/LoginModal";
 
 type HeaderProps = {
   variant?: "dark" | "light";
@@ -25,8 +27,14 @@ const navItems = [
 
 export function Header({ variant = "light" }: HeaderProps) {
   const router = useRouter();
-  const pathname = usePathname();
-  const [isChangeLanguageOpen, setIsChangeLanguageOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(true);
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
+
+  function handleAuthenticated(user: AuthUser) {
+    setCurrentUser(user);
+    setLoginOpen(false);
+  }
+
   const { cartCount } = useCart();
 
   const isDark = variant === "dark";
@@ -34,12 +42,12 @@ export function Header({ variant = "light" }: HeaderProps) {
 
   return (
     <header className={`sticky left-0 top-0 z-50 w-full transition-all duration-300 ${isDark
-        ? "bg-transparent text-white"
-        : "bg-brand-cream shadow-sm"
+      ? "bg-transparent text-white"
+      : "bg-brand-cream shadow-sm"
       }`}>
       <div className="mx-auto flex h-[86px] w-full max-w-[880px] items-center justify-between px-5 md:px-0">
         <Link href="/" className="block w-[150px] md:w-[165px]" aria-label="Bánh Cuốn Tây Hồ 127">
-          <Image src={isDark ? "/images/logo-white.png" : "/images/logo-color.png"} alt="Tây Hồ 127" width={165} height={86}   className="h-auto w-full" />
+          <Image src={isDark ? "/images/logo-white.png" : "/images/logo-color.png"} alt="Tây Hồ 127" width={165} height={86} className="h-auto w-full" />
         </Link>
 
         <nav className="hidden items-center gap-16 text-[16px] font-black md:flex">
@@ -55,7 +63,7 @@ export function Header({ variant = "light" }: HeaderProps) {
             }`}
         >
           {/* Ngôn ngữ */}
-            <LanguageSwitcher
+          <LanguageSwitcher
             onChange={(language) => {
               console.log(
                 "Ngôn ngữ vừa chọn:",
@@ -66,7 +74,7 @@ export function Header({ variant = "light" }: HeaderProps) {
 
           {/* Giỏ hàng */}
           <button
-            onClick={()=>router.push("/checkout")}
+            onClick={() => router.push("/checkout")}
             type="button"
             className={`group  items-center gap-2 transition-opacity hover:opacity-70 ${displayCart ? "md:inline-flex" : "hidden"}`}
             aria-label={`Giỏ hàng có ${cartCount} sản phẩm`}
@@ -86,14 +94,21 @@ export function Header({ variant = "light" }: HeaderProps) {
 
           {/* Đăng nhập */}
           <button
+            onClick={() => setLoginOpen(true)}
             type="button"
             className="hidden items-center gap-2 transition-opacity hover:opacity-70 md:inline-flex"
           >
             <UserRound className="size-4" />
-            <span>Đăng nhập</span>
+            {currentUser ? currentUser.name : "Đăng nhập"}
+
           </button>
         </div>
       </div>
+      <LoginModal
+        open={loginOpen}
+        onClose={() => setLoginOpen(false)}
+        onAuthenticated={handleAuthenticated}
+      />
     </header>
   );
 }

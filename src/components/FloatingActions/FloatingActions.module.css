@@ -1,0 +1,93 @@
+.floatingActions {
+  position: fixed;
+
+  right: 24px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  z-index: 1000;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  gap: 16px;
+}
+
+.actionButton {
+  width: 58px;
+  height: 58px;
+
+  border: none;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #ffffff;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.actionButton:hover {
+  transform: translateY(-3px) scale(1.05);
+
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.16);
+}
+
+.actionButton:active {
+  transform: scale(0.95);
+}
+
+/* Nút lên đầu trang */
+.scrollTop {
+  background: #ff9418;
+}
+
+/* Facebook */
+.facebook {
+  background: #317c48;
+}
+
+/* Map */
+.map {
+  background: #f51e27;
+}
+
+/*
+  Scroll top chỉ xuất hiện
+  khi user đã scroll xuống
+*/
+.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  transform: translateY(10px);
+}
+
+.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .floatingActions {
+    right: 12px;
+
+    gap: 12px;
+  }
+
+  .actionButton {
+    width: 50px;
+    height: 50px;
+  }
+}
