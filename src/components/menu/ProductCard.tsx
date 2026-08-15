@@ -4,6 +4,7 @@ import { useCart } from "@/contexts/cart-context";
 import { formatCurrency } from "@/data/menu-items";
 import { UiProduct } from "@/types/menu";
 import Image from "next/image";
+import BestSellerBanner from "../product/tag-best-seller";
 
 type ProductCardProps = {
   item: UiProduct;
@@ -20,17 +21,17 @@ export function ProductCard({ item }: ProductCardProps) {
   };
 
   return (
-    <article className="relative overflow-hidden rounded-md border border-brand-red bg-brand-cream shadow-card">
-      <div className="relative h-[142px] overflow-hidden">
+    <article className="relative overflow-visible rounded-md border border-brand-red bg-brand-cream shadow-card">
+      <BestSellerBanner/>
+      <div className="relative overflow-hidden h-[142px] ">
         <Image src={item.image} alt={item.name} width={100} height={142} className="h-full w-full object-cover transition-transform duration-500 ease-out hover:scale-105" />
         {item.badge && (
           <span className="absolute right-2 top-2 rounded bg-brand-red px-2 py-1 text-[10px] font-black text-white">
             {item.badge}
           </span>
         )}
-        {item.id === 1 && (
-          <span className="absolute left-0 top-0 bg-brand-red px-2 py-1 text-[11px] font-black text-white">Best seller</span>
-        )}
+        
+        
       </div>
 
       <div className="min-h-[136px] px-3 pb-2 pt-3">

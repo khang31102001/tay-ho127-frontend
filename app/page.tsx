@@ -30,7 +30,7 @@ export default function HomePage() {
       <PromotionZone />
       <FavoriteSection />
      
-      {/* <BrandProofSection /> */}
+      <BrandProofSection />
       <Testimonials />
    </div>
   );
