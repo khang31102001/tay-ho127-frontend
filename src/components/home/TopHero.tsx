@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Header } from "@/components/layout/header";
+import { Header } from "@/components/layout/Header";
 
 export function TopHero() {
   return (

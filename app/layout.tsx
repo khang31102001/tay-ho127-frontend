@@ -11,10 +11,10 @@ import "./globals.css";
 // @ts-ignore: side-effect CSS import may not have type declarations in this setup
 import "@/styles/components.css";
 // Import Footer dùng chung cho mọi trang.
-import { Footer } from "@/components/layout/footer";
+import { Footer } from "@/components/layout/Footer";
 // Import thông tin site tập trung từ data.
 import { site } from "@/data/site";
-import { Header } from "@/components/layout/header";
+import { Header } from "@/components/layout/Header";
 import { AppProviders } from "@/provider/app-providers";
 import FloatingActions from "@/components/layout/floating-actions";
 
