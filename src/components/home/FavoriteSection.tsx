@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import { Container } from "../ui/Container";
@@ -12,11 +10,7 @@ import {
   type KeyboardEvent,
   type TouchEvent,
 } from "react";
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  MoveLeftIcon,
-} from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon, MoveLeftIcon } from "lucide-react";
 
 import { ProductCard } from "@/components/menu/ProductCard";
 import { Reveal } from "../common/animation";
@@ -72,9 +66,7 @@ export function FavoriteSection() {
    * thì quay về phần tử cuối.
    */
   const previousIndex =
-    activeIndex === 0
-      ? favorites.length - 1
-      : activeIndex - 1;
+    activeIndex === 0 ? favorites.length - 1 : activeIndex - 1;
 
   /**
    * Index sản phẩm tiếp theo.
@@ -82,19 +74,14 @@ export function FavoriteSection() {
    * Khi activeIndex đang ở phần tử cuối
    * thì quay lại phần tử đầu.
    */
-  const nextIndex =
-    activeIndex === favorites.length - 1
-      ? 0
-      : activeIndex + 1;
+  const nextIndex = activeIndex === favorites.length - 1 ? 0 : activeIndex + 1;
 
   /**
    * Chuyển sang sản phẩm tiếp theo.
    */
   const handleNext = useCallback(() => {
     setActiveIndex((currentIndex) => {
-      return currentIndex === favorites.length - 1
-        ? 0
-        : currentIndex + 1;
+      return currentIndex === favorites.length - 1 ? 0 : currentIndex + 1;
     });
   }, [favorites.length]);
 
@@ -103,9 +90,7 @@ export function FavoriteSection() {
    */
   const handlePrevious = useCallback(() => {
     setActiveIndex((currentIndex) => {
-      return currentIndex === 0
-        ? favorites.length - 1
-        : currentIndex - 1;
+      return currentIndex === 0 ? favorites.length - 1 : currentIndex - 1;
     });
   }, [favorites.length]);
 
@@ -127,11 +112,7 @@ export function FavoriteSection() {
     return () => {
       window.clearInterval(timer);
     };
-  }, [
-    favorites.length,
-    handleNext,
-    isPaused,
-  ]);
+  }, [favorites.length, handleNext, isPaused]);
 
   /**
    * Xử lý điều hướng bằng bàn phím.
@@ -139,9 +120,7 @@ export function FavoriteSection() {
    * ArrowLeft  => sản phẩm trước.
    * ArrowRight => sản phẩm tiếp theo.
    */
-  function handleKeyDown(
-    event: KeyboardEvent<HTMLDivElement>,
-  ) {
+  function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key === "ArrowLeft") {
       handlePrevious();
     }
@@ -154,32 +133,25 @@ export function FavoriteSection() {
   /**
    * Ghi nhận vị trí bắt đầu swipe.
    */
-  function handleTouchStart(
-    event: TouchEvent<HTMLDivElement>,
-  ) {
-    touchStartXRef.current =
-      event.touches[0]?.clientX ?? null;
+  function handleTouchStart(event: TouchEvent<HTMLDivElement>) {
+    touchStartXRef.current = event.touches[0]?.clientX ?? null;
   }
 
   /**
    * Xử lý khi người dùng kết thúc swipe.
    */
-  function handleTouchEnd(
-    event: TouchEvent<HTMLDivElement>,
-  ) {
+  function handleTouchEnd(event: TouchEvent<HTMLDivElement>) {
     if (touchStartXRef.current === null) {
       return;
     }
 
-    const touchEndX =
-      event.changedTouches[0]?.clientX;
+    const touchEndX = event.changedTouches[0]?.clientX;
 
     if (touchEndX === undefined) {
       return;
     }
 
-    const swipeDistance =
-      touchEndX - touchStartXRef.current;
+    const swipeDistance = touchEndX - touchStartXRef.current;
 
     /**
      * Vuốt sang trái:
@@ -225,15 +197,59 @@ export function FavoriteSection() {
         {/* =================================================
          * HEADER
          * =============================================== */}
-        <div className="mb-10 flex items-center justify-end gap-6">
+        <div
+          className="
+            relative
+            mb-10
+            flex
+            items-center
+            justify-center
+          "
+        >
           <Reveal type="fade-up">
-            <h2 className="text-center font-display text-[32px] font-black md:text-[34px] text-white ">
-            Những lựa chọn được yêu thích nhất
-          </h2>
+            <h2
+              className="
+              text-center
+              font-display
+              text-[30px]
+              font-black
+              leading-tight
+              text-white
+              md:text-[34px]
+            "
+            >
+              Những lựa chọn được yêu thích nhất
+            </h2>
           </Reveal>
-          <Link href="/menu" className="hidden  rounded-md bg-brand-green px-6 py-3 text-[14px] font-black text-white md:inline-flex">
+          <Link
+            href="/menu"
+            className="
+              absolute
+              right-0
+              hidden
+              items-center
+              rounded-md
+              bg-brand-green
+              px-6
+              py-3
+              text-[14px]
+              font-black
+              text-white
+              transition
+              hover:opacity-90
+              active:scale-[0.98]
+              md:inline-flex
+            "
+          >
             <span className="flex items-center gap-2">
-              Xem thực đơn <MoveLeftIcon className="ml-2 h-4 w-4 rotate-180" />
+              Xem thực đơn
+              <MoveLeftIcon
+                className="
+                  h-4
+                  w-4
+                  rotate-180
+                "
+              />
             </span>
           </Link>
         </div>
@@ -280,10 +296,7 @@ export function FavoriteSection() {
               md:h-11 md:w-11
             "
           >
-            <ChevronLeftIcon
-              className="h-6 w-6"
-              strokeWidth={3.5}
-            />
+            <ChevronLeftIcon className="h-6 w-6" strokeWidth={3.5} />
           </button>
 
           {/* =================================================
@@ -321,10 +334,7 @@ export function FavoriteSection() {
             </div>
 
             {/* Sản phẩm trung tâm */}
-            <Reveal
-              key={`active-${activeItem.id}`}
-              type="fade-up"
-            >
+            <Reveal key={`active-${activeItem.id}`} type="fade-up">
               <div
                 className="
                   transition duration-300
@@ -337,10 +347,7 @@ export function FavoriteSection() {
 
             {/* Sản phẩm bên phải */}
             <div className="hidden md:block">
-              <Reveal
-                key={`next-${nextItem.id}-${activeIndex}`}
-                type="fade-up"
-              >
+              <Reveal key={`next-${nextItem.id}-${activeIndex}`} type="fade-up">
                 <div
                   onClick={handleNext}
                   className="
@@ -378,10 +385,7 @@ export function FavoriteSection() {
               md:h-11 md:w-11
             "
           >
-            <ChevronRightIcon
-              className="h-6 w-6"
-              strokeWidth={3.5}
-            />
+            <ChevronRightIcon className="h-6 w-6" strokeWidth={3.5} />
           </button>
         </div>
 
@@ -397,30 +401,22 @@ export function FavoriteSection() {
           aria-label="Chọn món ăn"
         >
           {favorites.map((item, index) => {
-            const isActive =
-              activeIndex === index;
+            const isActive = activeIndex === index;
 
             return (
               <button
                 key={item.id}
                 type="button"
-                onClick={() =>
-                  setActiveIndex(index)
-                }
+                onClick={() => setActiveIndex(index)}
                 aria-label={`Xem món ăn ${index + 1}`}
-                aria-current={
-                  isActive ? "true" : undefined
-                }
+                aria-current={isActive ? "true" : undefined}
                 className={[
                   "h-2 rounded-full",
                   "transition-all duration-300",
 
                   isActive
                     ? "w-6 bg-white"
-                    : [
-                        "w-2 bg-white/50",
-                        "hover:bg-white/80",
-                      ].join(" "),
+                    : ["w-2 bg-white/50", "hover:bg-white/80"].join(" "),
                 ].join(" ")}
               />
             );
@@ -443,22 +439,13 @@ export function FavoriteSection() {
             "
           >
             Xem thực đơn
-
-            <ChevronRightIcon
-              className="h-4 w-4"
-              strokeWidth={3}
-            />
+            <ChevronRightIcon className="h-4 w-4" strokeWidth={3} />
           </Link>
         </div>
 
         {/* Nội dung hỗ trợ trình đọc màn hình */}
-        <p
-          className="sr-only"
-          aria-live="polite"
-        >
-          Đang hiển thị món ăn{" "}
-          {activeIndex + 1} trên{" "}
-          {favorites.length}
+        <p className="sr-only" aria-live="polite">
+          Đang hiển thị món ăn {activeIndex + 1} trên {favorites.length}
         </p>
       </Container>
     </section>

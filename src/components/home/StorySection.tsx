@@ -1,57 +1,238 @@
 import Image from "next/image";
-import { Container } from "../ui/Container";
+
 import { Reveal } from "../common/animation";
+import { Container } from "../ui/Container";
+
+/* ============================================================
+ * DATA
+ * ========================================================== */
+
+const storyParagraphs = [
+  "Bánh Cuốn Tây Hồ bắt đầu từ một cửa hàng nhỏ tại phố cổ Hà Nội vào năm 1972. Với công thức gia truyền độc đáo và tình yêu dành cho ẩm thực truyền thống Việt Nam, chúng tôi đã dần xây dựng được thương hiệu uy tín và được yêu mến trong lòng người dân Hà Nội.",
+
+  "Trải qua hơn 5 thập kỷ, Bánh Cuốn Tây Hồ vẫn giữ nguyên hương vị truyền thống với bột gạo tươi được làm thủ công mỗi ngày, nhân thịt thơm ngon, và nước chấm đặc trưng theo công thức bí truyền.",
+
+  "Ngày nay, Bánh Cuốn Tây Hồ đã phát triển thành chuỗi nhà hàng trên khắp Việt Nam, nhưng chúng tôi vẫn luôn giữ vững triết lý kinh doanh: tôn trọng truyền thống, đảm bảo chất lượng, và không ngừng đổi mới để mang đến trải nghiệm tốt nhất cho khách hàng.",
+];
+
+const storyImages = {
+  top: "/images/banh-cuon-dish.jpg",
+  bottom: "/images/banh-cuon-dish.jpg",
+  side: "/images/story-col-1.png",
+};
+
+/* ============================================================
+ * COMPONENT
+ * ========================================================== */
 
 export function StorySection() {
   return (
-    <section className="min-h-svh snap-start bg-brand-cream py-20">
-      <Container className=" grid items-center gap-16 md:grid-cols-[0.96fr_1.04fr]">
-        <div className="grid h-[330px] grid-cols-[1fr_0.72fr] gap-5">
-        <Reveal type="slide-left" delay={0.2}  once={false}>
-            <div className="space-y-5">
-            <Image 
-              src="/images/banh-cuon-dish.jpg"alt="Story 1"
-              height={150} width={300} 
-              className="placeholder-box h-[150px]" 
-            />
-             <Image 
-              src="/images/banh-cuon-dish.jpg" alt="Story 1" 
-              height={140} width={300}
-              className="placeholder-box h-[140px]" 
-            />
-          </div>
-        </Reveal>
-          <Reveal type="slide-left" delay={0.3}  once={false}>
-             <Image 
-              src="/images/story-col-1.png" alt="Story 1" 
-              height={220} width={220}
-              className="placeholder-box mt-2 h-[215px]" 
-            />
-          </Reveal>
-        </div>
+    <section
+      className="
+        h-auto
+        snap-start
+        bg-brand-cream
+        py-12
+        sm:py-14
+        md:py-16
+        lg:py-20
+      "
+    >
+      <Container>
+        <div
+          className="
+            grid
+            items-center
+            gap-10
+            md:grid-cols-[0.95fr_1.05fr]
+            md:gap-12
+            lg:gap-16
+          "
+        >
+          {/* ==================================================
+           * IMAGE COLLAGE
+           * ================================================ */}
+          <div
+            className="
+              mx-auto
+              grid
+              w-full
+              max-w-[520px]
+              grid-cols-[1fr_0.72fr]
+              gap-3
+              sm:gap-4
+              md:max-w-none
+              md:gap-5
+            "
+          >
+            {/* LEFT COLUMN */}
+            <Reveal
+              type="slide-left"
+              delay={0.05}
+              duration={0.6}
+              once={false}
+            >
+              <div className="grid gap-3 sm:gap-4 md:gap-5">
+                <div
+                  className="
+                    relative
+                    aspect-[16/10]
+                    overflow-hidden
+                    rounded-[18px]
+                    sm:rounded-[20px]
+                  "
+                >
+                  <Image
+                    src={storyImages.top}
+                    alt="Bánh cuốn Tây Hồ"
+                    fill
+                    sizes="
+                      (max-width: 768px) 60vw,
+                      320px
+                    "
+                    className="
+                      object-cover
+                      transition-transform
+                      duration-700
+                      hover:scale-[1.03]
+                    "
+                  />
+                </div>
 
-        <article>
-          <Reveal type="fade-up" delay={0.2} duration={0.8} once={false}>
-            <h2 className="heading-section space-x-2">
-            <span className="text-brand-red">Nửa thế kỷ</span>
-            <span className="text-brand-green">gìn giữ vị xưa</span>
-          </h2>
-          </Reveal>
-          
-         <Reveal type="fade-up" delay={0.4} duration={0.8}once={false}>
-           <div className="mt-7 space-y-5 text-[16px] font-medium leading-6 text-[#26351e]">
-            <p>
-              Bánh Cuốn Tây Hồ bắt đầu từ một cửa hàng nhỏ tại phố cổ Hà Nội vào năm 1972. Với công thức gia truyền độc đáo và tình yêu dành cho ẩm thực truyền thống Việt Nam, chúng tôi đã dần xây dựng được thương hiệu uy tín và được yêu mến trong lòng người dân Hà Nội.
-            </p>
-            <p>
-              Trải qua hơn 5 thập kỷ, Bánh Cuốn Tây Hồ vẫn giữ nguyên hương vị truyền thống với bột gạo tươi được làm thủ công mỗi ngày, nhân thịt thơm ngon, và nước chấm đặc trưng theo công thức bí truyền.
-            </p>
-            <p>
-              Ngày nay, Bánh Cuốn Tây Hồ đã phát triển thành chuỗi nhà hàng trên khắp Việt Nam, nhưng chúng tôi vẫn luôn giữ vững triết lý kinh doanh: tôn trọng truyền thống, đảm bảo chất lượng, và không ngừng đổi mới để mang đến trải nghiệm tốt nhất cho khách hàng.
-            </p>
+                <div
+                  className="
+                    relative
+                    aspect-[16/9]
+                    overflow-hidden
+                    rounded-[18px]
+                    sm:rounded-[20px]
+                  "
+                >
+                  <Image
+                    src={storyImages.bottom}
+                    alt="Món ăn truyền thống của Tây Hồ"
+                    fill
+                    sizes="
+                      (max-width: 768px) 60vw,
+                      320px
+                    "
+                    className="
+                      object-cover
+                      transition-transform
+                      duration-700
+                      hover:scale-[1.03]
+                    "
+                  />
+                </div>
+              </div>
+            </Reveal>
+
+            {/* RIGHT COLUMN */}
+            <Reveal
+              type="slide-left"
+              delay={0.12}
+              duration={0.6}
+              once={false}
+            >
+              <div
+                className="
+                  relative
+                  mt-5
+                  aspect-[3/4]
+                  overflow-hidden
+                  rounded-[18px]
+                  sm:mt-7
+                  sm:rounded-[20px]
+                  md:mt-8
+                "
+              >
+                <Image
+                  src={storyImages.side}
+                  alt="Câu chuyện Bánh Cuốn Tây Hồ"
+                  fill
+                  sizes="
+                    (max-width: 768px) 35vw,
+                    220px
+                  "
+                  className="
+                    object-cover
+                    transition-transform
+                    duration-700
+                    hover:scale-[1.03]
+                  "
+                />
+              </div>
+            </Reveal>
           </div>
-         </Reveal>
-        </article>
+
+          {/* ==================================================
+           * STORY CONTENT
+           * ================================================ */}
+          <article
+            className="
+              mx-auto
+              w-full
+              max-w-[620px]
+              md:max-w-none
+            "
+          >
+            {/* TITLE */}
+            <Reveal
+              type="fade-up"
+              delay={0.05}
+              duration={0.55}
+              once={false}
+            >
+              <h2
+                className="
+                  heading-section
+                  text-center
+                  text-[28px]
+                  leading-tight
+                  sm:text-[31px]
+                  md:text-left
+                  md:text-[34px]
+                "
+              >
+                <span className="text-brand-red">
+                  Nửa thế kỷ
+                </span>{" "}
+                <span className="text-brand-green">
+                  gìn giữ vị xưa
+                </span>
+              </h2>
+            </Reveal>
+
+            {/* CONTENT */}
+            <div
+              className="
+                mt-5
+                space-y-4
+                text-[15px]
+                font-medium
+                leading-7
+                text-[#26351e]
+                sm:mt-6
+                sm:text-[16px]
+                sm:leading-7
+                md:mt-7
+                md:space-y-5
+              "
+            >
+              {storyParagraphs.map((paragraph, index) => (
+                <Reveal
+                  key={paragraph}
+                  type="fade-up"
+                  delay={0.1 + index * 0.06}
+                  duration={0.55}
+                  once={false}
+                >
+                  <p>{paragraph}</p>
+                </Reveal>
+              ))}
+            </div>
+          </article>
+        </div>
       </Container>
     </section>
   );

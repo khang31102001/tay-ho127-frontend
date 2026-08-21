@@ -80,17 +80,17 @@ function TestimonialCard({
 
         isMainCard
           ? [
-              "min-h-[144px] rounded-[15px]",
-              "px-6 py-5",
-            ].join(" ")
+            "min-h-[144px] rounded-[15px]",
+            "px-6 py-5",
+          ].join(" ")
           : [
-              "hidden h-[108px] cursor-pointer",
-              "overflow-hidden rounded-[15px]",
-              "px-4 py-4 opacity-90",
-              "hover:-translate-y-1",
-              "hover:opacity-100",
-              "md:block",
-            ].join(" "),
+            "hidden h-[108px] cursor-pointer",
+            "overflow-hidden rounded-[15px]",
+            "px-4 py-4 opacity-90",
+            "hover:-translate-y-1",
+            "hover:opacity-100",
+            "md:block",
+          ].join(" "),
       ].join(" ")}
     >
       {/* Thông tin người đánh giá */}
@@ -332,60 +332,97 @@ export function Testimonials() {
   return (
     <section
       className="
-        snap-start snap-always
-        bg-[#666665]
-        py-6 text-white
-        md:min-h-[270px]
-      "
+    snap-start snap-always
+    bg-[#666665]
+    px-3 py-6
+    text-white
+    sm:px-4
+    md:min-h-[270px] md:px-0 md:py-6
+  "
     >
       <Container className="text-center">
         {/* =================================================
-         * TIÊU ĐỀ
-         * =============================================== */}
+     * TIÊU ĐỀ
+     * =============================================== */}
         <Reveal type="fade-up">
-          <h2 className="heading-section text-[24px] font-black leading-tight md:text-[26px]">
-            Khách hàng{" "}
+          <h2
+            className="
+                heading-section
+                text-[22px] font-black leading-tight
+                sm:text-[24px]
+                md:text-[26px]
+              "
+              >
+            <span className="text-white">
+              Khách hàng
+            </span>{" "}
+
             <span className="text-[#ffd339]">
               nói gì
             </span>{" "}
-            về chúng tôi
+
+            <span className="text-green-600">
+              về chúng tôi
+            </span>
           </h2>
         </Reveal>
-
         {/* =================================================
-         * THÔNG TIN GOOGLE REVIEW
-         * =============================================== */}
+     * THÔNG TIN GOOGLE REVIEW
+     * =============================================== */}
         <Reveal type="fade-up">
-          <div className="mt-3 flex flex-wrap items-center justify-center gap-1.5">
+          <div
+            className="
+              mt-3
+              flex flex-wrap
+              items-center justify-center
+              gap-x-1.5 gap-y-1
+            "
+          >
             <Image
               src="/images/google-logo.png"
               alt="Google"
               width={52}
               height={18}
-              className="h-auto w-[52px] object-contain"
+              className="
+            h-auto w-[46px] object-contain
+            sm:w-[52px]
+          "
             />
 
             <StarIcon
               aria-hidden="true"
               className="
-                h-[18px] w-[18px]
-                fill-[#ffd339] text-[#ffd339]
-              "
+            h-[17px] w-[17px]
+            fill-[#ffd339] text-[#ffd339]
+            sm:h-[18px] sm:w-[18px]
+          "
             />
 
-            <span className="text-[16px] font-black">
+            <span className="text-[15px] font-black sm:text-[16px]">
               4.6
             </span>
 
-            <span className="text-[16px] font-medium text-[#ff9d00]">
+            <span
+              className="
+            text-[14px] font-medium
+            text-[#ff9d00]
+            sm:text-[16px]
+          "
+            >
               (519 đánh giá)
             </span>
           </div>
         </Reveal>
 
         {/* =================================================
-         * CAROUSEL
-         * =============================================== */}
+     * CAROUSEL
+     *
+     * Mobile:
+     * [ Previous ] [ Main Card ] [ Next ]
+     *
+     * Desktop:
+     * [ Previous ] [ Side ] [ Main ] [ Side ] [ Next ]
+     * =============================================== */}
         <div
           role="region"
           aria-label="Đánh giá của khách hàng"
@@ -397,99 +434,137 @@ export function Testimonials() {
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
           className="
-            mx-auto mt-6 grid max-w-[720px]
-            touch-pan-y select-none
-            grid-cols-[34px_minmax(0,226px)_34px]
-            items-center justify-center gap-4
-            outline-none
-            md:mt-7
-            md:grid-cols-[34px_170px_226px_170px_34px]
-            md:gap-[18px]
-          "
+        mx-auto mt-5
+        grid w-full max-w-[720px]
+        touch-pan-y select-none
+        grid-cols-[32px_minmax(0,1fr)_32px]
+        items-center justify-center
+        gap-2
+        outline-none
+
+        sm:grid-cols-[34px_minmax(0,300px)_34px]
+        sm:gap-3
+
+        md:mt-7
+        md:grid-cols-[34px_170px_226px_170px_34px]
+        md:gap-[18px]
+      "
         >
-          {/* Nút quay lại */}
+          {/* =================================================
+       * NÚT QUAY LẠI
+       * =============================================== */}
           <button
             type="button"
             onClick={handlePrevious}
             aria-label="Xem đánh giá trước"
             className="
-              flex h-[32px] w-[32px]
-              items-center justify-center
-              rounded-full bg-white
-              text-[#666665]
-              shadow-sm transition
-              hover:scale-105 hover:bg-gray-100
-              active:scale-95
-            "
+          flex h-[30px] w-[30px]
+          shrink-0
+          items-center justify-center
+          rounded-full
+          bg-white
+          text-[#666665]
+          shadow-sm
+          transition
+          hover:scale-105 hover:bg-gray-100
+          active:scale-95
+          sm:h-[32px] sm:w-[32px]
+        "
           >
             <ChevronLeftIcon
-              className="h-[22px] w-[22px]"
+              className="h-[20px] w-[20px] sm:h-[22px] sm:w-[22px]"
               strokeWidth={3.5}
             />
           </button>
 
-          {/* Thẻ bên trái */}
-          <Reveal
-            key={`previous-${previousItem.id}-${activeIndex}`}
-            type="fade-up"
-          >
-            <TestimonialCard
-              item={previousItem}
-              variant="side"
-              onClick={handlePrevious}
-            />
-          </Reveal>
+          {/* =================================================
+       * THẺ BÊN TRÁI
+       * Chỉ hiển thị từ desktop
+       * =============================================== */}
+          <div className="hidden md:block">
+            <Reveal
+              key={`previous-${previousItem.id}-${activeIndex}`}
+              type="fade-up"
+            >
+              <TestimonialCard
+                item={previousItem}
+                variant="side"
+                onClick={handlePrevious}
+              />
+            </Reveal>
+          </div>
 
-          {/* Thẻ chính */}
-          <Reveal
-            key={`active-${activeItem.id}`}
-            type="fade-up"
-          >
-            <TestimonialCard
-              item={activeItem}
-              variant="main"
-            />
-          </Reveal>
+          {/* =================================================
+       * THẺ CHÍNH
+       * =============================================== */}
+          <div className="min-w-0">
+            <Reveal
+              key={`active-${activeItem.id}`}
+              type="fade-up"
+            >
+              <TestimonialCard
+                item={activeItem}
+                variant="main"
+              />
+            </Reveal>
+          </div>
 
-          {/* Thẻ bên phải */}
-          <Reveal
-            key={`next-${nextItem.id}-${activeIndex}`}
-            type="fade-up"
-          >
-            <TestimonialCard
-              item={nextItem}
-              variant="side"
-              onClick={handleNext}
-            />
-          </Reveal>
+          {/* =================================================
+       * THẺ BÊN PHẢI
+       * Chỉ hiển thị từ desktop
+       * =============================================== */}
+          <div className="hidden md:block">
+            <Reveal
+              key={`next-${nextItem.id}-${activeIndex}`}
+              type="fade-up"
+            >
+              <TestimonialCard
+                item={nextItem}
+                variant="side"
+                onClick={handleNext}
+              />
+            </Reveal>
+          </div>
 
-          {/* Nút tiếp theo */}
+          {/* =================================================
+       * NÚT TIẾP THEO
+       * =============================================== */}
           <button
             type="button"
             onClick={handleNext}
             aria-label="Xem đánh giá tiếp theo"
             className="
-              flex h-[32px] w-[32px]
-              items-center justify-center
-              rounded-full bg-white
-              text-[#666665]
-              shadow-sm transition
-              hover:scale-105 hover:bg-gray-100
-              active:scale-95
-            "
+          flex h-[30px] w-[30px]
+          shrink-0
+          items-center justify-center
+          rounded-full
+          bg-white
+          text-[#666665]
+          shadow-sm
+          transition
+          hover:scale-105 hover:bg-gray-100
+          active:scale-95
+          sm:h-[32px] sm:w-[32px]
+        "
           >
             <ChevronRightIcon
-              className="h-[22px] w-[22px]"
+              className="h-[20px] w-[20px] sm:h-[22px] sm:w-[22px]"
               strokeWidth={3.5}
             />
           </button>
         </div>
 
         {/* =================================================
-         * DOT NAVIGATION
-         * =============================================== */}
+     * DOT NAVIGATION
+     * =============================================== */}
         <div
-          className="mt-5 flex items-center justify-center gap-2"
+          className="
+        mt-4 flex
+        flex-wrap
+        items-center justify-center
+        gap-1.5
+        sm:mt-5 sm:gap-2
+      "
           aria-label="Chọn đánh giá"
         >
           {testimonials.map((item, index) => {
@@ -515,7 +590,10 @@ export function Testimonials() {
         </div>
 
         {/* Nội dung hỗ trợ trình đọc màn hình */}
-        <p className="sr-only" aria-live="polite">
+        <p
+          className="sr-only"
+          aria-live="polite"
+        >
           Đang hiển thị đánh giá {activeIndex + 1} trên{" "}
           {testimonials.length}
         </p>

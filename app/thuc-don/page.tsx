@@ -27,7 +27,7 @@ export default async function MenuPage() {
       <MenuHero />
  
       <MenuGrid groups={groups} />
-        <FloatingCartBar />
+      <FloatingCartBar />
       {/* <CTASection /> */}
     </>
   );

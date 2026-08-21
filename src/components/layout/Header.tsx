@@ -15,6 +15,8 @@ import { useCart } from "@/contexts/cart-context";
 import { LanguageSwitcher } from "../common/language-switcher";
 import { AuthUser } from "@/types/auth";
 import LoginModal from "../auth/LoginModal";
+import  MobileHeaderMenu  from "./mobile-header-menu";
+
 
 type HeaderProps = {
   variant?: "dark" | "light";
@@ -49,6 +51,7 @@ export function Header({ variant = "light" }: HeaderProps) {
         <Link href="/" className="block w-[150px] md:w-[165px]" aria-label="Bánh Cuốn Tây Hồ 127">
           <Image src={isDark ? "/images/logo-white.png" : "/images/logo-color.png"} alt="Tây Hồ 127" width={165} height={86} className="h-auto w-full" />
         </Link>
+        {/* <Logo tone="white" className="h-auto w-40 md:w-48" /> */}
 
         <nav className="hidden items-center gap-16 text-[16px] font-black md:flex">
           {navItems.map((item) => (
@@ -74,9 +77,10 @@ export function Header({ variant = "light" }: HeaderProps) {
 
           {/* Giỏ hàng */}
           <button
+            data-cart-target
             onClick={() => router.push("/checkout")}
             type="button"
-            className={`group  items-center gap-2 transition-opacity hover:opacity-70 ${displayCart ? "md:inline-flex" : "hidden"}`}
+            className={`group  hidden items-center gap-2 transition-opacity hover:opacity-70 ${displayCart ? "md:inline-flex" : ""}`}
             aria-label={`Giỏ hàng có ${cartCount} sản phẩm`}
           >
             <span className="relative">
@@ -102,6 +106,15 @@ export function Header({ variant = "light" }: HeaderProps) {
             {currentUser ? currentUser.name : "Đăng nhập"}
 
           </button>
+          {/* Menu - Mobile */}
+          <MobileHeaderMenu
+            navItems={navItems}
+            currentUser={currentUser}
+            cartCount={cartCount}
+            isDark={isDark}
+            onLoginClick={() => setLoginOpen(true)}
+            onCartClick={() => router.push("/checkout")}
+          />
         </div>
       </div>
       <LoginModal

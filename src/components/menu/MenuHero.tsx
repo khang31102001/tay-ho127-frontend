@@ -1,4 +1,4 @@
-import { Header } from "@/components/layout/Header";
+import { Header } from "@/components/layout/header";
 import { PromotionZone } from "@/components/home/PromotionZone";
 
 export function MenuHero() {

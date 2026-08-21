@@ -12,7 +12,6 @@ export function BrandProofSection() {
           <ImageActivitySection />
         </Reveal>
         <StatsMichelin />
-
       </Container>
     </section>
   )

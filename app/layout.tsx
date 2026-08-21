@@ -10,13 +10,11 @@ import "./globals.css";
 // Import class component dùng chung sau Tailwind để @apply hoạt động đúng.
 // @ts-ignore: side-effect CSS import may not have type declarations in this setup
 import "@/styles/components.css";
-// Import Navbar dùng chung cho mọi trang.
-import { Navbar } from "@/components/layout/Navbar";
 // Import Footer dùng chung cho mọi trang.
-import { Footer } from "@/components/layout/Footer";
+import { Footer } from "@/components/layout/footer";
 // Import thông tin site tập trung từ data.
 import { site } from "@/data/site";
-import { Header } from "@/components/layout/Header";
+import { Header } from "@/components/layout/header";
 import { AppProviders } from "@/provider/app-providers";
 import FloatingActions from "@/components/layout/floating-actions";
 

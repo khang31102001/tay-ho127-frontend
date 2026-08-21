@@ -16,6 +16,7 @@ import {
   Share2,
 
 } from "lucide-react";
+import { Reveal } from "../common/animation";
 
 // Footer chứa thông tin liên hệ và menu phụ.
 export function Footer() {
@@ -33,8 +34,8 @@ export function Footer() {
               <div className="flex p-2 items-center justify-center rounded-full bg-orange-500 transition hover:scale-105 hover:bg-orange-600">
                 <Globe className="size-4 text-white" />
               </div>
-             
-               <Link href={brand.following?.web} target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-white">
+
+              <Link href={brand.following?.web} target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-white">
                 {brand.following?.web}
               </Link>
             </div>
@@ -42,7 +43,7 @@ export function Footer() {
               <div className="flex p-2 items-center justify-center rounded-full bg-orange-500 transition hover:scale-105 hover:bg-orange-600">
                 <ShoppingBag className="size-4 text-white" />
               </div>
-              
+
               <Link href={brand.following?.shopee} target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-white">
                 {brand.following?.shopee}
               </Link>
@@ -51,10 +52,10 @@ export function Footer() {
               <div className="flex p-2 items-center justify-center rounded-full bg-orange-500 transition hover:scale-105 hover:bg-orange-600">
                 <Share2 className="size-4 text-white" />
               </div>
-              <Link 
-                href={brand.following?.facebook ?? "#"} 
-                target="_blank" 
-                rel="noopener noreferrer" 
+              <Link
+                href={brand.following?.facebook ?? "#"}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center text-white/70 hover:text-white">
                 <p>{brand.following?.facebook}</p>
               </Link>
@@ -62,26 +63,148 @@ export function Footer() {
           </div>
         </div>
         <div>
-          <h3 className="text-sm font-black uppercase tracking-[0.22em] text-white">Thông tin liên hệ</h3>
-          <div className="mt-5 space-y-3 text-sm leading-6 text-white/70">
-            <div className="flex items-start gap-3">
-              <MapPin className="mt-1 size-4 shrink-0 text-white" />
-              <Link href={brand.following?.web} target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-white">
-                {brand.address}
-              </Link>
-            </div>
-            <div className="flex items-start gap-3">
-              <Phone className="mt-1 size-4 shrink-0 text-white" />
-              <Link href={`tel:${brand.phone}`} className="text-white/70 hover:text-white">
-                {brand.phone}
-              </Link>
-            </div>
-               <div className="flex items-start gap-3">
-              <Clock3 className="mt-1 size-4 shrink-0 text-white" />
-              <Link href={brand.following?.web} target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-white">
-                {brand.openingHours}
-              </Link>
-            </div>
+          {/* =========================================================
+        * TITLE
+        * ======================================================= */}
+          <Reveal
+            type="slide-left"
+            delay={0.05}
+            duration={0.45}
+          >
+            <h3
+              className="
+        text-sm
+        font-black
+        uppercase
+        tracking-[0.22em]
+        text-white
+      "
+            >
+              Thông tin liên hệ
+            </h3>
+          </Reveal>
+
+          {/* =========================================================
+   * CONTACT INFORMATION
+   * ======================================================= */}
+          <div className="mt-5 space-y-3 text-sm leading-6">
+            {/* Địa chỉ */}
+            <Reveal
+              type="slide-left"
+              delay={0.08}
+              duration={0.45}
+            >
+              <div
+                className="
+          group
+          flex items-start
+          gap-3
+        "
+              >
+                <MapPin
+                  className="
+            mt-1
+            size-4
+            shrink-0
+            text-white
+            transition-transform
+            duration-300
+            group-hover:translate-x-1
+          "
+                />
+
+                <Link
+                  href={brand.following?.web ?? "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="
+            text-white/70
+            transition-all
+            duration-300
+            hover:text-white
+          "
+                >
+                  {brand.address}
+                </Link>
+              </div>
+            </Reveal>
+
+            {/* Số điện thoại */}
+            <Reveal
+              type="slide-left"
+              delay={0.13}
+              duration={0.45}
+            >
+              <div
+                className="
+          group
+          flex items-start
+          gap-3
+        "
+              >
+                <Phone
+                  className="
+            mt-1
+            size-4
+            shrink-0
+            text-white
+            transition-transform
+            duration-300
+            group-hover:translate-x-1
+          "
+                />
+
+                <Link
+                  href={`tel:${brand.phone}`}
+                  className="
+            text-white/70
+            transition-all
+            duration-300
+            hover:text-white
+          "
+                >
+                  {brand.phone}
+                </Link>
+              </div>
+            </Reveal>
+
+            {/* Giờ mở cửa */}
+            <Reveal
+              type="slide-left"
+              delay={0.18}
+              duration={0.45}
+            >
+              <div
+                className="
+          group
+          flex items-start
+          gap-3
+        "
+              >
+                <Clock3
+                  className="
+            mt-1
+            size-4
+            shrink-0
+            text-white
+            transition-transform
+            duration-300
+            group-hover:translate-x-1
+          "
+                />
+
+                <span
+                  className="
+            text-white/70
+            transition-colors
+            duration-300
+            group-hover:text-white
+          "
+                >
+                  {brand.openingHours}
+                </span>
+              </div>
+            </Reveal>
           </div>
         </div>
         {/* <div>

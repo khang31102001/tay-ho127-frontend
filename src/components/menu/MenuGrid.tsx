@@ -134,6 +134,7 @@ export default function MenuGrid({
   const [visibleCount, setVisibleCount] = useState(
     INITIAL_VISIBLE_COUNT,
   );
+  
 
   /* =======================================================
    * 1. CHUYỂN DỮ LIỆU API THÀNH DANH SÁCH UIPRODUCT
@@ -458,7 +459,7 @@ export default function MenuGrid({
         {visibleItems.length > 0 ? (
           <div className="grid gap-x-10 gap-y-8 sm:grid-cols-2 md:grid-cols-3">
             {visibleItems.map((item, index) => (
-              <Reveal type="fade-up" delay={index * 0.1} duration={ index * 0.5} key={item.id} className="w-full">
+              <Reveal type="fade-up" delay={index * 0.06} duration={0.45} key={item.id} className="w-full">
                 <ProductCard item={item} />
               </Reveal>
             ))}
