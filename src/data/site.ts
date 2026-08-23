@@ -24,6 +24,10 @@ export const site = {
     michelin: "/images/michelin-2026.png",
     // Logo Google được user cung cấp.
     google: "/images/google-logo.png",
+    /// background menu dùng cho menu section.
+    menuBackground: "/images/background-menu.png",
+     /// background checkout dùng cho checkout section.
+    checkoutBackground: "/images/background-checkout.png",
   },
 };
 

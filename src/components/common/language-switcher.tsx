@@ -484,7 +484,7 @@ export function LanguageSwitcher({
           className="
             flex items-center gap-2
             whitespace-nowrap
-            text-[18px] font-bold text-[#181511]
+            text-[18px]
             transition hover:text-brand-green
           "
         >

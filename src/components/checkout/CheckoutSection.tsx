@@ -18,6 +18,7 @@ import { RadioOption } from "@/components/ui/radio-option";
 import { useCart } from "@/contexts/cart-context";
 import { formatCurrency } from "@/data/menu-items";
 import { PopupStatus, StatusPopup } from "../common/status-popup";
+import MenuBackgroundDecoration from "../ui/menu-background-decoration";
 interface PopupState {
   open: boolean;
   status: PopupStatus;
@@ -216,7 +217,8 @@ export function CheckoutSection({ onSubmitOrder }: CheckoutSectionProps) {
   }
 
   return (
-    <main className="site-shell food-pattern min-h-screen px-5 py-28 md:px-0">
+    <div className="relative w-full pb-40 pt-24  bg-[#ff9418] min-h-screen px-5 py-28 md:px-0">
+     <MenuBackgroundDecoration leftColor="#F5C884" rightColor="#F5C884" />
       <form onSubmit={handleSubmit} className="mx-auto max-w-[730px] space-y-3">
         {/* Danh sách món trong giỏ hàng */}
         <section className="rounded-lg bg-white p-7 shadow-soft">
@@ -533,6 +535,6 @@ export function CheckoutSection({ onSubmitOrder }: CheckoutSectionProps) {
           ERR-API-20260805
         </div>
       </StatusPopup>
-    </main>
+    </div>
   );
 }

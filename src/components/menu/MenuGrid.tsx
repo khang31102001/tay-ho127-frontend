@@ -5,6 +5,9 @@ import { useMemo, useState } from "react";
 import { ProductCard } from "./ProductCard";
 import type { MenuResponse, UiProduct } from "@/types/menu";
 import { Reveal } from "../common/animation";
+import { Container } from "../ui/Container";
+import { site } from "@/data/site";
+import MenuBackgroundDecoration from "../ui/menu-background-decoration";
 
 /* =========================================================
  * CẤU HÌNH HIỂN THỊ
@@ -341,20 +344,9 @@ export default function MenuGrid({
    * ===================================================== */
 
   return (
-    <section className="relative bg-brand-cream pb-40 pt-24">
-      {/* Họa tiết trang trí bên trái */}
-      <div className="pointer-events-none absolute left-2 top-3 hidden space-y-4 md:block">
-        {Array.from({ length: 3 }).map(
-          (_, index) => (
-            <div
-              key={index}
-              className="h-12 w-24 rounded-[50%_50%_12%_12%] border-2 border-orange-300"
-            />
-          ),
-        )}
-      </div>
-
-      <div className="mx-auto max-w-[790px] px-5 md:px-0">
+    <section className="relative w-full  pb-40 pt-24 " >
+       <MenuBackgroundDecoration leftColor="#FF9418" rightColor="#F5C884" />
+      <Container className="mx-auto max-w-[790px] px-5 md:px-0">
         {/* Tiêu đề */}
         <h1 className="heading-section mb-24 text-center text-[44px] text-brand-green md:text-[48px]">
           Hôm nay bạn muốn ăn gì?
@@ -547,7 +539,7 @@ export default function MenuGrid({
             )}
           </div>
         )}
-      </div>
+      </Container>
     </section>
   );
 }

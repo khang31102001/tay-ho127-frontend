@@ -2,115 +2,323 @@
 import { Container } from "@/components/ui/Container";
 // Import Logo dùng lại ở footer.
 import { Logo } from "@/components/ui/Logo";
-// Import dữ liệu site và nav tập trung.
-import { navItems, brand } from "@/data/site";
+// Import dữ liệu brand tập trung.
+import { brand } from "@/data/site";
 // Import Link cho các đường dẫn footer.
 import Link from "next/link";
 
 import {
-  MapPin,
   Clock3,
-  Phone,
   Globe,
-  ShoppingBag,
+  MapPin,
+  Phone,
   Share2,
-
+  ShoppingBag,
+  type LucideIcon,
 } from "lucide-react";
+
 import { Reveal } from "../common/animation";
+
+/* =================================================
+ * TYPES
+ * =============================================== */
+
+type SocialItem = {
+  id: string;
+  label: string;
+  href?: string;
+  icon: LucideIcon;
+};
+
+/* =================================================
+ * DATA
+ * =============================================== */
+
+const socialItems: SocialItem[] = [
+  {
+    id: "website",
+    label: brand.following?.web ?? "",
+    href: brand.following?.web,
+    icon: Globe,
+  },
+  {
+    id: "shopee",
+    label: brand.following?.shopee ?? "",
+    href: brand.following?.shopee,
+    icon: ShoppingBag,
+  },
+  {
+    id: "facebook",
+    label: brand.following?.facebook ?? "",
+    href: brand.following?.facebook,
+    icon: Share2,
+  },
+];
+
+/* =================================================
+ * FOOTER
+ * =============================================== */
 
 // Footer chứa thông tin liên hệ và menu phụ.
 export function Footer() {
-  // Render footer nền tối tương phản với nền kem.
   return (
-    <footer id="lien-he" className="bg-brand-green text-white">
-      <Container className="grid gap-10 py-12 md:grid-cols-[1.2fr_.8fr_.8fr] md:py-16">
-        <div>
-          <Logo tone="white" className="h-auto w-full" />
-        </div>
-        <div>
-          <h3 className="text-sm font-black uppercase tracking-[0.22em] text-white">Theo dõi chúng tôi</h3>
-          <div className="mt-5 space-y-3 text-sm leading-6 text-white/70">
-            <div className="flex items-start gap-3">
-              <div className="flex p-2 items-center justify-center rounded-full bg-orange-500 transition hover:scale-105 hover:bg-orange-600">
-                <Globe className="size-4 text-white" />
-              </div>
+    <footer
+      id="lien-he"
+      className="
+        relative
+        overflow-hidden
+        bg-brand-green
+        text-white
+      "
+    >
+      {/* =================================================
+       * DECORATIVE BACKGROUND EFFECT
+       * Chỉ tạo điểm nhấn khi người dùng kéo xuống Footer.
+       * =============================================== */}
 
-              <Link href={brand.following?.web} target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-white">
-                {brand.following?.web}
-              </Link>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="flex p-2 items-center justify-center rounded-full bg-orange-500 transition hover:scale-105 hover:bg-orange-600">
-                <ShoppingBag className="size-4 text-white" />
-              </div>
+      <div
+        aria-hidden="true"
+        className="
+          pointer-events-none
+          absolute
+          -left-24
+          -top-24
+          h-72
+          w-72
+          rounded-full
+          bg-orange-400/10
+          blur-3xl
+          animate-pulse
+        "
+      />
 
-              <Link href={brand.following?.shopee} target="_blank" rel="noopener noreferrer" className="text-white/70 hover:text-white">
-                {brand.following?.shopee}
-              </Link>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="flex p-2 items-center justify-center rounded-full bg-orange-500 transition hover:scale-105 hover:bg-orange-600">
-                <Share2 className="size-4 text-white" />
-              </div>
-              <Link
-                href={brand.following?.facebook ?? "#"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center text-white/70 hover:text-white">
-                <p>{brand.following?.facebook}</p>
-              </Link>
-            </div>
+      <div
+        aria-hidden="true"
+        className="
+          pointer-events-none
+          absolute
+          -bottom-32
+          -right-24
+          h-96
+          w-96
+          rounded-full
+          bg-white/5
+          blur-3xl
+          animate-pulse
+          [animation-delay:700ms]
+        "
+      />
+
+      {/* =================================================
+       * TOP ACCENT
+       * =============================================== */}
+
+      <Reveal
+        type="fade-up"
+        delay={0}
+        duration={0.45}
+      >
+        <div
+          className="
+            h-[3px]
+            w-full
+            bg-gradient-to-r
+            from-transparent
+            via-orange-400
+            to-transparent
+          "
+        />
+      </Reveal>
+
+      {/* =================================================
+       * FOOTER CONTENT
+       * =============================================== */}
+
+      <Container
+        className="
+          relative
+          z-10
+          grid
+          gap-10
+          py-12
+
+          md:grid-cols-[1.2fr_.8fr_.8fr]
+          md:py-16
+        "
+      >
+        {/* =================================================
+         * BRAND / LOGO
+         * =============================================== */}
+
+        <Reveal
+          type="fade-up"
+          delay={0.05}
+          duration={0.6}
+        >
+          <div
+            className="
+              group
+              relative
+            "
+          >
+            <Logo
+              tone="white"
+              className="
+                h-auto
+                w-full
+                transition-transform
+                duration-500
+                ease-out
+
+                group-hover:-translate-y-1
+                group-hover:scale-[1.02]
+              "
+            />
           </div>
-        </div>
+        </Reveal>
+
+        {/* =================================================
+         * SOCIAL
+         * =============================================== */}
+
         <div>
-          {/* =========================================================
-        * TITLE
-        * ======================================================= */}
           <Reveal
             type="slide-left"
-            delay={0.05}
+            delay={0.1}
             duration={0.45}
           >
             <h3
               className="
-        text-sm
-        font-black
-        uppercase
-        tracking-[0.22em]
-        text-white
-      "
+                text-sm
+                font-black
+                uppercase
+                tracking-[0.22em]
+                text-white
+              "
+            >
+              Theo dõi chúng tôi
+            </h3>
+          </Reveal>
+
+          <div className="mt-5 space-y-3 text-sm leading-6">
+            {socialItems.map((item, index) => {
+              const Icon = item.icon;
+
+              if (!item.href || !item.label) {
+                return null;
+              }
+
+              return (
+                <Reveal
+                  key={item.id}
+                  type="fade-up"
+                  delay={0.14 + index * 0.08}
+                  duration={0.45}
+                >
+                  <div
+                    className="
+                      group
+                      flex
+                      items-center
+                      gap-3
+                    "
+                  >
+                    <div
+                      className="
+                        flex
+                        shrink-0
+                        items-center
+                        justify-center
+                        rounded-full
+                        bg-orange-500
+                        p-2
+
+                        transition-all
+                        duration-300
+
+                        group-hover:-translate-y-0.5
+                        group-hover:rotate-6
+                        group-hover:scale-110
+                        group-hover:bg-orange-600
+                      "
+                    >
+                      <Icon className="size-4 text-white" />
+                    </div>
+
+                    <Link
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="
+                        break-all
+                        text-white/70
+
+                        transition-all
+                        duration-300
+
+                        group-hover:translate-x-1
+                        group-hover:text-white
+                      "
+                    >
+                      {item.label}
+                    </Link>
+                  </div>
+                </Reveal>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* =================================================
+         * CONTACT
+         * =============================================== */}
+
+        <div>
+          <Reveal
+            type="slide-left"
+            delay={0.16}
+            duration={0.45}
+          >
+            <h3
+              className="
+                text-sm
+                font-black
+                uppercase
+                tracking-[0.22em]
+                text-white
+              "
             >
               Thông tin liên hệ
             </h3>
           </Reveal>
 
-          {/* =========================================================
-   * CONTACT INFORMATION
-   * ======================================================= */}
           <div className="mt-5 space-y-3 text-sm leading-6">
             {/* Địa chỉ */}
             <Reveal
               type="slide-left"
-              delay={0.08}
+              delay={0.22}
               duration={0.45}
             >
               <div
                 className="
-          group
-          flex items-start
-          gap-3
-        "
+                  group
+                  flex
+                  items-start
+                  gap-3
+                "
               >
                 <MapPin
                   className="
-            mt-1
-            size-4
-            shrink-0
-            text-white
-            transition-transform
-            duration-300
-            group-hover:translate-x-1
-          "
+                    mt-1
+                    size-4
+                    shrink-0
+                    text-white
+
+                    transition-transform
+                    duration-300
+
+                    group-hover:translate-x-1
+                  "
                 />
 
                 <Link
@@ -118,11 +326,13 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="
-            text-white/70
-            transition-all
-            duration-300
-            hover:text-white
-          "
+                    text-white/70
+
+                    transition-all
+                    duration-300
+
+                    hover:text-white
+                  "
                 >
                   {brand.address}
                 </Link>
@@ -132,36 +342,41 @@ export function Footer() {
             {/* Số điện thoại */}
             <Reveal
               type="slide-left"
-              delay={0.13}
+              delay={0.3}
               duration={0.45}
             >
               <div
                 className="
-          group
-          flex items-start
-          gap-3
-        "
+                  group
+                  flex
+                  items-start
+                  gap-3
+                "
               >
                 <Phone
                   className="
-            mt-1
-            size-4
-            shrink-0
-            text-white
-            transition-transform
-            duration-300
-            group-hover:translate-x-1
-          "
+                    mt-1
+                    size-4
+                    shrink-0
+                    text-white
+
+                    transition-transform
+                    duration-300
+
+                    group-hover:translate-x-1
+                  "
                 />
 
                 <Link
                   href={`tel:${brand.phone}`}
                   className="
-            text-white/70
-            transition-all
-            duration-300
-            hover:text-white
-          "
+                    text-white/70
+
+                    transition-all
+                    duration-300
+
+                    hover:text-white
+                  "
                 >
                   {brand.phone}
                 </Link>
@@ -171,35 +386,40 @@ export function Footer() {
             {/* Giờ mở cửa */}
             <Reveal
               type="slide-left"
-              delay={0.18}
+              delay={0.38}
               duration={0.45}
             >
               <div
                 className="
-          group
-          flex items-start
-          gap-3
-        "
+                  group
+                  flex
+                  items-start
+                  gap-3
+                "
               >
                 <Clock3
                   className="
-            mt-1
-            size-4
-            shrink-0
-            text-white
-            transition-transform
-            duration-300
-            group-hover:translate-x-1
-          "
+                    mt-1
+                    size-4
+                    shrink-0
+                    text-white
+
+                    transition-transform
+                    duration-300
+
+                    group-hover:translate-x-1
+                  "
                 />
 
                 <span
                   className="
-            text-white/70
-            transition-colors
-            duration-300
-            group-hover:text-white
-          "
+                    text-white/70
+
+                    transition-colors
+                    duration-300
+
+                    group-hover:text-white
+                  "
                 >
                   {brand.openingHours}
                 </span>
@@ -207,20 +427,7 @@ export function Footer() {
             </Reveal>
           </div>
         </div>
-        {/* <div>
-          <h3 className="text-sm font-black uppercase tracking-[0.22em] text-white">Điều hướng</h3>
-          <div className="mt-5 grid gap-3 text-sm text-white/70">
-            {navItems.map((item) => (
-              <Link key={item.href} href={item.href} className="transition hover:text-white">
-                {item.label}
-              </Link>
-            ))}
-          </div>
-        </div> */}
       </Container>
-      {/* <div className="border-t border-white/10 py-5 text-center text-xs uppercase tracking-[0.18em] text-white/50">
-        © 2026 {site.name}. Frontend source by Next.js + TailwindCSS.
-      </div> */}
     </footer>
   );
 }

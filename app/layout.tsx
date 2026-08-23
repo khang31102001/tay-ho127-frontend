@@ -43,7 +43,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <body className="min-h-svh">
         <AppProviders>
           <div className="flex min-h-svh flex-col">
-            <Header variant="light" />
+            <Header variant="dark" />
 
             <main className="min-h-0 flex-1 snap-y snap-proximity">
               {children}
