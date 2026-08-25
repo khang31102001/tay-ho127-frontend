@@ -207,17 +207,7 @@ export function FavoriteSection() {
           "
         >
           <Reveal type="fade-up">
-            <h2
-              className="
-              text-center
-              font-display
-              text-[30px]
-              font-black
-              leading-tight
-              text-white
-              md:text-[34px]
-            "
-            >
+            <h2 className="heading-section text-center text-white">
               Những lựa chọn được yêu thích nhất
             </h2>
           </Reveal>

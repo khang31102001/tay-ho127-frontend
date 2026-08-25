@@ -187,11 +187,6 @@ export function StorySection() {
                 className="
                   heading-section
                   text-center
-                  text-[28px]
-                  leading-tight
-                  sm:text-[31px]
-                  md:text-left
-                  md:text-[34px]
                 "
               >
                 <span className="text-brand-red">
@@ -208,6 +203,7 @@ export function StorySection() {
               className="
                 mt-5
                 space-y-4
+                text-justify
                 text-[15px]
                 font-medium
                 leading-7
@@ -227,7 +223,7 @@ export function StorySection() {
                   duration={0.55}
                   once={false}
                 >
-                  <p>{paragraph}</p>
+                  <p className="text-justify">{paragraph}</p>
                 </Reveal>
               ))}
             </div>

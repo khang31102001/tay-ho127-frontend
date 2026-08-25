@@ -62,7 +62,7 @@ const contactInformation: ContactInformationItem[] = [
   {
     id: "address",
     title: "Địa chỉ chính",
-    description: "127 Đinh Tiên Hoàng, TP.HCM",
+    description: "127 Đinh Tiên Hoàng, Phường Đa Kao, TP.HCM",
     icon: MapPin,
   },
   {
@@ -240,7 +240,6 @@ export function TopHero() {
         className={`
           absolute
           inset-0
-
           transition-opacity
           duration-500
           ease-out
@@ -257,7 +256,7 @@ export function TopHero() {
          * =============================================== */}
 
         <Image
-          src="/images/banner-home-1.png"
+          src="/images/banner-home2.png"
           alt=""
           fill
           priority
@@ -266,7 +265,6 @@ export function TopHero() {
           className="
             object-cover
             object-[68%_center]
-
             sm:object-[65%_center]
             md:object-[63%_center]
             lg:object-center
@@ -304,25 +302,26 @@ export function TopHero() {
           className="
             relative
             z-10
-
             mx-auto
             flex
             h-full
             w-full
             max-w-[1200px]
+            flex-col
             items-start
-
+            justify-end
+            gap-4
+            
             px-5
             pb-[86px]
-            pt-[88px]
-
+            pt-[160px]
+            pl-[64px]
+            md:pl-[80px]
             sm:px-7
             sm:pt-[96px]
-
             md:px-8
             md:pb-[90px]
             md:pt-[110px]
-
             lg:px-0
             lg:pt-[120px]
           "
@@ -351,7 +350,7 @@ export function TopHero() {
               {/* Eyebrow */}
               <p
                 className="
-                  mb-0
+                  mb-4
                   text-[20px]
                   font-black
                   leading-none
@@ -422,10 +421,8 @@ export function TopHero() {
                   flex-wrap
                   items-center
                   gap-2
-
                   sm:mt-6
                   sm:gap-3
-
                   lg:mt-8
                 "
               >
@@ -494,107 +491,143 @@ export function TopHero() {
          * CONTACT INFORMATION BAR
          * =============================================== */}
 
-        <div
-          className="
-            absolute
-            bottom-0
-            left-0
-            z-20
-            w-full
+      <div
+  className="
+    absolute
+    bottom-0
+    left-0
+    z-20
+    w-full
 
-            bg-brand-red
-            text-white
+    bg-brand-red
+    text-white
+  "
+>
+  <div
+    className="
+      mx-auto
+      grid
+      w-full
+      max-w-[1200px]
+
+      grid-cols-1
+      gap-y-4
+
+      px-5
+      py-4
+
+      sm:grid-cols-3
+      sm:gap-y-0
+      sm:px-6
+      sm:py-4
+
+      md:px-8
+      md:py-5
+
+      lg:min-h-[88px]
+      lg:px-0
+      lg:py-0
+    "
+  >
+    {contactInformation.map((item) => {
+      const Icon = item.icon;
+
+      return (
+        <div
+          key={item.id}
+          className="
+            flex
+            min-w-0
+            items-center
+            justify-start
+            gap-3
+
+            sm:justify-center
+            sm:gap-3
+
+            md:gap-4
+
+            lg:gap-5
           "
         >
+          {/* =================================================
+           * ICON
+           * =============================================== */}
+
+          <Icon
+            className="
+              size-[28px]
+              shrink-0
+              text-white
+
+              sm:size-[30px]
+
+              md:size-[36px]
+
+              lg:size-[46px]
+            "
+            strokeWidth={2.4}
+          />
+
+          {/* =================================================
+           * CONTENT
+           * =============================================== */}
+
           <div
             className="
-              mx-auto
-              grid
-              min-h-[66px]
-              w-full
-              max-w-[1200px]
-              grid-cols-3
-              items-center
-              px-3
-
-              sm:min-h-[70px]
-              sm:px-5
-
-              md:px-8
-
-              lg:min-h-[76px]
-              lg:px-0
+              flex
+              min-w-0
+              flex-col
+              justify-center
+              gap-1
             "
           >
-            {contactInformation.map((item, index) => {
-              const Icon = item.icon;
-              const isLastItem =
-                index === contactInformation.length - 1;
+            {/* Title */}
 
-              return (
-                <div
-                  key={item.id}
-                  className={`
-                    flex
-                    min-w-0
-                    items-center
-                    justify-center
-                    gap-1.5
-                    px-1
+            <p
+              className="
+                truncate
 
-                    sm:gap-2
-                    sm:px-3
+                text-[13px]
+                font-black
+                leading-none
+                text-white
 
-                    ${
-                      !isLastItem
-                        ? "border-r border-white/20"
-                        : ""
-                    }
-                  `}
-                >
-                  <Icon
-                    className="
-                      size-[16px]
-                      shrink-0
+                sm:text-[12px]
 
-                      sm:size-[20px]
-                      lg:size-[24px]
-                    "
-                  />
+                md:text-[14px]
 
-                  <div className="min-w-0">
-                    <p
-                      className="
-                        truncate
-                        text-[8px]
-                        font-black
+                lg:text-[16px]
+              "
+            >
+              {item.title}
+            </p>
 
-                        sm:text-[10px]
-                        lg:text-[12px]
-                      "
-                    >
-                      {item.title}
-                    </p>
+            {/* Description */}
 
-                    <p
-                      className="
-                        hidden
-                        text-[8px]
-                        leading-tight
-                        text-white/80
+            <p
+              className="
+                text-[10px]
+                font-medium
+                leading-[1.25]
+                text-white/90
 
-                        sm:block
-                        lg:text-[9px]
-                      "
-                    >
-                      {item.description}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
+                sm:text-[9px]
+
+                md:text-[10px]
+
+                lg:text-[11px]
+              "
+            >
+              {item.description}
+            </p>
           </div>
         </div>
+      );
+    })}
+  </div>
+</div>
+
       </div>
     </section>
   );

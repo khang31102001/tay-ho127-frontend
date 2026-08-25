@@ -345,14 +345,7 @@ export function Testimonials() {
      * TIÊU ĐỀ
      * =============================================== */}
         <Reveal type="fade-up">
-          <h2
-            className="
-                heading-section
-                text-[22px] font-black leading-tight
-                sm:text-[24px]
-                md:text-[26px]
-              "
-              >
+          <h2 className="heading-3">
             <span className="text-white">
               Khách hàng
             </span>{" "}

@@ -194,7 +194,7 @@ export function Header({
                 hidden
                 items-center
                 gap-10
-                text-[14px]
+                text-[15px]
                 transition-all
                 duration-300
 
@@ -234,8 +234,8 @@ export function Header({
               flex
               items-center
               gap-4
-              text-[14px]
-              font-medium
+              text-[15px]
+              font-bold
               md:gap-5
             "
           >
@@ -339,7 +339,7 @@ export function Header({
                 md:inline-flex
               "
             >
-              <UserRound className="size-[16px]" />
+              <UserRound className="size-[18px]" />
 
               <span>
                 {currentUser

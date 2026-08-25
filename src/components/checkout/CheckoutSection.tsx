@@ -298,11 +298,11 @@ export function CheckoutSection({ onSubmitOrder }: CheckoutSectionProps) {
 
         {/* Thông tin người đặt hàng */}
         <section className="rounded-lg bg-white p-7 shadow-soft">
-          <h2 className="mb-4 text-[18px] font-black text-tayho-green">
+          <h2 className="mb-4 text-[18px] font-black text-brand-green">
             THÔNG TIN ĐẶT HÀNG
           </h2>
 
-          <div className="space-y-3 text-[13px] font-medium text-tayho-greenDark">
+          <div className="space-y-3 text-[13px] font-medium text-brand-greenDark">
             <label className="block">
               <span className="sr-only">Tên người đặt hàng</span>
 
@@ -379,7 +379,7 @@ export function CheckoutSection({ onSubmitOrder }: CheckoutSectionProps) {
 
         {/* Phí giao hàng */}
         <section className="rounded-lg bg-white p-7 shadow-soft">
-          <h2 className="mb-4 text-[18px] font-black text-tayho-green">
+          <h2 className="mb-4 text-[18px] font-black text-brand-green">
             PHÍ SHIP
           </h2>
 
@@ -406,7 +406,7 @@ export function CheckoutSection({ onSubmitOrder }: CheckoutSectionProps) {
 
             <div className="text-left font-black md:text-right">
               {totals.shippingFee === 0 ? (
-                <p className="text-tayho-green">Freeship!</p>
+                <p className="text-brand-green">Freeship!</p>
               ) : (
                 <p className="text-brand-red">
                   {formatCurrency(totals.shippingFee)}
@@ -418,7 +418,7 @@ export function CheckoutSection({ onSubmitOrder }: CheckoutSectionProps) {
 
         {/* Phương thức thanh toán */}
         <section className="rounded-lg bg-white p-7 shadow-soft">
-          <h2 className="mb-4 text-[18px] font-black text-tayho-green">
+          <h2 className="mb-4 text-[18px] font-black text-brand-green">
             PHƯƠNG THỨC THANH TOÁN
           </h2>
 
@@ -442,7 +442,7 @@ export function CheckoutSection({ onSubmitOrder }: CheckoutSectionProps) {
 
           {form.paymentMethod === "bank_transfer" && (
             <div className="mt-4 rounded-lg bg-gray-50 p-4 text-[13px] leading-6">
-              <p className="font-bold text-tayho-greenDark">
+              <p className="font-bold text-brand-greenDark">
                 Thông tin chuyển khoản
               </p>
 
@@ -456,7 +456,7 @@ export function CheckoutSection({ onSubmitOrder }: CheckoutSectionProps) {
 
         {/* Chi tiết thanh toán */}
         <section className="rounded-lg bg-white p-7 shadow-soft">
-          <h2 className="mb-4 text-[18px] font-black text-tayho-green">
+          <h2 className="mb-4 text-[18px] font-black text-brand-green">
             CHI TIẾT THANH TOÁN
           </h2>
 

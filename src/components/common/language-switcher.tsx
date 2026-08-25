@@ -484,13 +484,13 @@ export function LanguageSwitcher({
           className="
             flex items-center gap-2
             whitespace-nowrap
-            text-[18px]
+            text-[15px] font-bold
             transition hover:text-brand-green
           "
         >
           <LanguagesIcon
             aria-hidden="true"
-            className="h-6 w-6"
+            className="h-[18px] w-[18px]"
             strokeWidth={2}
           />
 

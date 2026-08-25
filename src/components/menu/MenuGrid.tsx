@@ -348,7 +348,7 @@ export default function MenuGrid({
        <MenuBackgroundDecoration leftColor="#FF9418" rightColor="#F5C884" />
       <Container className="mx-auto max-w-[790px] px-5 md:px-0">
         {/* Tiêu đề */}
-        <h1 className="heading-section mb-24 text-center text-[44px] text-brand-green md:text-[48px]">
+        <h1 className="heading-1 mb-24 text-center text-brand-green">
           Hôm nay bạn muốn ăn gì?
         </h1>
 
@@ -510,7 +510,7 @@ export default function MenuGrid({
                 className="
                   rounded-md bg-brand-red
                   px-16 py-3
-                  text-[18px] font-medium text-white
+                  text-[18px] font-bold text-white
                   transition
                   hover:opacity-90
                   active:scale-[0.98]
@@ -528,7 +528,7 @@ export default function MenuGrid({
                 className="
                   rounded-md border-2 border-brand-red
                   bg-white px-12 py-3
-                  text-[18px] font-medium text-brand-red
+                  text-[18px] font-bold text-brand-red
                   transition
                   hover:bg-brand-red hover:text-white
                   active:scale-[0.98]

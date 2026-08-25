@@ -78,31 +78,63 @@ export default function MobileHeaderMenu({
   return (
     <div className="md:hidden">
       {/* ========================================================
-          Menu Trigger
+          Top row: Cart (quick access) + Menu Trigger
       ======================================================== */}
 
-      <button
-        type="button"
-        onClick={() => setMenuOpen((previousState) => !previousState)}
-        className={`
-          flex size-10 items-center justify-center rounded-full
-          transition-colors duration-200
-          ${
-            isDark
-              ? "text-white hover:bg-white/10"
-              : "text-tayho-greenDark hover:bg-black/5"
-          }
-        `}
-        aria-label={menuOpen ? "Đóng menu" : "Mở menu"}
-        aria-expanded={menuOpen}
-        aria-controls="mobile-navigation"
-      >
-        {menuOpen ? (
-          <X className="size-6" />
-        ) : (
-          <Menu className="size-6" />
+      <div className="flex items-center gap-1">
+        {cartCount > 0 && (
+          <button
+            type="button"
+            onClick={handleCartClick}
+            aria-label={`Giỏ hàng có ${cartCount} sản phẩm`}
+            className={`
+              relative flex size-11 items-center justify-center rounded-full
+              transition-colors duration-200
+              ${
+                isDark
+                  ? "text-white hover:bg-white/10"
+                  : "text-brand-greenDark hover:bg-black/5"
+              }
+            `}
+          >
+            <ShoppingCart className="size-[18px]" />
+
+            <span
+              className="
+                absolute right-1.5 top-1.5
+                flex min-h-[16px] min-w-[16px] items-center justify-center
+                rounded-full bg-orange-500 px-1
+                text-[9px] font-bold leading-none text-white
+              "
+            >
+              {cartCount > 99 ? "99+" : cartCount}
+            </span>
+          </button>
         )}
-      </button>
+
+        <button
+          type="button"
+          onClick={() => setMenuOpen((previousState) => !previousState)}
+          className={`
+            flex size-11 items-center justify-center rounded-full
+            transition-colors duration-200
+            ${
+              isDark
+                ? "text-white hover:bg-white/10"
+                : "text-brand-greenDark hover:bg-black/5"
+            }
+          `}
+          aria-label={menuOpen ? "Đóng menu" : "Mở menu"}
+          aria-expanded={menuOpen}
+          aria-controls="mobile-navigation"
+        >
+          {menuOpen ? (
+            <X className="size-6" />
+          ) : (
+            <Menu className="size-6" />
+          )}
+        </button>
+      </div>
 
       {/* ========================================================
           Backdrop
@@ -137,8 +169,8 @@ export default function MobileHeaderMenu({
           }
           ${
             isDark
-              ? "border-t border-white/10 bg-tayho-greenDark text-white"
-              : "border-t border-black/5 bg-brand-cream text-tayho-greenDark"
+              ? "border-t border-white/10 bg-brand-greenDark text-white"
+              : "border-t border-black/5 bg-brand-cream text-brand-greenDark"
           }
         `}
       >
@@ -161,12 +193,12 @@ export default function MobileHeaderMenu({
                   className={`
                     flex min-h-14 items-center
                     border-b py-3
-                    text-[16px] font-black
+                    text-[16px] font-bold
                     transition-opacity hover:opacity-70
                     ${
                       isDark
                         ? "border-white/10"
-                        : "border-tayho-greenDark/10"
+                        : "border-brand-greenDark/10"
                     }
                     ${isActive ? "opacity-100" : "opacity-80"}
                   `}
@@ -192,7 +224,7 @@ export default function MobileHeaderMenu({
               ${
                 isDark
                   ? "bg-white/10 hover:bg-white/15"
-                  : "bg-tayho-greenDark/5 hover:bg-tayho-greenDark/10"
+                  : "bg-brand-greenDark/5 hover:bg-brand-greenDark/10"
               }
             `}
           >
@@ -203,7 +235,7 @@ export default function MobileHeaderMenu({
                 ${
                   isDark
                     ? "bg-white/10"
-                    : "bg-tayho-greenDark/10"
+                    : "bg-brand-greenDark/10"
                 }
               `}
             >
@@ -243,7 +275,7 @@ export default function MobileHeaderMenu({
                 ${
                   isDark
                     ? "bg-white/10 hover:bg-white/15"
-                    : "bg-tayho-greenDark/5 hover:bg-tayho-greenDark/10"
+                    : "bg-brand-greenDark/5 hover:bg-brand-greenDark/10"
                 }
               `}
             >
@@ -255,7 +287,7 @@ export default function MobileHeaderMenu({
                     ${
                       isDark
                         ? "bg-white/10"
-                        : "bg-tayho-greenDark/10"
+                        : "bg-brand-greenDark/10"
                     }
                   `}
                 >

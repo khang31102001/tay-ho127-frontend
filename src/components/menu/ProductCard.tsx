@@ -21,7 +21,7 @@ export function ProductCard({ item }: ProductCardProps) {
   };
 
   return (
-    <article className="relative overflow-visible rounded-md border border-brand-red bg-brand-cream shadow-card">
+    <article className="relative rounded-md border border-brand-red bg-brand-cream shadow-card">
       <BestSellerBanner/>
       <div className="relative overflow-hidden h-[142px] ">
         <Image src={item.image} alt={item.name} width={100} height={142} className="h-full w-full object-cover transition-transform duration-500 ease-out hover:scale-105" />

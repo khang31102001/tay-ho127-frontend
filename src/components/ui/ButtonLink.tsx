@@ -27,7 +27,7 @@ export function ButtonLink({ href, children, variant = "primary", className }: B
     <Link
       href={href}
       className={cn(
-        "focus-ring inline-flex items-center justify-center px-6 py-3 text-sm font-extrabold uppercase tracking-[0.18em] transition duration-300",
+        "focus-ring inline-flex items-center justify-center px-6 py-3 text-sm font-bold transition duration-300",
         variants[variant],
         className,
       )}

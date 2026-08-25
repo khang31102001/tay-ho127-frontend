@@ -58,8 +58,24 @@
   }
 
   .heading-section {
-    /* Tiêu đề section dùng chung trên nền sáng. */
-    @apply font-display text-4xl font-black uppercase leading-none tracking-tight text-brand-ink md:text-6xl;
+    /* Tiêu đề section (H2): dùng chung cho tiêu đề section.
+       Không ép uppercase để giữ đúng case theo nội dung (khớp design). */
+    @apply font-display text-[28px] font-black leading-tight tracking-tight text-brand-ink sm:text-[31px] md:text-[34px];
+  }
+
+  .heading-1 {
+    /* Tiêu đề cấp 1 (H1): dùng cho tiêu đề lớn nhất trong 1 trang con (vd trang Thực đơn). */
+    @apply font-display text-[44px] font-black leading-tight tracking-tight text-brand-ink md:text-[48px];
+  }
+
+  .heading-3 {
+    /* Tiêu đề cấp 3 (H3): section nhỏ hơn heading-section (vd dải testimonial nền tối). */
+    @apply font-display text-[22px] font-black leading-tight tracking-tight text-brand-ink sm:text-[24px] md:text-[26px];
+  }
+
+  .stat-number {
+    /* Số liệu thống kê lớn (CountUp), dùng chung cho các block stats. */
+    @apply font-display text-[42px] font-black leading-none text-brand-green md:text-[48px];
   }
 
   .body-lead {
