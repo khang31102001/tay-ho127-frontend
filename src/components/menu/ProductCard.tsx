@@ -4,14 +4,26 @@ import { useCart } from "@/contexts/cart-context";
 import { formatCurrency } from "@/data/menu-items";
 import { UiProduct } from "@/types/menu";
 import Image from "next/image";
+import { Star } from "lucide-react";
 import BestSellerBanner from "../product/tag-best-seller";
 
 type ProductCardProps = {
   item: UiProduct;
 };
 
+/**
+ * Màu badge danh mục ở góc phải ảnh, theo đúng màu dùng cho từng
+ * loại món trên toàn site (đỏ = món mặn, xanh = món chay).
+ */
+const CATEGORY_BADGE_CLASS: Record<string, string> = {
+  "Món mặn": "bg-brand-red",
+  "Món chay": "bg-brand-green",
+  "Ăn kèm": "bg-brand-wood",
+};
+
 export function ProductCard({ item }: ProductCardProps) {
   const { addToCart } = useCart();
+  const filledStars = Math.round(item.rating);
 
   const cartProduct = {
     id: String(item.id),
@@ -21,40 +33,54 @@ export function ProductCard({ item }: ProductCardProps) {
   };
 
   return (
-    <article className="relative rounded-md border border-brand-red bg-brand-cream shadow-card">
+    <article className="relative flex h-full flex-col rounded-md border border-brand-red bg-brand-cream shadow-card">
       <BestSellerBanner/>
       <div className="relative overflow-hidden h-[142px] ">
         <Image src={item.image} alt={item.name} width={100} height={142} className="h-full w-full object-cover transition-transform duration-500 ease-out hover:scale-105" />
-        {item.badge && (
-          <span className="absolute right-2 top-2 rounded bg-brand-red px-2 py-1 text-[10px] font-black text-white">
-            {item.badge}
-          </span>
-        )}
-        
-        
+        <span
+          className={`absolute right-2 top-2 rounded px-2 py-1 text-[10px] font-black text-white ${
+            CATEGORY_BADGE_CLASS[item.category] ?? "bg-brand-red"
+          }`}
+        >
+          {item.category}
+        </span>
       </div>
 
-      <div className="min-h-[136px] px-3 pb-2 pt-3">
-        <h3 className="min-h-[48px] text-[16px] font-black leading-5 text-brand-greenDark">{item.name}</h3>
-        <div className="mt-3 flex items-end justify-end gap-2">
-          <div className="text-right text-[15px] font-black text-black">
-            {item.oldPrice && <span className="mr-1 text-[13px] text-[#5f5f5f] line-through">{formatCurrency(item.oldPrice)}</span>}
-            <span>{formatCurrency(item.price)}</span>
-          </div>
+      <div className="flex flex-1 flex-col px-3 pb-3 pt-3">
+        <h3 className="line-clamp-2 text-[20px] font-extrabold leading-[1.15] text-brand-greenDark sm:text-[22px]">
+          {item.name}
+        </h3>
+
+        {/* Khoảng đệm co giãn: đẩy giá/rating/CTA xuống cùng baseline giữa các card */}
+        <div className="flex-1" />
+
+        <div className="mt-3 text-right">
+          <span className="text-[20px] font-extrabold text-black sm:text-[22px]">{formatCurrency(item.price)}</span>
+          {item.oldPrice && <span className="ml-1 text-[13px] text-[#8a8a8a] line-through">{formatCurrency(item.oldPrice)}</span>}
         </div>
 
-        <div className="mt-3 flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0 text-[#1f1f1f] sm:flex-1">
-            <span className="whitespace-nowrap">★★★★★</span>{" "}
-            <span>({item.ratingCount}) đánh giá</span>
+        <div className="mt-2 flex items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-1 text-[#1f1f1f]">
+            <span className="flex shrink-0 items-center gap-[1px]">
+              {Array.from({ length: 5 }, (_, index) => (
+                <Star
+                  key={index}
+                  className={index < filledStars ? "text-brand-red" : "text-gray-300"}
+                  size={14}
+                  fill="currentColor"
+                  strokeWidth={0}
+                />
+              ))}
+            </span>
+            <span className="truncate text-[12px]">({item.ratingCount}) đánh giá</span>
           </div>
 
-          <div className="flex shrink-0 items-center gap-2 self-start sm:self-auto">
+          <div className="flex shrink-0 items-center gap-1.5">
             <button
               type="button"
               aria-label={`Thêm ${item.name} vào giỏ hàng`}
               onClick={() => addToCart(cartProduct)}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-brand-red text-lg font-black leading-none text-white"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-brand-red text-xl font-black leading-none text-white"
             >
               +
             </button>
@@ -62,7 +88,7 @@ export function ProductCard({ item }: ProductCardProps) {
             <button
               type="button"
               onClick={() => addToCart(cartProduct)}
-              className="min-h-8 shrink-0 whitespace-nowrap rounded bg-brand-red px-3 py-1.5 text-center text-[12px] font-bold leading-none text-white"
+              className="h-10 shrink-0 whitespace-nowrap rounded-md bg-brand-red px-4 text-center text-[15px] font-bold leading-none text-white"
             >
               Đặt ngay
             </button>

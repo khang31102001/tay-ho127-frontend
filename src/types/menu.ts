@@ -107,6 +107,7 @@ export type UiProduct = {
   price: number;
   oldPrice?: number;
   badge?: string;
+  rating: number;
   ratingCount: number;
   image: string;
 };

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Clock3, MapPin, Phone, type LucideIcon } from "lucide-react";
+import { Clock3, MapPin, Phone, Play, type LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 /* =================================================
@@ -28,6 +28,13 @@ type ContactInformationItem = {
   title: string;
   description: string;
   icon: LucideIcon;
+};
+
+type HeroOrderField = {
+  id: string;
+  label: string;
+  type: "text" | "tel";
+  autoComplete: string;
 };
 
 /* =================================================
@@ -79,6 +86,27 @@ const contactInformation: ContactInformationItem[] = [
   },
 ];
 
+const heroOrderFields: HeroOrderField[] = [
+  {
+    id: "hero-order-name",
+    label: "Tên",
+    type: "text",
+    autoComplete: "name",
+  },
+  {
+    id: "hero-order-phone",
+    label: "SĐT",
+    type: "tel",
+    autoComplete: "tel",
+  },
+  {
+    id: "hero-order-address",
+    label: "Địa chỉ",
+    type: "text",
+    autoComplete: "street-address",
+  },
+];
+
 /* =================================================
  * CONSTANTS
  * =============================================== */
@@ -120,28 +148,14 @@ export function TopHero() {
       className={`
         relative
         w-full
-        snap-start
+        min-h-svh
         overflow-hidden
 
-        transition-[min-height,background-color]
+        transition-colors
         duration-500
         ease-out
 
-        ${
-          isScrolled
-            ? `
-              min-h-[460px]
-              bg-brand-cream
-
-              sm:min-h-[480px]
-              md:min-h-[500px]
-              lg:min-h-[540px]
-            `
-            : `
-              min-h-svh
-              bg-black
-            `
-        }
+        ${isScrolled ? "bg-brand-cream" : "bg-black"}
       `}
     >
       {/* =================================================
@@ -189,6 +203,67 @@ export function TopHero() {
           "
         />
 
+        {/* =================================================
+         * NÚT PLAY
+         * =============================================== */}
+
+        <div
+          className="
+            absolute
+            inset-0
+            z-10
+
+            flex
+            items-center
+            justify-center
+          "
+        >
+          <button
+            type="button"
+            aria-label="Xem video giới thiệu"
+            className="
+              flex
+              h-14
+              w-14
+              items-center
+              justify-center
+
+              rounded-full
+              bg-orange-500
+              text-white
+
+              shadow-card
+              transition
+              hover:opacity-90
+              active:scale-95
+
+              sm:h-16
+              sm:w-16
+
+              md:h-[72px]
+              md:w-[72px]
+
+              lg:h-20
+              lg:w-20
+            "
+          >
+            <Play
+              className="
+                ml-1
+                size-5
+
+                sm:size-6
+
+                lg:size-7
+              "
+              fill="currentColor"
+              strokeWidth={0}
+            />
+          </button>
+        </div>
+
+    
+
         {/* Michelin */}
         <div
           className="
@@ -198,8 +273,8 @@ export function TopHero() {
             z-20
 
             flex
-            h-[66px]
-            w-[66px]
+            h-[120px]
+            w-[120px]
             items-center
             justify-center
 
@@ -225,9 +300,7 @@ export function TopHero() {
             lg:text-[13px]
           "
         >
-          MICHELIN
-          <br />
-          2026
+          <Image src="/images/michelin-2026-2.png" alt="Michelin"  fill className="object-contain" />
         </div>
       </div>
 
@@ -309,7 +382,7 @@ export function TopHero() {
             max-w-[1200px]
             flex-col
             items-start
-            justify-end
+            justify-center
             gap-4
             
             px-5

@@ -7,15 +7,15 @@ export default function BestSellerBanner({ labelName }: BestSellerBannerProps) {
       className="
         pointer-events-none
         absolute
-        left-[-4px]
+        left-[4px]
         top-[-3px]
         z-20
         skew-x-[-10deg]
 
-        sm:left-[-5px]
+        sm:left-[4px]
         sm:top-[-8px]
 
-        lg:left-[-6px]
+        lg:left-[4px]
       "
     >
       <div

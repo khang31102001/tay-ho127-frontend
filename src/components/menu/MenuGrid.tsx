@@ -201,6 +201,8 @@ export default function MenuGrid({
                   badge:
                     product.productType || undefined,
 
+                  rating: 0,
+
                   ratingCount: 0,
 
                   image:

@@ -3,7 +3,7 @@ import { Reveal } from "../common/animation";
 import { ButtonLink } from "../ui/ButtonLink";
 export function PromotionZone() {
   return (
-     <section className="relative min-h-svh snap-start overflow-hidden md:snap-always">
+     <section className="relative min-h-svh overflow-hidden">
       <Reveal
         type="zoom-in"
         className="absolute inset-0"

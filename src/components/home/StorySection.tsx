@@ -29,13 +29,17 @@ export function StorySection() {
   return (
     <section
       className="
-        h-auto
-        snap-start
+        flex
+        min-h-svh
+        flex-col
+        justify-center
         bg-brand-cream
-        py-12
-        sm:py-14
-        md:py-16
-        lg:py-20
+        pb-10
+        pt-24
+        sm:pb-12
+        md:pb-14
+        md:pt-28
+        lg:pb-16
       "
     >
       <Container>
@@ -43,7 +47,7 @@ export function StorySection() {
           className="
             grid
             items-center
-            gap-10
+            gap-6
             md:grid-cols-[0.95fr_1.05fr]
             md:gap-12
             lg:gap-16
@@ -57,9 +61,10 @@ export function StorySection() {
               mx-auto
               grid
               w-full
-              max-w-[520px]
+              max-w-[420px]
               grid-cols-[1fr_0.72fr]
-              gap-3
+              gap-2
+              sm:max-w-[520px]
               sm:gap-4
               md:max-w-none
               md:gap-5
@@ -72,13 +77,14 @@ export function StorySection() {
               duration={0.6}
               once={false}
             >
-              <div className="grid gap-3 sm:gap-4 md:gap-5">
+              <div className="grid gap-2 sm:gap-4 md:gap-5">
                 <div
                   className="
                     relative
-                    aspect-[16/10]
+                    aspect-[16/11]
                     overflow-hidden
                     rounded-[18px]
+                    sm:aspect-[16/10]
                     sm:rounded-[20px]
                   "
                 >
@@ -102,9 +108,11 @@ export function StorySection() {
                 <div
                   className="
                     relative
+                    hidden
                     aspect-[16/9]
                     overflow-hidden
                     rounded-[18px]
+                    sm:block
                     sm:rounded-[20px]
                   "
                 >
@@ -137,7 +145,6 @@ export function StorySection() {
               <div
                 className="
                   relative
-                  mt-5
                   aspect-[3/4]
                   overflow-hidden
                   rounded-[18px]
@@ -201,16 +208,17 @@ export function StorySection() {
             {/* CONTENT */}
             <div
               className="
-                mt-5
-                space-y-4
+                mt-4
+                space-y-3
                 text-justify
-                text-[15px]
+                text-[13px]
                 font-medium
-                leading-7
+                leading-[1.5]
                 text-[#26351e]
                 sm:mt-6
                 sm:text-[16px]
                 sm:leading-7
+                sm:space-y-4
                 md:mt-7
                 md:space-y-5
               "

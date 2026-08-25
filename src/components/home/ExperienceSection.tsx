@@ -138,10 +138,25 @@ function CountUp({
  * COMPONENT
  * ========================================================== */
 
-export function BrandProofSection() {
+export function ExperienceSection() {
   return (
-    <section className="min-h-svh snap-start bg-[#fdf6e8] py-16 text-brand-ink">
-      <Container>
+    <section
+      className="
+        flex
+        min-h-svh
+        flex-col
+        justify-center
+        bg-[#fdf6e8]
+        pb-6
+        pt-20
+        text-brand-ink
+
+        sm:pt-24
+        md:pb-8
+        md:pt-24
+      "
+    >
+      <Container className="flex flex-col gap-4 sm:gap-6 md:gap-8">
         {/* ======================================================
          * ẢNH HOẠT ĐỘNG
          * ==================================================== */}
@@ -150,12 +165,13 @@ export function BrandProofSection() {
           <div
             className="
               relative
-              h-[220px]
+              aspect-[16/5]
               w-full
               overflow-hidden
               rounded-[22px]
               bg-white
-              md:h-[280px]
+
+            
             "
           >
             <Image
@@ -173,9 +189,9 @@ export function BrandProofSection() {
          * HEADING + STATS
          * ==================================================== */}
 
-        <div className="py-12 text-center md:py-16">
+        <div className="text-center">
           <Reveal type="fade-up" delay={0.05}>
-            <h2 className="heading-section text-brand-green">
+            <h2 className="heading-section text-[24px] leading-tight text-brand-green">
               Hơn 60 năm đồng hành và phục vụ
             </h2>
           </Reveal>
@@ -184,7 +200,7 @@ export function BrandProofSection() {
             <p
               className="
                 mt-2
-                text-[15px]
+                text-[13px]
                 font-medium
                 text-black
                 md:text-[16px]
@@ -197,10 +213,10 @@ export function BrandProofSection() {
 
           <div
             className="
-              mt-8
+              mt-4
               grid grid-cols-2
-              gap-x-6 gap-y-8
-              md:mt-10
+              gap-x-6 gap-y-3
+              md:mt-6
               md:grid-cols-4
               md:gap-8
             "
@@ -212,7 +228,7 @@ export function BrandProofSection() {
                 delay={0.12 + index * 0.06}
               >
                 <div>
-                  <div className="stat-number">
+                  <div className="stat-number text-[30px] md:text-[48px]">
                     <CountUp
                       value={item.value}
                       suffix={item.suffix}
@@ -224,10 +240,11 @@ export function BrandProofSection() {
 
                   <p
                     className="
-                      mt-3
+                      mt-2
                       text-[13px]
                       font-medium
                       text-black
+                      md:mt-3
                       md:text-[14px]
                     "
                   >
@@ -259,11 +276,12 @@ export function BrandProofSection() {
       bg-cover
       bg-center
       bg-no-repeat
-      px-5 py-7
+      px-5 py-4
       text-center
 
       sm:max-w-none
-      sm:px-8
+      sm:px-6
+      sm:py-6
 
       md:grid-cols-[300px_1fr]
       md:gap-8
@@ -302,7 +320,7 @@ export function BrandProofSection() {
         items-center
         text-center
 
-        md:p-4
+        md:p-3
       "
     >
       <Image
@@ -311,41 +329,45 @@ export function BrandProofSection() {
         width={110}
         height={110}
         className="
-          mb-4
-          w-[90px]
+          mb-2
+          w-[64px]
 
-          md:mb-5
-          md:w-[110px]
+          md:mb-3
+          md:w-[90px]
         "
       />
 
       <h3
         className="
-          text-[19px]
+          text-[16px]
           font-black
           italic
-          leading-7
+          leading-[1.3]
           text-brand-green
           w-full
           text-center
-          md:text-[21px]
+          md:text-[19px]
+          md:leading-6
         "
       >
         Bước chân đầu tiên mang bản sắc dân tộc
- 
+
         đến nền ẩm thực quốc tế.
       </h3>
 
       <p
         className="
-          mt-4
-          text-[14px]
+          mt-2
+          line-clamp-3
+          text-[12px]
           font-medium
-          leading-6
+          leading-[1.35]
           text-[#34402c]
           text-justify
-          md:mt-5
-          md:text-[15px]
+          md:mt-3
+          md:line-clamp-4
+          md:text-[14px]
+          md:leading-[1.45]
         "
       >
         Tháng 5/2026 đánh dấu một cột mốc đầy tự

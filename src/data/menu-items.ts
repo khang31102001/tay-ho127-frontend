@@ -7,6 +7,7 @@ export type MenuItem = {
   price: number;
   oldPrice?: number;
   badge?: string;
+  rating: number;
   ratingCount: number;
   image: string;
 };
@@ -18,6 +19,7 @@ export const menuItems: MenuItem[] = [
     category: "Món mặn",
     price: 50000,
     badge: "Best seller",
+    rating: 4.2,
     ratingCount: 25,
     image: "/images/banh-cuon-dish.jpg"
   },
@@ -27,6 +29,7 @@ export const menuItems: MenuItem[] = [
     category: "Món chay",
     price: 50000,
     badge: "Món chay",
+    rating: 3.4,
     ratingCount: 2,
     image: "/images/banh-cuon-dish.jpg"
   },
@@ -37,6 +40,7 @@ export const menuItems: MenuItem[] = [
     price: 35000,
     oldPrice: 44000,
     badge: "Món chay",
+    rating: 3.4,
     ratingCount: 2,
     image: "/images/banh-cuon-dish.jpg"
   },
@@ -46,6 +50,7 @@ export const menuItems: MenuItem[] = [
     category: "Món mặn",
     price: 56000,
     badge: "Món mặn",
+    rating: 4.8,
     ratingCount: 25,
     image: "/images/banh-cuon-dish.jpg"
   },
@@ -55,6 +60,7 @@ export const menuItems: MenuItem[] = [
     category: "Món mặn",
     price: 40000,
     badge: "Món mặn",
+    rating: 4.0,
     ratingCount: 2,
     image: "/images/banh-cuon-dish.jpg"
   },
@@ -65,6 +71,7 @@ export const menuItems: MenuItem[] = [
     price: 65000,
     oldPrice: 72000,
     badge: "Món mặn",
+    rating: 4.6,
     ratingCount: 2,
     image: "/images/banh-cuon-dish.jpg"
   },
@@ -74,6 +81,7 @@ export const menuItems: MenuItem[] = [
     category: "Ăn kèm",
     price: 24000,
     badge: "Ăn kèm",
+    rating: 4.9,
     ratingCount: 25,
     image: "/images/banh-cuon-dish.jpg"
   },
@@ -83,6 +91,7 @@ export const menuItems: MenuItem[] = [
     category: "Ăn kèm",
     price: 24000,
     badge: "Ăn kèm",
+    rating: 4.7,
     ratingCount: 25,
     image: "/images/banh-cuon-dish.jpg"
   },
@@ -92,6 +101,7 @@ export const menuItems: MenuItem[] = [
     category: "Ăn kèm",
     price: 12000,
     badge: "Ăn kèm",
+    rating: 4.3,
     ratingCount: 2,
     image: "/images/banh-cuon-dish.jpg"
   },
@@ -101,6 +111,7 @@ export const menuItems: MenuItem[] = [
     category: "Món mặn",
     price: 50000,
     badge: "Món mặn",
+    rating: 4.1,
     ratingCount: 2,
     image: "/images/banh-cuon-dish.jpg"
   },
@@ -110,6 +121,7 @@ export const menuItems: MenuItem[] = [
     category: "Món mặn",
     price: 50000,
     badge: "Món mặn",
+    rating: 4.4,
     ratingCount: 2,
     image: "/images/banh-cuon-dish.jpg"
   },
@@ -119,6 +131,7 @@ export const menuItems: MenuItem[] = [
     category: "Món mặn",
     price: 78000,
     badge: "Món mặn",
+    rating: 4.5,
     ratingCount: 2,
     image: "/images/banh-cuon-dish.jpg"
   }
