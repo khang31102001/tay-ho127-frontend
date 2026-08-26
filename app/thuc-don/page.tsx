@@ -2,10 +2,8 @@
 import { MenuHero } from "@/components/sections/MenuHero";
 // Import grid danh sách món.
 import MenuGrid from "@/components/menu/MenuGrid";
-// Import CTA cuối trang dùng chung.
-import { CTASection } from "@/components/sections/CTASection";
-import { fetchMenu } from "@/lib/mockMenuApi";
-import { FloatingCartBar } from "@/components/menu/floating-cart-bar";
+import { fetchMenu } from "@/services/menu-service";
+import { FloatingCartBar } from "@/components/menu/FloatingCartBar";
 
 import type { MenuResponse } from "@/types/menu";
 

@@ -3,7 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Clock3, MapPin, Phone, Play, type LucideIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+
+import { useScrollThreshold } from "@/hooks/useScrollThreshold";
 
 /* =================================================
  * TYPES
@@ -108,40 +109,11 @@ const heroOrderFields: HeroOrderField[] = [
 ];
 
 /* =================================================
- * CONSTANTS
- * =============================================== */
-
-const SCROLL_THRESHOLD = 50;
-
-/* =================================================
  * TOP HERO
  * =============================================== */
 
 export function TopHero() {
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  /* =================================================
-   * SCROLL STATE
-   * =============================================== */
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const nextScrolledState =
-        window.scrollY > SCROLL_THRESHOLD;
-
-      setIsScrolled(nextScrolledState);
-    };
-
-    handleScroll();
-
-    window.addEventListener("scroll", handleScroll, {
-      passive: true,
-    });
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
+  const isScrolled = useScrollThreshold();
 
   return (
     <section

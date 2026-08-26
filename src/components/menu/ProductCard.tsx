@@ -1,11 +1,13 @@
 "use client";
 
+import { useRef } from "react";
 import { useCart } from "@/contexts/cart-context";
+import { useFlyToCart } from "@/contexts/fly-to-cart-context";
 import { formatCurrency } from "@/data/menu-items";
 import { UiProduct } from "@/types/menu";
 import Image from "next/image";
 import { Star } from "lucide-react";
-import BestSellerBanner from "../product/tag-best-seller";
+import BestSellerBanner from "../product/BestSellerBanner";
 
 type ProductCardProps = {
   item: UiProduct;
@@ -23,6 +25,8 @@ const CATEGORY_BADGE_CLASS: Record<string, string> = {
 
 export function ProductCard({ item }: ProductCardProps) {
   const { addToCart } = useCart();
+  const { flyToCart } = useFlyToCart();
+  const imageRef = useRef<HTMLImageElement>(null);
   const filledStars = Math.round(item.rating);
 
   const cartProduct = {
@@ -32,11 +36,26 @@ export function ProductCard({ item }: ProductCardProps) {
     image: item.image,
   };
 
+  function handleAddToCart() {
+    addToCart(cartProduct);
+    flyToCart({
+      sourceElement: imageRef.current,
+      imageUrl: item.image,
+    });
+  }
+
   return (
     <article className="relative flex h-full flex-col rounded-md border border-brand-red bg-brand-cream shadow-card">
-      <BestSellerBanner/>
+      {/* <BestSellerBanner/> */}
       <div className="relative overflow-hidden h-[142px] ">
-        <Image src={item.image} alt={item.name} width={100} height={142} className="h-full w-full object-cover transition-transform duration-500 ease-out hover:scale-105" />
+        <Image
+          ref={imageRef}
+          src={item.image}
+          alt={item.name}
+          width={100}
+          height={142}
+          className="h-full w-full object-cover transition-transform duration-500 ease-out hover:scale-105"
+        />
         <span
           className={`absolute right-2 top-2 rounded px-2 py-1 text-[10px] font-black text-white ${
             CATEGORY_BADGE_CLASS[item.category] ?? "bg-brand-red"
@@ -79,7 +98,7 @@ export function ProductCard({ item }: ProductCardProps) {
             <button
               type="button"
               aria-label={`Thêm ${item.name} vào giỏ hàng`}
-              onClick={() => addToCart(cartProduct)}
+              onClick={handleAddToCart}
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-brand-red text-xl font-black leading-none text-white"
             >
               +
@@ -87,7 +106,7 @@ export function ProductCard({ item }: ProductCardProps) {
 
             <button
               type="button"
-              onClick={() => addToCart(cartProduct)}
+              onClick={handleAddToCart}
               className="h-10 shrink-0 whitespace-nowrap rounded-md bg-brand-red px-4 text-center text-[15px] font-bold leading-none text-white"
             >
               Đặt ngay

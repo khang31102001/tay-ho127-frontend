@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { useFlyToCart } from "@/contexts/fly-to-cart-context";
 import { AuthUser } from "@/types/auth";
 
 type NavItem = {
@@ -36,6 +37,8 @@ export default function MobileHeaderMenu({
   isDark = false,
 }: MobileHeaderMenuProps) {
   const pathname = usePathname();
+
+  const { registerCartTarget } = useFlyToCart();
 
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -84,6 +87,8 @@ export default function MobileHeaderMenu({
       <div className="flex items-center gap-1">
         {cartCount > 0 && (
           <button
+            data-cart-target
+            ref={(element) => registerCartTarget("mobile", element)}
             type="button"
             onClick={handleCartClick}
             aria-label={`Giỏ hàng có ${cartCount} sản phẩm`}

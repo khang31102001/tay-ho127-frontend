@@ -1,4 +1,4 @@
-// src/components/ui/menu-background-decoration.tsx
+// src/components/ui/MenuBackgroundDecoration.tsx
 
 interface TriangleMotifProps {
   className?: string;

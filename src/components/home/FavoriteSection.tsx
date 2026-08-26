@@ -5,9 +5,9 @@ import Link from "next/link";
 import { ChevronRightIcon, MoveLeftIcon } from "lucide-react";
 
 import { ProductCard } from "@/components/menu/ProductCard";
-import { Reveal } from "../common/animation";
+import { Reveal } from "../common/Reveal";
 import { SwiperCarousel } from "@/components/ui/SwiperCarousel";
-import MenuBackgroundDecoration from "../ui/menu-background-decoration";
+import MenuBackgroundDecoration from "../ui/MenuBackgroundDecoration";
 
 import { menuItems } from "@/data/menu-items";
 

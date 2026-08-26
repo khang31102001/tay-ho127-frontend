@@ -16,7 +16,7 @@ import { Footer } from "@/components/layout/Footer";
 import { site } from "@/data/site";
 import { Header } from "@/components/layout/Header";
 import { AppProviders } from "@/provider/app-providers";
-import FloatingActions from "@/components/layout/floating-actions";
+import FloatingActions from "@/components/layout/FloatingActions";
 
 
 // Metadata SEO cơ bản của Next.js App Router.

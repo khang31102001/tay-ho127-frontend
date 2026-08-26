@@ -4,14 +4,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ShoppingCart, UserRound } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { useCart } from "@/contexts/cart-context";
+import { useFlyToCart } from "@/contexts/fly-to-cart-context";
+import { useScrollThreshold } from "@/hooks/useScrollThreshold";
 import { AuthUser } from "@/types/auth";
 
-import { LanguageSwitcher } from "../common/language-switcher";
-import LoginModal from "../auth/LoginModal";
-import MobileHeaderMenu from "./mobile-header-menu";
+import { LanguageSwitcher } from "../common/LanguageSwitcher";
+import AuthModal from "../auth/AuthModal";
+import MobileHeaderMenu from "./MobileHeaderMenu";
 
 /* =================================================
  * TYPES
@@ -36,8 +38,6 @@ const navItems = [
   },
 ];
 
-const SCROLL_THRESHOLD = 50;
-
 /* =================================================
  * HEADER
  * =============================================== */
@@ -51,9 +51,10 @@ export function Header({
   const [currentUser, setCurrentUser] =
     useState<AuthUser | null>(null);
 
-  const [isScrolled, setIsScrolled] = useState(false);
+  const isScrolled = useScrollThreshold();
 
   const { cartCount } = useCart();
+  const { registerCartTarget } = useFlyToCart();
 
   const isDarkVariant = variant === "dark";
 
@@ -69,35 +70,6 @@ export function Header({
     isDarkVariant && !isScrolled;
 
   const displayCart = cartCount > 0;
-
-  /* =================================================
-   * SCROLL STATE
-   * =============================================== */
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(
-        window.scrollY > SCROLL_THRESHOLD,
-      );
-    };
-
-    handleScroll();
-
-    window.addEventListener(
-      "scroll",
-      handleScroll,
-      {
-        passive: true,
-      },
-    );
-
-    return () => {
-      window.removeEventListener(
-        "scroll",
-        handleScroll,
-      );
-    };
-  }, []);
 
   /* =================================================
    * HANDLERS
@@ -256,6 +228,9 @@ export function Header({
 
             <button
               data-cart-target
+              ref={(element) =>
+                registerCartTarget("desktop", element)
+              }
               type="button"
               aria-label={`Giỏ hàng có ${cartCount} sản phẩm`}
               onClick={() =>
@@ -368,7 +343,7 @@ export function Header({
         </div>
       </header>
 
-      <LoginModal
+      <AuthModal
         open={loginOpen}
         onClose={() =>
           setLoginOpen(false)

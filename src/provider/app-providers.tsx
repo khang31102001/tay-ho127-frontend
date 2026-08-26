@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { CartProvider } from "@/contexts/cart-context";
+import { FlyToCartProvider } from "@/contexts/fly-to-cart-context";
 
 type AppProvidersProps = {
   children: ReactNode;
@@ -10,7 +11,9 @@ type AppProvidersProps = {
 export function AppProviders({ children }: AppProvidersProps) {
   return (
     <CartProvider>
-      {children}
+      <FlyToCartProvider>
+        {children}
+      </FlyToCartProvider>
     </CartProvider>
   );
 }

@@ -16,7 +16,7 @@ import {
   LanguageDropdown,
   type LanguageCode,
   type LanguageOption,
-} from "./language-dropdown";
+} from "./LanguageDropdown";
 
 /* =========================================================
  * KHAI BÁO TYPE CHO GOOGLE TRANSLATE

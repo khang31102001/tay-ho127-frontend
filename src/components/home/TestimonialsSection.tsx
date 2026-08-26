@@ -4,7 +4,7 @@ import Image from "next/image";
 import { StarIcon } from "lucide-react";
 
 import { Container } from "../ui/Container";
-import { Reveal } from "../common/animation";
+import { Reveal } from "../common/Reveal";
 import { SwiperCarousel } from "@/components/ui/SwiperCarousel";
 
 import {

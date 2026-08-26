@@ -7,7 +7,7 @@ import {
   useState,
 } from "react";
 
-import { Reveal } from "../common/animation";
+import { Reveal } from "../common/Reveal";
 import { Container } from "../ui/Container";
 
 /* ============================================================
