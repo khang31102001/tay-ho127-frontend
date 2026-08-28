@@ -17,7 +17,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import { Reveal } from "../common/Reveal";
+import { Reveal } from "@/components/shared/Reveal";
 
 /* =================================================
  * TYPES

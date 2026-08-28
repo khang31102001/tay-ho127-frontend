@@ -1,8 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { CartProvider } from "@/contexts/cart-context";
-import { FlyToCartProvider } from "@/contexts/fly-to-cart-context";
+import { CartProvider, FlyToCartProvider } from "@/features/cart";
 
 type AppProvidersProps = {
   children: ReactNode;

@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
   ArrowUp,
   MapPin,
@@ -10,6 +9,8 @@ import {
   motion,
   useReducedMotion,
 } from "motion/react";
+
+import { useScrollThreshold } from "@/hooks/useScrollThreshold";
 
 /* =========================================================
  * CONSTANTS
@@ -57,44 +58,15 @@ const BASE_BUTTON_CLASS = `
  * ======================================================= */
 
 export default function FloatingActions() {
-  const [showContactActions, setShowContactActions] =
-    useState(false);
+  const showContactActions = useScrollThreshold(
+    CONTACT_SCROLL_THRESHOLD,
+  );
 
-  const [showScrollTop, setShowScrollTop] =
-    useState(false);
+  const showScrollTop = useScrollThreshold(
+    SCROLL_TOP_THRESHOLD,
+  );
 
   const shouldReduceMotion = useReducedMotion();
-
-  /* =========================================================
-   * SCROLL LISTENER
-   * ======================================================= */
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-
-      setShowContactActions(
-        scrollPosition > CONTACT_SCROLL_THRESHOLD,
-      );
-
-      setShowScrollTop(
-        scrollPosition > SCROLL_TOP_THRESHOLD,
-      );
-    };
-
-    handleScroll();
-
-    window.addEventListener("scroll", handleScroll, {
-      passive: true,
-    });
-
-    return () => {
-      window.removeEventListener(
-        "scroll",
-        handleScroll,
-      );
-    };
-  }, []);
 
   /* =========================================================
    * HANDLERS

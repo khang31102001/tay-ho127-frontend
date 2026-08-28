@@ -11,8 +11,8 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { useFlyToCart } from "@/contexts/fly-to-cart-context";
-import { AuthUser } from "@/types/auth";
+import { useFlyToCart } from "@/features/cart";
+import type { AuthUser } from "@/features/auth";
 
 type NavItem = {
   href: string;

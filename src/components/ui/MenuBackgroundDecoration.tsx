@@ -44,7 +44,7 @@ leftColor = "#FF9418",
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 overflow-hidden"
+      className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
     >
       {/* Canvas trang trí */}
       <div className="absolute inset-y-0 left-1/2 w-full -translate-x-1/2">

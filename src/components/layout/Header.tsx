@@ -6,13 +6,11 @@ import { useRouter } from "next/navigation";
 import { ShoppingCart, UserRound } from "lucide-react";
 import { useState } from "react";
 
-import { useCart } from "@/contexts/cart-context";
-import { useFlyToCart } from "@/contexts/fly-to-cart-context";
+import { useCart, useFlyToCart } from "@/features/cart";
 import { useScrollThreshold } from "@/hooks/useScrollThreshold";
-import { AuthUser } from "@/types/auth";
+import { AuthModal, type AuthUser } from "@/features/auth";
 
-import { LanguageSwitcher } from "../common/LanguageSwitcher";
-import AuthModal from "../auth/AuthModal";
+import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import MobileHeaderMenu from "./MobileHeaderMenu";
 
 /* =================================================

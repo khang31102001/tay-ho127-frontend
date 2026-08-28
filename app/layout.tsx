@@ -10,16 +10,11 @@ import "./globals.css";
 // Import class component dùng chung sau Tailwind để @apply hoạt động đúng.
 // @ts-ignore: side-effect CSS import may not have type declarations in this setup
 import "@/styles/components.css";
-// Import Footer dùng chung cho mọi trang.
-import { Footer } from "@/components/layout/Footer";
 // Import thông tin site tập trung từ data.
 import { site } from "@/data/site";
-import { Header } from "@/components/layout/Header";
-import { AppProviders } from "@/provider/app-providers";
-import FloatingActions from "@/components/layout/FloatingActions";
 
-
-// Metadata SEO cơ bản của Next.js App Router.
+// Metadata SEO mặc định của Next.js App Router.
+// (site) và admin có thể override qua metadata riêng ở layout con.
 export const metadata = {
   // Tiêu đề mặc định của website.
   title: `${site.name} | Bánh cuốn truyền thống`,
@@ -35,25 +30,12 @@ export const metadata = {
 interface RootLayoutProps {
   children: React.ReactNode;
 }
-// RootLayout bọc tất cả page để giữ header/footer nhất quán.
+// RootLayout: chỉ giữ khung <html>/<body> + global CSS, dùng chung cho cả User Site và Admin Portal.
+// Header/Footer/CartProvider của khách hàng nằm ở app/(site)/layout.tsx, không áp dụng cho /admin.
 export default function RootLayout({ children }: RootLayoutProps) {
-  // Trả về cấu trúc HTML chính của Next.js.
   return (
     <html lang="vi">
-      <body className="min-h-svh">
-        <AppProviders>
-          <div className="flex min-h-svh flex-col">
-            <Header variant="dark" />
-
-            <main className="min-h-0 flex-1">
-              {children}
-            </main>
-
-            <Footer />
-          </div>
-          <FloatingActions />
-        </AppProviders>
-      </body>
+      <body className="min-h-svh">{children}</body>
     </html>
   );
 }

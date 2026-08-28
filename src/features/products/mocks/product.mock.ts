@@ -1,0 +1,522 @@
+import type { ManagedProduct } from "../types/product.types";
+
+/**
+ * Nguồn Product duy nhất cho cả Admin Catalog lẫn Customer Site (trang
+ * thực đơn, trang chủ). Giữ nguyên id/tên/giá gốc từ mock JSON cũ của
+ * /thuc-don cho 46 món "thực đơn chính" (id tiền tố product-bc, tp, du, dv),
+ * enrich thêm rating/ratingCount/ảnh cho 9 món trùng với data thực đơn cũ
+ * của trang chủ.
+ *
+ * 3 món KHÔNG merge (product-mi003, product-mi006, product-mi012): tên gần
+ * giống nhưng giá xung đột thật (hoặc không có món tương ứng) với 3 món
+ * trong data thực đơn cũ của trang chủ — giữ làm Product riêng để không đổi
+ * giá đang hiển thị ở cả hai nơi. Xem mục "Rủi ro" trong plan gộp domain.
+ */
+export const SEED_PRODUCTS: ManagedProduct[] = [
+  // ================= FOOD / Bánh cuốn / Bánh cuốn nhân =================
+  {
+    id: "product-bc001",
+    name: "Bánh cuốn nhân thịt",
+    categoryId: "subcat-food-banh-cuon-banh-cuon-nhan",
+    price: 56_000,
+    status: "active",
+    mediaIds: ["media-banh-cuon-dish"],
+    rating: 4.8,
+    ratingCount: 25,
+    badge: "DISH",
+  },
+  {
+    id: "product-bc003",
+    name: "Bánh cuốn nhân thịt đặc biệt",
+    categoryId: "subcat-food-banh-cuon-banh-cuon-nhan",
+    price: 72_000,
+    status: "active",
+    mediaIds: [],
+    badge: "DISH",
+  },
+  {
+    id: "product-bc004",
+    name: "Bánh cuốn nhân chà bông heo",
+    categoryId: "subcat-food-banh-cuon-banh-cuon-nhan",
+    price: 50_000,
+    status: "active",
+    mediaIds: ["media-banh-cuon-dish"],
+    rating: 4.1,
+    ratingCount: 2,
+    badge: "DISH",
+  },
+  {
+    id: "product-bc005",
+    name: "Bánh cuốn nhân chà bông tôm",
+    categoryId: "subcat-food-banh-cuon-banh-cuon-nhan",
+    price: 50_000,
+    status: "active",
+    mediaIds: ["media-banh-cuon-dish"],
+    rating: 4.2,
+    ratingCount: 25,
+    badge: "DISH",
+  },
+
+  // ================= FOOD / Bánh cuốn / Bánh ướt =================
+  {
+    id: "product-bc002",
+    name: "Bánh ướt (không nhân)",
+    categoryId: "subcat-food-banh-cuon-banh-uot",
+    price: 40_000,
+    status: "active",
+    mediaIds: ["media-banh-cuon-dish"],
+    rating: 4.0,
+    ratingCount: 2,
+    badge: "DISH",
+  },
+  {
+    id: "product-bc006",
+    name: "Bánh ướt trứng vàng",
+    categoryId: "subcat-food-banh-cuon-banh-uot",
+    price: 50_000,
+    status: "active",
+    mediaIds: ["media-banh-cuon-dish"],
+    rating: 4.4,
+    ratingCount: 2,
+    badge: "DISH",
+  },
+
+  // ================= FOOD / Món chay / Bánh cuốn chay =================
+  {
+    id: "product-bc007",
+    name: "Bánh cuốn nhân chay thập cẩm",
+    categoryId: "subcat-food-mon-chay-banh-cuon-chay",
+    price: 50_000,
+    status: "active",
+    mediaIds: ["media-banh-cuon-dish"],
+    rating: 3.4,
+    ratingCount: 2,
+    badge: "DISH",
+  },
+  {
+    id: "product-bc008",
+    name: "Bánh cuốn chà bông chay",
+    categoryId: "subcat-food-mon-chay-banh-cuon-chay",
+    price: 50_000,
+    status: "active",
+    mediaIds: [],
+    badge: "DISH",
+  },
+  {
+    id: "product-bc010",
+    name: "Bánh cuốn lá dứa đậu hũ",
+    categoryId: "subcat-food-mon-chay-banh-cuon-chay",
+    price: 44_000,
+    status: "active",
+    mediaIds: [],
+    badge: "DISH",
+  },
+  {
+    id: "product-bc011",
+    name: "Bánh cuốn nấm linh chi",
+    categoryId: "subcat-food-mon-chay-banh-cuon-chay",
+    price: 44_000,
+    status: "active",
+    mediaIds: [],
+    badge: "DISH",
+  },
+
+  // ================= FOOD / Món chay / Bánh ướt chay =================
+  {
+    id: "product-bc009",
+    name: "Bánh ướt chay (không nhân)",
+    categoryId: "subcat-food-mon-chay-banh-uot-chay",
+    price: 40_000,
+    status: "active",
+    mediaIds: [],
+    badge: "DISH",
+  },
+
+  // ================= FOOD / Món chay / Món chay ăn kèm =================
+  {
+    id: "product-tp009",
+    name: "Chả chay (2 miếng)",
+    categoryId: "subcat-food-mon-chay-mon-chay-an-kem",
+    price: 10_000,
+    status: "active",
+    mediaIds: [],
+    badge: "DISH",
+  },
+  {
+    id: "product-tp010",
+    name: "Nem chay (2 miếng)",
+    categoryId: "subcat-food-mon-chay-mon-chay-an-kem",
+    price: 10_000,
+    status: "active",
+    mediaIds: [],
+    badge: "DISH",
+  },
+
+  // ================= FOOD / Món thêm / Nem-Chả =================
+  {
+    id: "product-tp001",
+    name: "Nem Huế (đĩa 2 miếng)",
+    categoryId: "subcat-food-mon-them-nem-cha",
+    price: 24_000,
+    status: "active",
+    mediaIds: ["media-banh-cuon-dish"],
+    rating: 4.9,
+    ratingCount: 25,
+    badge: "ADD_ON",
+  },
+  {
+    id: "product-tp002",
+    name: "Chả quế / Chả lụa (đĩa 2 miếng)",
+    categoryId: "subcat-food-mon-them-nem-cha",
+    price: 24_000,
+    status: "active",
+    mediaIds: ["media-banh-cuon-dish"],
+    rating: 4.7,
+    ratingCount: 25,
+    badge: "ADD_ON",
+  },
+
+  // ================= FOOD / Món thêm / Bánh ăn kèm =================
+  {
+    id: "product-tp003",
+    name: "Bánh đậu",
+    categoryId: "subcat-food-mon-them-banh-an-kem",
+    price: 12_000,
+    status: "active",
+    mediaIds: ["media-banh-cuon-dish"],
+    rating: 4.3,
+    ratingCount: 2,
+    badge: "ADD_ON",
+  },
+
+  // ================= FOOD / Phụ thu / Gia vị-Ăn kèm =================
+  {
+    id: "product-tp004",
+    name: "Hành phi (1 đĩa)",
+    categoryId: "subcat-food-phu-thu-gia-vi-an-kem",
+    price: 5_000,
+    status: "active",
+    mediaIds: [],
+    badge: "ADD_ON",
+  },
+
+  // ================= FOOD / Bánh ngọt / Bánh ngọt =================
+  {
+    id: "product-tp005",
+    name: "Bánh cam",
+    categoryId: "subcat-food-banh-ngot-banh-ngot",
+    price: 10_000,
+    status: "active",
+    mediaIds: [],
+    badge: "ADD_ON",
+  },
+
+  // ================= FOOD / Hàng đóng gói / Nem-Chả đóng gói =================
+  {
+    id: "product-tp006",
+    name: "Nem Huế (1 cây 200 gram)",
+    categoryId: "subcat-food-hang-dong-goi-nem-cha-dong-goi",
+    price: 60_000,
+    status: "active",
+    mediaIds: [],
+    badge: "PACKAGED_PRODUCT",
+  },
+
+  // ================= FOOD / Gia vị / Tinh chất-Gia vị =================
+  {
+    id: "product-tp007",
+    name: "Tinh chất cà cuống (1 giọt)",
+    categoryId: "subcat-food-gia-vi-tinh-chat-gia-vi",
+    price: 5_000,
+    status: "active",
+    mediaIds: [],
+    badge: "PACKAGED_PRODUCT",
+  },
+  {
+    id: "product-tp008",
+    name: "Tinh chất cà cuống (1 chai)",
+    categoryId: "subcat-food-gia-vi-tinh-chat-gia-vi",
+    price: 70_000,
+    status: "active",
+    mediaIds: [],
+    badge: "PACKAGED_PRODUCT",
+  },
+
+  // ================= DRINK / Đồ uống / Cà phê =================
+  {
+    id: "product-du001",
+    name: "Cà phê sữa đá/nóng",
+    categoryId: "subcat-drink-do-uong-ca-phe",
+    price: 20_000,
+    status: "active",
+    mediaIds: [],
+    badge: "BEVERAGE",
+  },
+  {
+    id: "product-du002",
+    name: "Cà phê đá/nóng",
+    categoryId: "subcat-drink-do-uong-ca-phe",
+    price: 15_000,
+    status: "active",
+    mediaIds: [],
+    badge: "BEVERAGE",
+  },
+
+  // ================= DRINK / Đồ uống / Sữa =================
+  {
+    id: "product-du003",
+    name: "Đậu nành",
+    categoryId: "subcat-drink-do-uong-sua",
+    price: 15_000,
+    status: "active",
+    mediaIds: [],
+    badge: "BEVERAGE",
+  },
+  {
+    id: "product-du004",
+    name: "Sữa tươi",
+    categoryId: "subcat-drink-do-uong-sua",
+    price: 15_000,
+    status: "active",
+    mediaIds: [],
+    badge: "BEVERAGE",
+  },
+
+  // ================= DRINK / Đồ uống / Nước ngọt =================
+  {
+    id: "product-du005",
+    name: "Coca-Cola",
+    categoryId: "subcat-drink-do-uong-nuoc-ngot",
+    price: 15_000,
+    status: "active",
+    mediaIds: [],
+    badge: "BEVERAGE",
+  },
+  {
+    id: "product-du006",
+    name: "Pepsi",
+    categoryId: "subcat-drink-do-uong-nuoc-ngot",
+    price: 15_000,
+    status: "active",
+    mediaIds: [],
+    badge: "BEVERAGE",
+  },
+  {
+    id: "product-du007",
+    name: "7 Up",
+    categoryId: "subcat-drink-do-uong-nuoc-ngot",
+    price: 15_000,
+    status: "active",
+    mediaIds: [],
+    badge: "BEVERAGE",
+  },
+  {
+    id: "product-du008",
+    name: "Sting dâu",
+    categoryId: "subcat-drink-do-uong-nuoc-ngot",
+    price: 15_000,
+    status: "active",
+    mediaIds: [],
+    badge: "BEVERAGE",
+  },
+  {
+    id: "product-du009",
+    name: "Soda",
+    categoryId: "subcat-drink-do-uong-nuoc-ngot",
+    price: 15_000,
+    status: "active",
+    mediaIds: [],
+    badge: "BEVERAGE",
+  },
+  {
+    id: "product-du010",
+    name: "Soda chanh đường",
+    categoryId: "subcat-drink-do-uong-nuoc-ngot",
+    price: 25_000,
+    status: "active",
+    mediaIds: [],
+    badge: "BEVERAGE",
+  },
+  {
+    id: "product-du012",
+    name: "Xá xị",
+    categoryId: "subcat-drink-do-uong-nuoc-ngot",
+    price: 15_000,
+    status: "active",
+    mediaIds: [],
+    badge: "BEVERAGE",
+  },
+
+  // ================= DRINK / Đồ uống / Nước tăng lực =================
+  {
+    id: "product-du011",
+    name: "Red Bull",
+    categoryId: "subcat-drink-do-uong-nuoc-tang-luc",
+    price: 15_000,
+    status: "active",
+    mediaIds: [],
+    badge: "BEVERAGE",
+  },
+
+  // ================= DRINK / Đồ uống / Nước đóng chai =================
+  {
+    id: "product-du013",
+    name: "Nước suối",
+    categoryId: "subcat-drink-do-uong-nuoc-dong-chai",
+    price: 10_000,
+    status: "active",
+    mediaIds: [],
+    badge: "BEVERAGE",
+  },
+
+  // ================= DRINK / Đồ uống / Nước ép =================
+  {
+    id: "product-du014",
+    name: "Nước cam",
+    categoryId: "subcat-drink-do-uong-nuoc-ep",
+    price: 15_000,
+    status: "active",
+    mediaIds: [],
+    badge: "BEVERAGE",
+  },
+  {
+    id: "product-du015",
+    name: "Cam vắt",
+    categoryId: "subcat-drink-do-uong-nuoc-ep",
+    price: 20_000,
+    status: "active",
+    mediaIds: [],
+    badge: "BEVERAGE",
+  },
+  {
+    id: "product-du016",
+    name: "Nước dừa",
+    categoryId: "subcat-drink-do-uong-nuoc-ep",
+    price: 20_000,
+    status: "active",
+    mediaIds: [],
+    badge: "BEVERAGE",
+  },
+  {
+    id: "product-du017",
+    name: "Nước chanh",
+    categoryId: "subcat-drink-do-uong-nuoc-ep",
+    price: 15_000,
+    status: "active",
+    mediaIds: [],
+    badge: "BEVERAGE",
+  },
+  {
+    id: "product-du018",
+    name: "Tắc ép",
+    categoryId: "subcat-drink-do-uong-nuoc-ep",
+    price: 15_000,
+    status: "active",
+    mediaIds: [],
+    badge: "BEVERAGE",
+  },
+  {
+    id: "product-du019",
+    name: "Chanh dây",
+    categoryId: "subcat-drink-do-uong-nuoc-ep",
+    price: 15_000,
+    status: "active",
+    mediaIds: [],
+    badge: "BEVERAGE",
+  },
+
+  // ================= DRINK / Đồ uống / Bia =================
+  {
+    id: "product-du020",
+    name: "Heineken",
+    categoryId: "subcat-drink-do-uong-bia",
+    price: 25_000,
+    status: "active",
+    mediaIds: [],
+    badge: "BEVERAGE",
+  },
+  {
+    id: "product-du021",
+    name: "Tiger",
+    categoryId: "subcat-drink-do-uong-bia",
+    price: 23_000,
+    status: "active",
+    mediaIds: [],
+    badge: "BEVERAGE",
+  },
+  {
+    id: "product-du022",
+    name: "Bia 333",
+    categoryId: "subcat-drink-do-uong-bia",
+    price: 18_000,
+    status: "active",
+    mediaIds: [],
+    badge: "BEVERAGE",
+  },
+
+  // ================= SERVICE / Phụ thu / Trà-Khăn =================
+  {
+    id: "product-dv001",
+    name: "Trà đá",
+    categoryId: "subcat-service-phu-thu-tra-khan",
+    price: 2_000,
+    status: "active",
+    mediaIds: [],
+    badge: "SERVICE_ITEM",
+  },
+  {
+    id: "product-dv002",
+    name: "Trà nóng",
+    categoryId: "subcat-service-phu-thu-tra-khan",
+    price: 1_000,
+    status: "active",
+    mediaIds: [],
+    badge: "SERVICE_ITEM",
+  },
+  {
+    id: "product-dv003",
+    name: "Khăn lạnh",
+    categoryId: "subcat-service-phu-thu-tra-khan",
+    price: 2_000,
+    status: "active",
+    mediaIds: [],
+    badge: "SERVICE_ITEM",
+  },
+
+  // ================= Món riêng (không merge — xem rủi ro trong plan) =================
+  {
+    id: "product-mi003",
+    name: "Bánh cuốn lá dứa nhân rau củ, đậu hủ",
+    categoryId: "subcat-food-mon-chay-banh-cuon-chay",
+    price: 35_000,
+    oldPrice: 44_000,
+    status: "active",
+    mediaIds: ["media-banh-cuon-dish"],
+    rating: 3.4,
+    ratingCount: 2,
+    badge: "Món chay",
+  },
+  {
+    id: "product-mi006",
+    name: "Bánh cuốn nhân thịt đặc biệt",
+    categoryId: "subcat-food-banh-cuon-banh-cuon-nhan",
+    price: 65_000,
+    oldPrice: 72_000,
+    status: "active",
+    mediaIds: ["media-banh-cuon-dish"],
+    rating: 4.6,
+    ratingCount: 2,
+    badge: "Món mặn",
+  },
+  {
+    id: "product-mi012",
+    name: "Bánh cuốn nhân tôm thịt nấm",
+    categoryId: "subcat-food-banh-cuon-banh-cuon-nhan",
+    price: 78_000,
+    status: "active",
+    mediaIds: ["media-banh-cuon-dish"],
+    rating: 4.5,
+    ratingCount: 2,
+    badge: "Món mặn",
+  },
+];
