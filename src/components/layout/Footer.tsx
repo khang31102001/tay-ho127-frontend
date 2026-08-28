@@ -2,8 +2,8 @@
 import { Container } from "@/components/ui/Container";
 // Import Logo dùng lại ở footer.
 import { Logo } from "@/components/ui/Logo";
-// Import dữ liệu brand tập trung.
-import { brand } from "@/data/site";
+// Import dữ liệu site tập trung.
+import { site } from "@/data/site";
 // Import Link cho các đường dẫn footer.
 import Link from "next/link";
 
@@ -17,7 +17,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import { Reveal } from "../common/animation";
+import { Reveal } from "@/components/shared/Reveal";
 
 /* =================================================
  * TYPES
@@ -37,20 +37,20 @@ type SocialItem = {
 const socialItems: SocialItem[] = [
   {
     id: "website",
-    label: brand.following?.web ?? "",
-    href: brand.following?.web,
+    label: site.following?.web ?? "",
+    href: site.following?.web,
     icon: Globe,
   },
   {
     id: "shopee",
-    label: brand.following?.shopee ?? "",
-    href: brand.following?.shopee,
+    label: site.following?.shopee ?? "",
+    href: site.following?.shopee,
     icon: ShoppingBag,
   },
   {
     id: "facebook",
-    label: brand.following?.facebook ?? "",
-    href: brand.following?.facebook,
+    label: site.following?.facebook ?? "",
+    href: site.following?.facebook,
     icon: Share2,
   },
 ];
@@ -322,7 +322,7 @@ export function Footer() {
                 />
 
                 <Link
-                  href={brand.following?.web ?? "#"}
+                  href={site.following?.web ?? "#"}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="
@@ -334,7 +334,7 @@ export function Footer() {
                     hover:text-white
                   "
                 >
-                  {brand.address}
+                  {site.address}
                 </Link>
               </div>
             </Reveal>
@@ -368,7 +368,7 @@ export function Footer() {
                 />
 
                 <Link
-                  href={`tel:${brand.phone}`}
+                  href={`tel:${site.phone}`}
                   className="
                     text-white/70
 
@@ -378,7 +378,7 @@ export function Footer() {
                     hover:text-white
                   "
                 >
-                  {brand.phone}
+                  {site.phone}
                 </Link>
               </div>
             </Reveal>
@@ -421,7 +421,7 @@ export function Footer() {
                     group-hover:text-white
                   "
                 >
-                  {brand.openingHours}
+                  {site.openingHours}
                 </span>
               </div>
             </Reveal>

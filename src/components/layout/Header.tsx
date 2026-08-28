@@ -4,14 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ShoppingCart, UserRound } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-import { useCart } from "@/contexts/cart-context";
-import { AuthUser } from "@/types/auth";
+import { useCart, useFlyToCart } from "@/features/cart";
+import { useScrollThreshold } from "@/hooks/useScrollThreshold";
+import { AuthModal, type AuthUser } from "@/features/auth";
 
-import { LanguageSwitcher } from "../common/language-switcher";
-import LoginModal from "../auth/LoginModal";
-import MobileHeaderMenu from "./mobile-header-menu";
+import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
+import MobileHeaderMenu from "./MobileHeaderMenu";
 
 /* =================================================
  * TYPES
@@ -36,8 +36,6 @@ const navItems = [
   },
 ];
 
-const SCROLL_THRESHOLD = 50;
-
 /* =================================================
  * HEADER
  * =============================================== */
@@ -51,9 +49,10 @@ export function Header({
   const [currentUser, setCurrentUser] =
     useState<AuthUser | null>(null);
 
-  const [isScrolled, setIsScrolled] = useState(false);
+  const isScrolled = useScrollThreshold();
 
   const { cartCount } = useCart();
+  const { registerCartTarget } = useFlyToCart();
 
   const isDarkVariant = variant === "dark";
 
@@ -69,35 +68,6 @@ export function Header({
     isDarkVariant && !isScrolled;
 
   const displayCart = cartCount > 0;
-
-  /* =================================================
-   * SCROLL STATE
-   * =============================================== */
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(
-        window.scrollY > SCROLL_THRESHOLD,
-      );
-    };
-
-    handleScroll();
-
-    window.addEventListener(
-      "scroll",
-      handleScroll,
-      {
-        passive: true,
-      },
-    );
-
-    return () => {
-      window.removeEventListener(
-        "scroll",
-        handleScroll,
-      );
-    };
-  }, []);
 
   /* =================================================
    * HANDLERS
@@ -194,7 +164,7 @@ export function Header({
                 hidden
                 items-center
                 gap-10
-                text-[14px]
+                text-[15px]
                 transition-all
                 duration-300
 
@@ -234,8 +204,8 @@ export function Header({
               flex
               items-center
               gap-4
-              text-[14px]
-              font-medium
+              text-[15px]
+              font-bold
               md:gap-5
             "
           >
@@ -256,6 +226,9 @@ export function Header({
 
             <button
               data-cart-target
+              ref={(element) =>
+                registerCartTarget("desktop", element)
+              }
               type="button"
               aria-label={`Giỏ hàng có ${cartCount} sản phẩm`}
               onClick={() =>
@@ -339,7 +312,7 @@ export function Header({
                 md:inline-flex
               "
             >
-              <UserRound className="size-[16px]" />
+              <UserRound className="size-[18px]" />
 
               <span>
                 {currentUser
@@ -368,7 +341,7 @@ export function Header({
         </div>
       </header>
 
-      <LoginModal
+      <AuthModal
         open={loginOpen}
         onClose={() =>
           setLoginOpen(false)
