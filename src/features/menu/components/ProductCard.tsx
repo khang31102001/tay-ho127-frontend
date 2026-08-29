@@ -5,21 +5,13 @@ import { useCart, useFlyToCart } from "@/features/cart";
 import { formatCurrency } from "@/lib/format-currency";
 import { UiProduct } from "../types/menu.types";
 import Image from "next/image";
+import Link from "next/link";
 import { Star } from "lucide-react";
 import BestSellerBanner from "./BestSellerBanner";
+import { CATEGORY_BADGE_CLASS } from "../constants/category-badge";
 
 type ProductCardProps = {
   item: UiProduct;
-};
-
-/**
- * Màu badge danh mục ở góc phải ảnh, theo đúng màu dùng cho từng
- * loại món trên toàn site (đỏ = món mặn, xanh = món chay).
- */
-const CATEGORY_BADGE_CLASS: Record<string, string> = {
-  "Món mặn": "bg-brand-red",
-  "Món chay": "bg-brand-green",
-  "Ăn kèm": "bg-brand-wood",
 };
 
 export function ProductCard({ item }: ProductCardProps) {
@@ -43,10 +35,12 @@ export function ProductCard({ item }: ProductCardProps) {
     });
   }
 
+  const detailHref = `/thuc-don/${item.slug}`;
+
   return (
     <article className="relative flex h-full flex-col rounded-md border border-brand-red bg-brand-cream shadow-card">
       {/* <BestSellerBanner/> */}
-      <div className="relative overflow-hidden h-[142px] ">
+      <Link href={detailHref} className="relative block overflow-hidden h-[142px]" aria-label={`Xem chi tiết ${item.name}`}>
         <Image
           ref={imageRef}
           src={item.image}
@@ -62,11 +56,13 @@ export function ProductCard({ item }: ProductCardProps) {
         >
           {item.category}
         </span>
-      </div>
+      </Link>
 
       <div className="flex flex-1 flex-col px-3 pb-3 pt-3">
         <h3 className="line-clamp-2 text-[20px] font-extrabold leading-[1.15] text-brand-greenDark sm:text-[22px]">
-          {item.name}
+          <Link href={detailHref} className="hover:underline">
+            {item.name}
+          </Link>
         </h3>
 
         {/* Khoảng đệm co giãn: đẩy giá/rating/CTA xuống cùng baseline giữa các card */}

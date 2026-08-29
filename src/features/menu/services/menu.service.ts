@@ -1,8 +1,22 @@
-import { listMenus, type ManagedMenu } from "@/features/menus";
-import { listMenuProducts, type ManagedMenuProduct } from "@/features/menu-products";
-import { listProducts, type ManagedProduct } from "@/features/products";
-import { listCategories, type ManagedCategory } from "@/features/categories";
-import { listMedia, type ManagedMedia } from "@/features/media";
+/**
+ * Import thẳng vào services/types của từng feature Catalog thay vì qua
+ * index.ts (barrel) — index.ts của các feature Admin còn re-export cả
+ * component "use client" (Explorer/Editor). Vì đây là code chạy trong
+ * Server Component của Site (trang chủ, /thuc-don), import qua barrel sẽ
+ * kéo theo toàn bộ UI Admin (DataExplorer/DataEditor + các Editor/Explorer)
+ * vào bundle JS công khai — đã đo được ~18kB gzip dư ra trên cả 2 trang.
+ * Đi thẳng vào service/type tránh hoàn toàn việc này mà không đổi API.
+ */
+import { listMenus } from "@/features/menus/services/menu.service";
+import type { ManagedMenu } from "@/features/menus/types/menu.types";
+import { listMenuProducts } from "@/features/menu-products/services/menu-product.service";
+import type { ManagedMenuProduct } from "@/features/menu-products/types/menu-product.types";
+import { listProducts } from "@/features/products/services/product.service";
+import type { ManagedProduct } from "@/features/products/types/product.types";
+import { listCategories } from "@/features/categories/services/category.service";
+import type { ManagedCategory } from "@/features/categories/types/category.types";
+import { listMedia } from "@/features/media/services/media.service";
+import type { ManagedMedia } from "@/features/media/types/media.types";
 import { normalizeText } from "@/lib/normalize-text";
 
 import type {
@@ -11,6 +25,7 @@ import type {
   MenuGroup,
   MenuResponse,
   Product,
+  ProductDetail,
   SubCategory,
   UiProduct,
 } from "../types/menu.types";
@@ -24,6 +39,7 @@ import type {
 const SITE_MAIN_MENU_ID = "menu-thuc-don-chinh";
 const SITE_FAVORITES_MENU_ID = "menu-mon-yeu-thich";
 const DEFAULT_PRODUCT_IMAGE = "/images/banh-cuon-dish.jpg";
+const RELATED_PRODUCTS_LIMIT = 4;
 
 interface CatalogSnapshot {
   menus: ManagedMenu[];
@@ -199,6 +215,7 @@ export async function fetchFeaturedMenu(): Promise<UiProduct[]> {
 
     items.push({
       id: items.length + 1,
+      slug: managedProduct.id,
       name: managedProduct.name,
       category: resolveMenuCategoryBucket(category?.name ?? ""),
       price: row.priceOverride ?? managedProduct.price,
@@ -211,4 +228,89 @@ export async function fetchFeaturedMenu(): Promise<UiProduct[]> {
   });
 
   return items;
+}
+
+export interface ProductDetailData {
+  product: ProductDetail;
+  relatedProducts: UiProduct[];
+}
+
+/**
+ * Chi tiết 1 sản phẩm cho trang `/thuc-don/[slug]` + danh sách sản phẩm liên
+ * quan (cùng danh mục cha, cùng nằm trong menu chính của site). `slug` hiện
+ * là `ManagedProduct.id` (xem `Product.slug` trong `fetchMenu`) — trả về
+ * null nếu sản phẩm không tồn tại, ngừng bán, hoặc không thuộc thực đơn site.
+ */
+export async function getProductDetail(slug: string): Promise<ProductDetailData | null> {
+  const { menuProducts, productById, categoryById, mediaById } = await loadCatalogSnapshot();
+
+  const managedProduct = productById.get(slug);
+
+  if (!managedProduct || managedProduct.status !== "active") {
+    return null;
+  }
+
+  const siteMenuRows = menuProducts
+    .filter((row) => row.menuId === SITE_MAIN_MENU_ID && row.isAvailable)
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+
+  const currentRow = siteMenuRows.find((row) => row.productId === managedProduct.id);
+
+  if (!currentRow) {
+    return null;
+  }
+
+  const category = resolveParentCategory(managedProduct.categoryId, categoryById);
+  const categoryBucket = resolveMenuCategoryBucket(category?.name ?? "");
+
+  const product: ProductDetail = {
+    id: managedProduct.id,
+    slug: managedProduct.id,
+    name: managedProduct.name,
+    category: categoryBucket,
+    price: currentRow.priceOverride ?? managedProduct.price,
+    oldPrice: managedProduct.oldPrice,
+    badge: managedProduct.badge,
+    rating: managedProduct.rating ?? 0,
+    ratingCount: managedProduct.ratingCount ?? 0,
+    image: resolveProductImage(managedProduct, mediaById),
+    description: managedProduct.description,
+  };
+
+  const relatedProducts: UiProduct[] = [];
+
+  for (const row of siteMenuRows) {
+    if (relatedProducts.length >= RELATED_PRODUCTS_LIMIT) {
+      break;
+    }
+
+    if (row.productId === managedProduct.id) {
+      continue;
+    }
+
+    const candidate = productById.get(row.productId);
+    if (!candidate) {
+      continue;
+    }
+
+    const candidateCategory = resolveParentCategory(candidate.categoryId, categoryById);
+    if ((candidateCategory?.id ?? "unknown-category") !== (category?.id ?? "unknown-category")) {
+      continue;
+    }
+
+    relatedProducts.push({
+      id: relatedProducts.length + 1,
+      slug: candidate.id,
+      name: candidate.name,
+      category: categoryBucket,
+      price: row.priceOverride ?? candidate.price,
+      oldPrice: candidate.oldPrice,
+      badge: candidate.badge,
+      rating: candidate.rating ?? 0,
+      ratingCount: candidate.ratingCount ?? 0,
+      image: resolveProductImage(candidate, mediaById),
+    });
+  }
+
+  return { product, relatedProducts };
 }

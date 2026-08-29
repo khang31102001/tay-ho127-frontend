@@ -2,11 +2,18 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ShoppingCart, UserRound } from "lucide-react";
+import { UserRound } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 
-import { useCart, useFlyToCart } from "@/features/cart";
+import {
+  CartTrigger,
+  FloatingCart,
+  MiniCart,
+  useCart,
+  useFlyToCart,
+  useMiniCart,
+} from "@/features/cart";
 import { useScrollThreshold } from "@/hooks/useScrollThreshold";
 import { AuthModal, type AuthUser } from "@/features/auth";
 
@@ -43,8 +50,6 @@ const navItems = [
 export function Header({
   variant = "light",
 }: HeaderProps) {
-  const router = useRouter();
-
   const [loginOpen, setLoginOpen] = useState(false);
   const [currentUser, setCurrentUser] =
     useState<AuthUser | null>(null);
@@ -53,6 +58,7 @@ export function Header({
 
   const { cartCount } = useCart();
   const { registerCartTarget } = useFlyToCart();
+  const { toggle: toggleMiniCart } = useMiniCart();
 
   const isDarkVariant = variant === "dark";
 
@@ -221,73 +227,31 @@ export function Header({
             />
 
             {/* =================================================
-             * GIỎ HÀNG
+             * GIỎ HÀNG (State 1: Header Cart — ẩn khi đã scroll,
+             * FloatingCart bên dưới sẽ thay thế, xem State 2)
              * =============================================== */}
 
-            <button
-              data-cart-target
-              ref={(element) =>
-                registerCartTarget("desktop", element)
-              }
-              type="button"
-              aria-label={`Giỏ hàng có ${cartCount} sản phẩm`}
-              onClick={() =>
-                router.push("/checkout")
-              }
-              className={`
-                group
-                hidden
-                items-center
-                gap-1.5
-                whitespace-nowrap
-
-                transition-opacity
-                duration-200
-
-                hover:opacity-70
-
-                ${
-                  displayCart
-                    ? "md:inline-flex"
-                    : ""
-                }
-              `}
-            >
-              <span className="relative">
-                <ShoppingCart className="size-[18px]" />
-
-                {cartCount > 0 && (
-                  <span
-                    className="
-                      absolute
-                      -right-2.5
-                      -top-2.5
-
-                      flex
-                      min-h-[18px]
-                      min-w-[18px]
-                      items-center
-                      justify-center
-
-                      rounded-full
-                      bg-orange-500
-                      px-1
-
-                      text-[10px]
-                      font-bold
-                      leading-none
-                      text-white
-                    "
-                  >
-                    {cartCount > 99
-                      ? "99+"
-                      : cartCount}
-                  </span>
-                )}
-              </span>
-
-              <span>Giỏ hàng</span>
-            </button>
+            <AnimatePresence initial={false}>
+              {displayCart && !isScrolled && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9, y: -6 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: -6 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="hidden md:block"
+                >
+                  <CartTrigger
+                    ref={(element) =>
+                      registerCartTarget("desktop", element)
+                    }
+                    variant="header"
+                    cartCount={cartCount}
+                    showLabel
+                    onClick={toggleMiniCart}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* =================================================
              * ĐĂNG NHẬP
@@ -330,16 +294,21 @@ export function Header({
               currentUser={currentUser}
               cartCount={cartCount}
               isDark={isTransparent}
+              isScrolled={isScrolled}
               onLoginClick={() =>
                 setLoginOpen(true)
               }
-              onCartClick={() =>
-                router.push("/checkout")
-              }
+              onCartClick={toggleMiniCart}
             />
           </div>
         </div>
       </header>
+
+      {/* State 2: Floating Cart — nổi lên khi đã scroll, thay Header Cart */}
+      <FloatingCart />
+
+      {/* Mini Cart dùng chung cho Header Cart + Floating Cart + Cart trong menu mobile */}
+      <MiniCart />
 
       <AuthModal
         open={loginOpen}

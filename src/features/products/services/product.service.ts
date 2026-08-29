@@ -86,3 +86,59 @@ export async function deleteProduct(id: string): Promise<void> {
 
   writeStore(readStore().filter((product) => product.id !== id));
 }
+
+export type ProductUpsertInput = {
+  /** Có id khớp sản phẩm hiện có → cập nhật; không có/không khớp → tạo mới. */
+  id?: string;
+  name: string;
+  categoryId: string;
+  price: number;
+  description?: string;
+  status: ManagedProduct["status"];
+};
+
+/**
+ * Tạo/cập nhật nhiều sản phẩm trong 1 lần đọc-ghi store — dùng cho Import
+ * hàng loạt (xem features/products/import-export/product-import.service.ts).
+ * Chỉ ghi đè các field trong ProductUpsertInput; các field site-display
+ * (mediaIds, rating, ratingCount, oldPrice, badge) giữ nguyên khi cập nhật.
+ */
+export async function bulkUpsertProducts(
+  items: ProductUpsertInput[],
+): Promise<ManagedProduct[]> {
+  await delay();
+
+  const currentById = new Map(readStore().map((product) => [product.id, product]));
+
+  items.forEach((item, index) => {
+    const existing = item.id ? currentById.get(item.id) : undefined;
+
+    if (existing) {
+      currentById.set(existing.id, {
+        ...existing,
+        name: item.name,
+        categoryId: item.categoryId,
+        price: item.price,
+        description: item.description,
+        status: item.status,
+      });
+    } else {
+      const newId = `prod-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 7)}`;
+
+      currentById.set(newId, {
+        id: newId,
+        name: item.name,
+        categoryId: item.categoryId,
+        price: item.price,
+        description: item.description,
+        status: item.status,
+        mediaIds: [],
+      });
+    }
+  });
+
+  const merged = Array.from(currentById.values());
+  writeStore(merged);
+
+  return merged;
+}

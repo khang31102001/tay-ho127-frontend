@@ -31,6 +31,8 @@ export type DataExplorerProps<T> = {
   editHref?: (row: T) => string;
   onDelete?: (row: T) => Promise<void> | void;
   emptyState?: ReactNode;
+  /** Nút/hành động phụ đặt cạnh nút "Thêm mới" (vd. Import/Export). Domain tự quyết định có hay không. */
+  toolbarActions?: ReactNode;
 };
 
 /**
@@ -50,6 +52,7 @@ export function DataExplorer<T>({
   editHref,
   onDelete,
   emptyState,
+  toolbarActions,
 }: DataExplorerProps<T>) {
   const { searchTerm, setSearchTerm, filteredRows } = useDataExplorer({
     rows,
@@ -71,15 +74,19 @@ export function DataExplorer<T>({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-[20px] font-black text-brand-greenDark">{title}</h1>
 
-        {createHref && (
-          <Link
-            href={createHref}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-brand-red px-4 py-2.5 text-[14px] font-bold text-white transition hover:bg-brand-redDark"
-          >
-            <Plus className="size-4" />
-            {createLabel}
-          </Link>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {toolbarActions}
+
+          {createHref && (
+            <Link
+              href={createHref}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-brand-red px-4 py-2.5 text-[14px] font-bold text-white transition hover:bg-brand-redDark"
+            >
+              <Plus className="size-4" />
+              {createLabel}
+            </Link>
+          )}
+        </div>
       </div>
 
       <div className="mt-4 flex items-center gap-2 rounded-lg border border-brand-line bg-white px-4 py-2.5">

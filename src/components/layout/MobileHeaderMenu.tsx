@@ -9,6 +9,7 @@ import {
   UserRound,
   X,
 } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 
 import { useFlyToCart } from "@/features/cart";
@@ -26,6 +27,8 @@ type MobileHeaderMenuProps = {
   onLoginClick: () => void;
   onCartClick: () => void;
   isDark?: boolean;
+  /** true khi trang đã scroll qua ngưỡng — ẩn cart icon nhanh ở top row, nhường chỗ cho FloatingCart (xem Header.tsx). */
+  isScrolled?: boolean;
 };
 
 export default function MobileHeaderMenu({
@@ -35,6 +38,7 @@ export default function MobileHeaderMenu({
   onLoginClick,
   onCartClick,
   isDark = false,
+  isScrolled = false,
 }: MobileHeaderMenuProps) {
   const pathname = usePathname();
 
@@ -85,37 +89,46 @@ export default function MobileHeaderMenu({
       ======================================================== */}
 
       <div className="flex items-center gap-1">
-        {cartCount > 0 && (
-          <button
-            data-cart-target
-            ref={(element) => registerCartTarget("mobile", element)}
-            type="button"
-            onClick={handleCartClick}
-            aria-label={`Giỏ hàng có ${cartCount} sản phẩm`}
-            className={`
-              relative flex size-11 items-center justify-center rounded-full
-              transition-colors duration-200
-              ${
-                isDark
-                  ? "text-white hover:bg-white/10"
-                  : "text-brand-greenDark hover:bg-black/5"
-              }
-            `}
-          >
-            <ShoppingCart className="size-[18px]" />
-
-            <span
-              className="
-                absolute right-1.5 top-1.5
-                flex min-h-[16px] min-w-[16px] items-center justify-center
-                rounded-full bg-orange-500 px-1
-                text-[9px] font-bold leading-none text-white
-              "
+        <AnimatePresence initial={false}>
+          {cartCount > 0 && !isScrolled && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
             >
-              {cartCount > 99 ? "99+" : cartCount}
-            </span>
-          </button>
-        )}
+              <button
+                data-cart-target
+                ref={(element) => registerCartTarget("mobile", element)}
+                type="button"
+                onClick={handleCartClick}
+                aria-label={`Giỏ hàng có ${cartCount} sản phẩm`}
+                className={`
+                  relative flex size-11 items-center justify-center rounded-full
+                  transition-colors duration-200
+                  ${
+                    isDark
+                      ? "text-white hover:bg-white/10"
+                      : "text-brand-greenDark hover:bg-black/5"
+                  }
+                `}
+              >
+                <ShoppingCart className="size-[18px]" />
+
+                <span
+                  className="
+                    absolute right-1.5 top-1.5
+                    flex min-h-[16px] min-w-[16px] items-center justify-center
+                    rounded-full bg-orange-500 px-1
+                    text-[9px] font-bold leading-none text-white
+                  "
+                >
+                  {cartCount > 99 ? "99+" : cartCount}
+                </span>
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <button
           type="button"
