@@ -5,6 +5,7 @@ import { Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 
 import { StatusPopup } from "@/components/shared/StatusPopup";
+import { Pagination } from "@/components/ui/Pagination";
 
 import { useDataExplorer } from "./useDataExplorer";
 
@@ -33,6 +34,10 @@ export type DataExplorerProps<T> = {
   emptyState?: ReactNode;
   /** Nút/hành động phụ đặt cạnh nút "Thêm mới" (vd. Import/Export). Domain tự quyết định có hay không. */
   toolbarActions?: ReactNode;
+  /** Số dòng/trang — không truyền = giữ nguyên hành vi cũ (hiện toàn bộ danh sách, không phân trang). */
+  pageSize?: number;
+  /** Từ khóa tìm kiếm ban đầu, dùng cho deep-link từ màn khác. */
+  initialSearchTerm?: string;
 };
 
 /**
@@ -53,11 +58,17 @@ export function DataExplorer<T>({
   onDelete,
   emptyState,
   toolbarActions,
+  pageSize,
+  initialSearchTerm,
 }: DataExplorerProps<T>) {
-  const { searchTerm, setSearchTerm, filteredRows } = useDataExplorer({
+  const { searchTerm, setSearchTerm, filteredRows, paginatedRows, page, setPage } = useDataExplorer({
     rows,
     getSearchableText,
+    pageSize,
+    initialSearchTerm,
   });
+
+  const visibleRows = pageSize ? paginatedRows : filteredRows;
 
   const [pendingDeleteRow, setPendingDeleteRow] = useState<T | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -140,7 +151,7 @@ export function DataExplorer<T>({
                 </td>
               </tr>
             ) : (
-              filteredRows.map((row) => (
+              visibleRows.map((row) => (
                 <tr
                   key={getRowId(row)}
                   className="border-b border-brand-line last:border-b-0"
@@ -185,6 +196,15 @@ export function DataExplorer<T>({
           </tbody>
         </table>
       </div>
+
+      {pageSize && filteredRows.length > 0 && (
+        <Pagination
+          page={page}
+          pageSize={pageSize}
+          totalItems={filteredRows.length}
+          onPageChange={setPage}
+        />
+      )}
 
       <StatusPopup
         open={pendingDeleteRow !== null}

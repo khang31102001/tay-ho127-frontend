@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createPortal } from "react-dom";
-import { AnimatePresence, motion } from "motion/react";
 import { ShoppingBag, X } from "lucide-react";
 
 import { formatCurrency } from "@/lib/format-currency";
@@ -17,9 +16,10 @@ import { MiniCartItem } from "./MiniCartItem";
  * dữ liệu trực tiếp từ `useCart()` nên luôn khớp với badge số lượng.
  * Desktop: dropdown neo góc phải, gần khu vực Cart. Mobile: bottom sheet.
  *
- * Render qua `createPortal` vào `document.body` (giống StatusPopup — pattern
- * overlay đã có sẵn trong codebase) để tránh bị kẹt trong stacking context
- * của Header, và để AnimatePresence chỉ cần theo dõi đúng 1 child gốc.
+ * Ẩn/hiện bằng CSS transition (opacity/translate + pointer-events), giống
+ * đúng pattern dropdown mobile nav trong MobileHeaderMenu.tsx — không dùng
+ * AnimatePresence: mount/unmount qua AnimatePresence với nhiều motion node
+ * lồng nhau không nhả DOM sau khi exit xong trong môi trường này.
  */
 export function MiniCart() {
   const { isOpen, close } = useMiniCart();
@@ -161,55 +161,57 @@ export function MiniCart() {
   }
 
   return createPortal(
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          key="mini-cart-overlay"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              close();
-            }
-          }}
-          className="fixed inset-x-0 bottom-0 top-16 z-[9999] bg-black/30 md:top-[68px]"
-        >
-          {/* Desktop: dropdown neo góc phải, gần khu vực Cart */}
-          <motion.div
-            role="dialog"
-            aria-label="Giỏ hàng"
-            initial={{ opacity: 0, scale: 0.95, y: -12 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -12 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            className="fixed right-4 top-[76px] hidden max-h-[70vh] w-[360px] flex-col overflow-hidden rounded-2xl border border-brand-line bg-white shadow-soft sm:flex md:right-8 md:top-[88px]"
-          >
-            {renderHeader()}
-            {renderBody()}
-            {renderFooter()}
-          </motion.div>
+    <div
+      aria-hidden={!isOpen}
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          close();
+        }
+      }}
+      className={`
+        fixed inset-x-0 bottom-0 top-16 z-[9999] bg-black/30
+        transition-opacity duration-200 ease-out
+        md:top-[68px]
+        ${isOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"}
+      `}
+    >
+      {/* Desktop: dropdown neo góc phải, gần khu vực Cart */}
+      <div
+        role="dialog"
+        aria-label="Giỏ hàng"
+        className={`
+          fixed right-4 top-[76px] hidden max-h-[70vh] w-[360px] flex-col overflow-hidden
+          rounded-2xl border border-brand-line bg-white shadow-soft
+          transition-all duration-200 ease-out
+          sm:flex md:right-8 md:top-[88px]
+          ${isOpen ? "translate-y-0 scale-100 opacity-100" : "pointer-events-none -translate-y-3 scale-95 opacity-0"}
+        `}
+      >
+        {renderHeader()}
+        {renderBody()}
+        {renderFooter()}
+      </div>
 
-          {/* Mobile: bottom sheet */}
-          <motion.div
-            role="dialog"
-            aria-label="Giỏ hàng"
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ duration: 0.28, ease: "easeOut" }}
-            className="fixed inset-x-0 bottom-0 sm:hidden"
-          >
-            <div className="flex max-h-[80vh] flex-col overflow-hidden rounded-t-2xl border-t border-brand-line bg-white shadow-soft">
-              {renderHeader()}
-              {renderBody()}
-              {renderFooter()}
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>,
+      {/* Mobile: bottom sheet */}
+      <div
+        className={`
+          fixed inset-x-0 bottom-0
+          transition-transform duration-300 ease-out
+          sm:hidden
+          ${isOpen ? "translate-y-0" : "pointer-events-none translate-y-full"}
+        `}
+      >
+        <div
+          role="dialog"
+          aria-label="Giỏ hàng"
+          className="flex max-h-[80vh] flex-col overflow-hidden rounded-t-2xl border-t border-brand-line bg-white shadow-soft"
+        >
+          {renderHeader()}
+          {renderBody()}
+          {renderFooter()}
+        </div>
+      </div>
+    </div>,
     document.body,
   );
 }

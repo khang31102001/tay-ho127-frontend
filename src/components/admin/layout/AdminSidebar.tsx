@@ -5,13 +5,22 @@ import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import {
   BookOpen,
+  ClipboardList,
+  Contact,
+  CreditCard,
+  FileText,
   FolderTree,
+  GalleryHorizontal,
   Images,
   LayoutDashboard,
   ListChecks,
+  Newspaper,
   Package,
   ShieldCheck,
+  Store,
+  Tags,
   Users,
+  Wallet,
 } from "lucide-react";
 
 type AdminNavItem = {
@@ -37,6 +46,14 @@ const ADMIN_NAV_SECTIONS: AdminNavSection[] = [
     ],
   },
   {
+    title: "Sales",
+    items: [
+      { href: "/admin/sales/orders", label: "Đơn hàng", icon: ClipboardList },
+      { href: "/admin/sales/customers", label: "Khách hàng", icon: Contact },
+      { href: "/admin/sales/payments", label: "Thanh toán", icon: CreditCard },
+    ],
+  },
+  {
     title: "Catalog",
     items: [
       { href: "/admin/catalog/categories", label: "Danh mục", icon: FolderTree },
@@ -45,6 +62,24 @@ const ADMIN_NAV_SECTIONS: AdminNavSection[] = [
       { href: "/admin/catalog/menus", label: "Thực đơn", icon: BookOpen },
       { href: "/admin/catalog/menu-products", label: "Liên kết Menu-SP", icon: ListChecks },
     ],
+  },
+  {
+    title: "Content",
+    items: [
+      { href: "/admin/content/pages", label: "Page", icon: FileText },
+      { href: "/admin/content/banners", label: "Banner", icon: GalleryHorizontal },
+      { href: "/admin/content/articles", label: "Bài viết", icon: Newspaper },
+      { href: "/admin/content/article-categories", label: "Danh mục bài viết", icon: FolderTree },
+      { href: "/admin/content/article-tags", label: "Thẻ bài viết", icon: Tags },
+    ],
+  },
+  {
+    title: "Brand",
+    items: [{ href: "/admin/brand/settings", label: "Cài đặt thương hiệu", icon: Store }],
+  },
+  {
+    title: "Cấu hình",
+    items: [{ href: "/admin/settings/payment-methods", label: "Phương thức thanh toán", icon: Wallet }],
   },
 ];
 

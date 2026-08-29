@@ -50,4 +50,22 @@ export const SEED_MEDIA: ManagedMedia[] = [
     size: 96_000,
     status: "inactive",
   },
+  {
+    id: "media-promotion-zone-1",
+    fileName: "promotion-zone-1.png",
+    url: "/images/promotion-zone-1.png",
+    type: "image",
+    altText: "Ưu đãi bánh cuốn Tây Hồ",
+    size: 720_000,
+    status: "active",
+  },
+  {
+    id: "media-promotion-zone-2",
+    fileName: "promotion-zone-2.png",
+    url: "/images/promotion-zone-2.png",
+    type: "image",
+    altText: "Ưu đãi bánh cuốn Tây Hồ (bản mobile)",
+    size: 480_000,
+    status: "active",
+  },
 ];
