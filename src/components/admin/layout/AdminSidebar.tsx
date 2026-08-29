@@ -19,6 +19,7 @@ import {
   ShieldCheck,
   Store,
   Tags,
+  Truck,
   Users,
   Wallet,
 } from "lucide-react";
@@ -79,7 +80,10 @@ const ADMIN_NAV_SECTIONS: AdminNavSection[] = [
   },
   {
     title: "Cấu hình",
-    items: [{ href: "/admin/settings/payment-methods", label: "Phương thức thanh toán", icon: Wallet }],
+    items: [
+      { href: "/admin/settings/payment-methods", label: "Phương thức thanh toán", icon: Wallet },
+      { href: "/admin/settings/delivery-methods", label: "Phương thức giao hàng", icon: Truck },
+    ],
   },
 ];
 

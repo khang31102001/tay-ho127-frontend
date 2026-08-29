@@ -60,7 +60,7 @@ export function PageEditor({ id }: PageEditorProps) {
             className={`${adminFieldInputClassName} cursor-not-allowed bg-brand-cream/60`}
           />
           <span className="mt-1.5 block text-[12px] text-brand-muted">
-            Đây là trang chủ (URL gốc "/"), không thể đổi đường dẫn.
+            Đây là trang chủ (URL gốc &quot;/&quot;), không thể đổi đường dẫn.
           </span>
         </label>
       ) : (

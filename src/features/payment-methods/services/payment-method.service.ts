@@ -39,6 +39,26 @@ export async function getPaymentMethodById(id: string): Promise<ManagedPaymentMe
   return readStore().find((method) => method.id === id);
 }
 
+export async function getPaymentMethodByCode(code: string): Promise<ManagedPaymentMethod | undefined> {
+  await delay();
+  return readStore().find((method) => method.code === code);
+}
+
+/**
+ * Kiểm tra đơn hàng có đủ điều kiện áp dụng phương thức thanh toán này
+ * không (minOrderAmount/maxOrderAmount) — dùng chung bởi Checkout (hiển thị
+ * gợi ý) và order.service.ts (chặn thật khi tạo Order).
+ */
+export function isPaymentMethodEligible(method: ManagedPaymentMethod, subtotal: number): boolean {
+  if (method.minOrderAmount !== undefined && subtotal < method.minOrderAmount) {
+    return false;
+  }
+  if (method.maxOrderAmount !== undefined && subtotal > method.maxOrderAmount) {
+    return false;
+  }
+  return true;
+}
+
 /**
  * Tương đương GET /payment-methods/available — Checkout PHẢI gọi hàm này để
  * lấy danh sách động, không hard-code phương thức trong UI Checkout.

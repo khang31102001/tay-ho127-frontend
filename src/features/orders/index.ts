@@ -3,7 +3,7 @@ export { OrderDetail } from "./components/OrderDetail";
 export { PaymentStatusBadge } from "./components/PaymentStatusBadge";
 
 export { listOrders, getOrderById, createOrder, updateOrderStatus, updateOrderPaymentStatus } from "./services/order.service";
-export type { CreateOrderInput } from "./services/order.service";
+export type { CreateOrderInput, CreateOrderItemInput } from "./services/order.service";
 
 export { ORDER_STATUS_OPTIONS, ORDER_STATUS_LABEL, ORDER_STATUS_TRANSITIONS } from "./types/order-status";
 export type { OrderStatus } from "./types/order-status";

@@ -1,3 +1,11 @@
+import { getDeliveryMethodByCode, resolveDeliveryFee } from "@/features/delivery-methods";
+import { getPaymentMethodByCode, isPaymentMethodEligible } from "@/features/payment-methods";
+// Đi thẳng vào service của Catalog (không qua barrel Admin) — lý do xem
+// features/menu/services/menu.service.ts. Đây là nguồn giá SẢN PHẨM duy nhất
+// được tin cậy khi tạo Order (xem CreateOrderInput bên dưới).
+import { getProductById } from "@/features/products/services/product.service";
+import { listMedia } from "@/features/media/services/media.service";
+
 import { SEED_ORDERS } from "../mocks/order.mock";
 import { ORDER_STATUS_TRANSITIONS, type OrderStatus } from "../types/order-status";
 import type { PaymentStatus } from "../types/payment-status";
@@ -6,6 +14,7 @@ import type { ManagedOrder } from "../types/order.types";
 
 const STORAGE_KEY = "tayho-admin-orders";
 const MOCK_DELAY_MS = 300;
+const DEFAULT_PRODUCT_IMAGE = "/images/banh-cuon-dish.jpg";
 
 function delay(): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, MOCK_DELAY_MS));
@@ -46,33 +55,92 @@ export async function getOrderById(id: string): Promise<ManagedOrder | undefined
   return readStore().find((order) => order.id === id);
 }
 
+export type CreateOrderItemInput = {
+  productId: string;
+  quantity: number;
+  note?: string;
+};
+
 export type CreateOrderInput = {
   customerId: string | null;
   customerName: string;
   phone: string;
   email?: string;
   deliveryAddressSnapshot: string;
+  /** Chỉ truyền code — nhãn hiển thị và phí giao hàng do service tự tra cứu lại, không tin Frontend. */
   paymentMethodCode: string;
-  paymentMethodLabel: string;
   deliveryMethodCode: string;
-  deliveryMethodLabel: string;
-  items: OrderItem[];
+  /** Chỉ truyền productId + quantity — tên/ảnh/đơn giá do service tự tra cứu lại từ Catalog, không tin Frontend. */
+  items: CreateOrderItemInput[];
   discount?: number;
-  deliveryFee?: number;
   note?: string;
 };
 
 /**
- * Backend/API phải tính lại tổng tiền — không tin subtotal/totalAmount gửi
- * từ Frontend. Hàm này tự cộng lại từ items để mô phỏng đúng quy tắc đó.
+ * Tra cứu lại tên/ảnh/đơn giá thật từ Catalog (features/products) theo
+ * productId — KHÔNG tin unitPrice/productName do Frontend (giỏ hàng ở
+ * localStorage, có thể bị chỉnh sửa) gửi lên. Đây là nơi duy nhất quyết
+ * định giá một dòng hàng khi tạo Order.
+ */
+async function resolveOrderItems(itemInputs: CreateOrderItemInput[]): Promise<OrderItem[]> {
+  const mediaList = await listMedia();
+  const mediaById = new Map(mediaList.map((media) => [media.id, media]));
+
+  return Promise.all(
+    itemInputs.map(async (input) => {
+      if (!Number.isInteger(input.quantity) || input.quantity <= 0) {
+        throw new Error("Số lượng sản phẩm không hợp lệ.");
+      }
+
+      const product = await getProductById(input.productId);
+      if (!product || product.status !== "active") {
+        throw new Error(`Sản phẩm không khả dụng: ${input.productId}`);
+      }
+
+      const media = product.mediaIds[0] ? mediaById.get(product.mediaIds[0]) : undefined;
+
+      const item: OrderItem = {
+        productId: product.id,
+        productName: product.name,
+        productImage: media?.url ?? DEFAULT_PRODUCT_IMAGE,
+        unitPrice: product.price,
+        quantity: input.quantity,
+        lineTotal: product.price * input.quantity,
+        note: input.note,
+      };
+      return item;
+    }),
+  );
+}
+
+/**
+ * Backend/API phải tính lại tổng tiền — không tin subtotal/totalAmount/phí
+ * giao hàng/đơn giá sản phẩm gửi từ Frontend. Hàm này tự tra cứu lại từng
+ * dòng hàng từ Catalog (resolveOrderItems), tự cộng lại subtotal, và tự tra
+ * cứu PaymentMethod/DeliveryMethod theo code (thay vì tin fee/label do
+ * Checkout gửi lên) để tính deliveryFee + validate điều kiện áp dụng.
  */
 export async function createOrder(input: CreateOrderInput): Promise<ManagedOrder> {
   await delay();
   const existing = readStore();
   const now = new Date().toISOString();
-  const subtotal = input.items.reduce((sum, item) => sum + item.lineTotal, 0);
+  const items = await resolveOrderItems(input.items);
+  const subtotal = items.reduce((sum, item) => sum + item.lineTotal, 0);
   const discount = input.discount ?? 0;
-  const deliveryFee = input.deliveryFee ?? 0;
+
+  const deliveryMethod = await getDeliveryMethodByCode(input.deliveryMethodCode);
+  if (!deliveryMethod || !deliveryMethod.isActive) {
+    throw new Error("Phương thức giao hàng không khả dụng.");
+  }
+  const deliveryFee = resolveDeliveryFee(deliveryMethod, subtotal);
+
+  const paymentMethod = await getPaymentMethodByCode(input.paymentMethodCode);
+  if (!paymentMethod || !paymentMethod.isActive) {
+    throw new Error("Phương thức thanh toán không khả dụng.");
+  }
+  if (!isPaymentMethodEligible(paymentMethod, subtotal)) {
+    throw new Error("Đơn hàng không đủ điều kiện áp dụng phương thức thanh toán này.");
+  }
 
   const order: ManagedOrder = {
     id: `order-${Date.now()}`,
@@ -82,11 +150,11 @@ export async function createOrder(input: CreateOrderInput): Promise<ManagedOrder
     phone: input.phone,
     email: input.email,
     deliveryAddressSnapshot: input.deliveryAddressSnapshot,
-    paymentMethodCode: input.paymentMethodCode,
-    paymentMethodLabel: input.paymentMethodLabel,
-    deliveryMethodCode: input.deliveryMethodCode,
-    deliveryMethodLabel: input.deliveryMethodLabel,
-    items: input.items,
+    paymentMethodCode: paymentMethod.code,
+    paymentMethodLabel: paymentMethod.name,
+    deliveryMethodCode: deliveryMethod.code,
+    deliveryMethodLabel: deliveryMethod.name,
+    items,
     statusHistory: [{ fromStatus: null, toStatus: "pending", changedAt: now, changedBy: "Khách hàng" }],
     subtotal,
     discount,

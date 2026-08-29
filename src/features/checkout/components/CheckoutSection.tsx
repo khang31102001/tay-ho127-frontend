@@ -1,8 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import type { CheckoutOrderPayload, ShippingMethod, PaymentMethod } from "../types/checkout.types";
-import { SHIPPING_LABELS, PAYMENT_LABELS } from "../types/checkout.types";
 import { RadioOption } from "@/components/ui/RadioOption";
 import { useCart } from "@/features/cart";
 import { formatCurrency } from "@/lib/format-currency";
@@ -10,11 +8,14 @@ import { StatusPopup } from "@/components/shared/StatusPopup";
 import MenuBackgroundDecoration from "@/components/ui/MenuBackgroundDecoration";
 import { useCheckoutForm } from "../hooks/useCheckoutForm";
 
-export interface CheckoutSectionProps {
-  onSubmitOrder?: (order: CheckoutOrderPayload) => Promise<void> | void;
+function formatEstimate(minMinutes?: number, maxMinutes?: number): string | null {
+  if (minMinutes === undefined && maxMinutes === undefined) return null;
+  if (minMinutes !== undefined && maxMinutes !== undefined) return `${minMinutes}–${maxMinutes} phút`;
+  return `${minMinutes ?? maxMinutes} phút`;
 }
-export function CheckoutSection({ onSubmitOrder }: CheckoutSectionProps) {
-  const { cartItems, totalPrice, updateQuantity, removeFromCart } = useCart();
+
+export function CheckoutSection() {
+  const { cartItems, totalPrice, updateQuantity, removeFromCart, clearCart } = useCart();
 
   const {
     form,
@@ -23,11 +24,18 @@ export function CheckoutSection({ onSubmitOrder }: CheckoutSectionProps) {
     setPopup,
     isSubmitting,
     totals,
+    deliveryMethods,
+    paymentMethods,
+    selectedDeliveryMethod,
+    selectedPaymentMethod,
+    isLoadingMethods,
     updateFormField,
     handleTextInputChange,
     handleSubmit,
     getInputClass,
-  } = useCheckoutForm({ cartItems, totalPrice, onSubmitOrder });
+  } = useCheckoutForm({ cartItems, totalPrice, clearCart });
+
+  const isPickup = selectedDeliveryMethod?.type === "pickup";
 
   return (
     <div className="relative isolate w-full pb-40 pt-24  bg-[#ff9418] min-h-screen px-5 py-28 md:px-0">
@@ -156,25 +164,32 @@ export function CheckoutSection({ onSubmitOrder }: CheckoutSectionProps) {
               )}
             </label>
 
-            <label className="block">
-              <span className="sr-only">Địa chỉ giao hàng</span>
+            {isPickup ? (
+              <div className="rounded-xl border border-[#0f9b55] bg-brand-cream/40 px-4 py-3 text-[13px]">
+                <p className="font-bold text-brand-greenDark">Địa chỉ nhận hàng</p>
+                <p className="mt-0.5">{selectedDeliveryMethod?.pickupAddress ?? "Cửa hàng"}</p>
+              </div>
+            ) : (
+              <label className="block">
+                <span className="sr-only">Địa chỉ giao hàng</span>
 
-              <input
-                type="text"
-                name="address"
-                value={form.address}
-                onChange={handleTextInputChange}
-                placeholder="Địa chỉ giao hàng"
-                autoComplete="street-address"
-                className={getInputClass(Boolean(formErrors.address))}
-              />
+                <input
+                  type="text"
+                  name="address"
+                  value={form.address}
+                  onChange={handleTextInputChange}
+                  placeholder="Địa chỉ giao hàng"
+                  autoComplete="street-address"
+                  className={getInputClass(Boolean(formErrors.address))}
+                />
 
-              {formErrors.address && (
-                <span className="mt-1 block px-3 text-xs text-red-500">
-                  {formErrors.address}
-                </span>
-              )}
-            </label>
+                {formErrors.address && (
+                  <span className="mt-1 block px-3 text-xs text-red-500">
+                    {formErrors.address}
+                  </span>
+                )}
+              </label>
+            )}
 
             <label className="block">
               <span className="sr-only">Ghi chú đơn hàng</span>
@@ -190,79 +205,105 @@ export function CheckoutSection({ onSubmitOrder }: CheckoutSectionProps) {
           </div>
         </section>
 
-        {/* Phí giao hàng */}
+        {/* Hình thức nhận hàng — lấy động từ Admin (features/delivery-methods), không hard-code */}
         <section className="rounded-lg bg-white p-7 shadow-soft">
           <h2 className="mb-4 text-[18px] font-black text-brand-green">
-            PHÍ SHIP
+            HÌNH THỨC NHẬN HÀNG
           </h2>
 
-          <div className="grid gap-4 text-[13px] md:grid-cols-[1fr_1fr_110px]">
-            <p>Thời gian giao dự kiến: khoảng 1 tiếng</p>
+          {isLoadingMethods ? (
+            <p className="text-[13px] text-[#4b4b4b]">Đang tải hình thức nhận hàng...</p>
+          ) : (
+            <div className="grid gap-4 text-[13px] md:grid-cols-[1fr_110px]">
+              <div className="space-y-3">
+                {deliveryMethods.map((method) => {
+                  const estimate = formatEstimate(method.estimatedMinMinutes, method.estimatedMaxMinutes);
+                  return (
+                    <RadioOption<string>
+                      key={method.id}
+                      name="deliveryMethodId"
+                      value={method.id}
+                      checked={form.deliveryMethodId === method.id}
+                      onChange={(value) => updateFormField("deliveryMethodId", value)}
+                      label={
+                        <span>
+                          {method.name}
+                          {estimate && <span className="text-[#4b4b4b]"> · {estimate}</span>}
+                          {method.freeShippingThreshold !== undefined && (
+                            <span className="block text-[11px] text-[#4b4b4b]">
+                              Miễn phí cho đơn từ {formatCurrency(method.freeShippingThreshold)}
+                            </span>
+                          )}
+                        </span>
+                      }
+                    />
+                  );
+                })}
+              </div>
 
-            <div className="space-y-3">
-              <RadioOption<ShippingMethod>
-                name="shippingMethod"
-                value="within_5km"
-                checked={form.shippingMethod === "within_5km"}
-                onChange={(value) => updateFormField("shippingMethod", value)}
-                label={SHIPPING_LABELS.within_5km}
-              />
-
-              <RadioOption<ShippingMethod>
-                name="shippingMethod"
-                value="over_5km"
-                checked={form.shippingMethod === "over_5km"}
-                onChange={(value) => updateFormField("shippingMethod", value)}
-                label={SHIPPING_LABELS.over_5km}
-              />
+              <div className="text-left font-black md:text-right">
+                {totals.shippingFee === 0 ? (
+                  <p className="text-brand-green">Freeship!</p>
+                ) : (
+                  <p className="text-brand-red">
+                    {formatCurrency(totals.shippingFee)}
+                  </p>
+                )}
+              </div>
             </div>
-
-            <div className="text-left font-black md:text-right">
-              {totals.shippingFee === 0 ? (
-                <p className="text-brand-green">Freeship!</p>
-              ) : (
-                <p className="text-brand-red">
-                  {formatCurrency(totals.shippingFee)}
-                </p>
-              )}
-            </div>
-          </div>
+          )}
         </section>
 
-        {/* Phương thức thanh toán */}
+        {/* Phương thức thanh toán — lấy động từ Admin (features/payment-methods), không hard-code */}
         <section className="rounded-lg bg-white p-7 shadow-soft">
           <h2 className="mb-4 text-[18px] font-black text-brand-green">
             PHƯƠNG THỨC THANH TOÁN
           </h2>
 
-          <div className="grid gap-3 text-[13px] md:grid-cols-2">
-            <RadioOption<PaymentMethod>
-              name="paymentMethod"
-              value="cash"
-              checked={form.paymentMethod === "cash"}
-              onChange={(value) => updateFormField("paymentMethod", value)}
-              label={PAYMENT_LABELS.cash}
-            />
+          {isLoadingMethods ? (
+            <p className="text-[13px] text-[#4b4b4b]">Đang tải phương thức thanh toán...</p>
+          ) : (
+            <div className="grid gap-3 text-[13px] md:grid-cols-2">
+              {paymentMethods.map((method) => (
+                <RadioOption<string>
+                  key={method.id}
+                  name="paymentMethodId"
+                  value={method.id}
+                  checked={form.paymentMethodId === method.id}
+                  onChange={(value) => updateFormField("paymentMethodId", value)}
+                  label={
+                    <span>
+                      {method.name}
+                      {method.minOrderAmount !== undefined && (
+                        <span className="block text-[11px] text-[#4b4b4b]">
+                          Áp dụng cho đơn từ {formatCurrency(method.minOrderAmount)}
+                        </span>
+                      )}
+                    </span>
+                  }
+                />
+              ))}
+            </div>
+          )}
 
-            <RadioOption<PaymentMethod>
-              name="paymentMethod"
-              value="bank_transfer"
-              checked={form.paymentMethod === "bank_transfer"}
-              onChange={(value) => updateFormField("paymentMethod", value)}
-              label={PAYMENT_LABELS.bank_transfer}
-            />
-          </div>
-
-          {form.paymentMethod === "bank_transfer" && (
+          {selectedPaymentMethod?.bankAccountNumber && (
             <div className="mt-4 rounded-lg bg-gray-50 p-4 text-[13px] leading-6">
               <p className="font-bold text-brand-greenDark">
                 Thông tin chuyển khoản
               </p>
 
-              <p>Ngân hàng: MB Bank</p>
-              <p>Số tài khoản: 0000000000</p>
-              <p>Chủ tài khoản: TÂY HỒ FOOD</p>
-              <p>Nội dung: Tên khách hàng + số điện thoại</p>
+              {selectedPaymentMethod.bankName && <p>Ngân hàng: {selectedPaymentMethod.bankName}</p>}
+              <p>Số tài khoản: {selectedPaymentMethod.bankAccountNumber}</p>
+              {selectedPaymentMethod.bankAccountHolder && (
+                <p>Chủ tài khoản: {selectedPaymentMethod.bankAccountHolder}</p>
+              )}
+              {selectedPaymentMethod.instructions && <p>{selectedPaymentMethod.instructions}</p>}
+            </div>
+          )}
+
+          {selectedPaymentMethod?.instructions && !selectedPaymentMethod.bankAccountNumber && (
+            <div className="mt-4 rounded-lg bg-gray-50 p-4 text-[13px] leading-6 text-[#4b4b4b]">
+              {selectedPaymentMethod.instructions}
             </div>
           )}
         </section>
@@ -303,8 +344,6 @@ export function CheckoutSection({ onSubmitOrder }: CheckoutSectionProps) {
           </div>
         )}
 
-
-
         {/* Xác nhận đặt hàng */}
         <div className="flex flex-col items-stretch justify-end gap-5 py-10 text-white sm:flex-row sm:items-center sm:gap-8">
           <strong className="text-[24px]">
@@ -313,7 +352,7 @@ export function CheckoutSection({ onSubmitOrder }: CheckoutSectionProps) {
 
           <button
             type="submit"
-            disabled={cartItems.length === 0 || isSubmitting}
+            disabled={cartItems.length === 0 || isSubmitting || isLoadingMethods}
             className="rounded-md bg-brand-red px-12 py-4 text-[16px] font-black disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSubmitting ? "ĐANG XỬ LÝ..." : "ĐẶT ĐƠN"}
@@ -337,17 +376,11 @@ export function CheckoutSection({ onSubmitOrder }: CheckoutSectionProps) {
             label: "Đóng",
             variant: "secondary",
           },
-
         ]}
         onActionError={(error) => {
           console.error("Không thể thực hiện:", error);
         }}
-      >
-        <div>
-          <strong>Mã tham chiếu:</strong>{" "}
-          ERR-API-20260805
-        </div>
-      </StatusPopup>
+      />
     </div>
   );
 }

@@ -41,6 +41,10 @@ const navItems = [
     href: "/menu",
     label: "Thực đơn",
   },
+  {
+    href: "/tin-tuc",
+    label: "Tin tức",
+  },
 ];
 
 /* =================================================

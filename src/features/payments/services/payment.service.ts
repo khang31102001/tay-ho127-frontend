@@ -39,6 +39,50 @@ export async function getPaymentById(id: string): Promise<ManagedPayment | undef
   return readStore().find((payment) => payment.id === id);
 }
 
+export type CreatePaymentInput = {
+  orderId: string;
+  orderCode: string;
+  paymentMethodCode: string;
+  paymentMethodLabel: string;
+  amount: number;
+};
+
+/**
+ * Tạo Payment ban đầu (status "pending") ngay sau khi Order được tạo —
+ * gọi từ Checkout (features/checkout), KHÔNG gọi từ trong order.service.ts,
+ * để tránh phụ thuộc vòng features/orders <-> features/payments (payments
+ * đã phụ thuộc orders qua updateOrderPaymentStatus).
+ */
+export async function createPayment(input: CreatePaymentInput): Promise<ManagedPayment> {
+  await delay();
+  const now = new Date().toISOString();
+  const payment: ManagedPayment = {
+    id: `payment-${Date.now()}`,
+    orderId: input.orderId,
+    orderCode: input.orderCode,
+    paymentMethodCode: input.paymentMethodCode,
+    paymentMethodLabel: input.paymentMethodLabel,
+    amount: input.amount,
+    status: "pending",
+    paidAt: null,
+    failedAt: null,
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  writeStore([...readStore(), payment]);
+
+  await appendTransaction({
+    paymentId: payment.id,
+    action: "created",
+    result: "success",
+    changedBy: "Hệ thống",
+    message: "Khởi tạo giao dịch từ đơn hàng mới.",
+  });
+
+  return payment;
+}
+
 const TRANSITION_ACTION: Record<PaymentStatus, PaymentTransactionAction> = {
   pending: "retry",
   paid: "charge",

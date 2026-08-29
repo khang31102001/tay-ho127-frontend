@@ -1,7 +1,8 @@
 export { PaymentsExplorer } from "./components/PaymentsExplorer";
 export { PaymentDetail } from "./components/PaymentDetail";
 
-export { listPayments, getPaymentById, transitionPayment } from "./services/payment.service";
+export { listPayments, getPaymentById, createPayment, transitionPayment } from "./services/payment.service";
+export type { CreatePaymentInput } from "./services/payment.service";
 export { listTransactionsByPaymentId } from "./services/payment-transaction.service";
 
 export { PAYMENT_TRANSITIONS } from "./types/payment-transitions";
