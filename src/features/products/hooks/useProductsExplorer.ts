@@ -46,7 +46,9 @@ export function useProductsExplorer() {
 
   return {
     rows,
+    categories,
     isLoading,
     handleDelete,
+    reload: loadProducts,
   };
 }

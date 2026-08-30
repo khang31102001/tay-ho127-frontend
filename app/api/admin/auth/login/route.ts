@@ -50,6 +50,9 @@ export async function POST(request: Request) {
         id: "admin-demo-001",
         name: "Quản trị viên",
         email: DEMO_ADMIN_ACCOUNT.email,
+        // MOCK CONTRACT: tài khoản demo duy nhất, cấp toàn bộ permission hiện có
+        // (xem PERMISSION_OPTIONS ở src/features/roles/types/role.types.ts).
+        permissions: ["menu:manage", "user:manage", "role:manage", "order:manage"],
       },
       accessToken: "mock-access-token-admin",
     },

@@ -66,6 +66,8 @@ export interface Price {
 // Helper type for UI mapping (Product card)
 export type UiProduct = {
   id: number;
+  /** Định danh ổn định của Product (ManagedProduct.id), dùng để điều hướng sang trang chi tiết `/thuc-don/[slug]`. */
+  slug: string;
   name: string;
   category: "Món mặn" | "Món chay" | "Ăn kèm" | string;
   price: number;
@@ -74,4 +76,14 @@ export type UiProduct = {
   rating: number;
   ratingCount: number;
   image: string;
+};
+
+/**
+ * Dữ liệu hiển thị cho trang chi tiết sản phẩm (`/thuc-don/[slug]`).
+ * Khác `UiProduct` ở chỗ `id` là định danh thật (string) thay vì số thứ tự,
+ * vì trang chi tiết được truy cập trực tiếp qua slug, không có vị trí trong danh sách.
+ */
+export type ProductDetail = Omit<UiProduct, "id"> & {
+  id: string;
+  description?: string;
 };

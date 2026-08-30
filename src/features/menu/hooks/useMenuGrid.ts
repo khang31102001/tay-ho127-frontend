@@ -94,6 +94,8 @@ export function useMenuGrid(groups: MenuResponse["data"]["menu"]["groups"]) {
                    */
                   id: mappedItems.length + 1,
 
+                  slug: product.slug || product.id,
+
                   name:
                     product.name?.vi ||
                     product.name?.en ||

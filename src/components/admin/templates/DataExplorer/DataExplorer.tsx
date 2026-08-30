@@ -5,6 +5,7 @@ import { Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 
 import { StatusPopup } from "@/components/shared/StatusPopup";
+import { Pagination } from "@/components/ui/Pagination";
 
 import { useDataExplorer } from "./useDataExplorer";
 
@@ -31,6 +32,12 @@ export type DataExplorerProps<T> = {
   editHref?: (row: T) => string;
   onDelete?: (row: T) => Promise<void> | void;
   emptyState?: ReactNode;
+  /** Nút/hành động phụ đặt cạnh nút "Thêm mới" (vd. Import/Export). Domain tự quyết định có hay không. */
+  toolbarActions?: ReactNode;
+  /** Số dòng/trang — không truyền = giữ nguyên hành vi cũ (hiện toàn bộ danh sách, không phân trang). */
+  pageSize?: number;
+  /** Từ khóa tìm kiếm ban đầu, dùng cho deep-link từ màn khác. */
+  initialSearchTerm?: string;
 };
 
 /**
@@ -50,11 +57,18 @@ export function DataExplorer<T>({
   editHref,
   onDelete,
   emptyState,
+  toolbarActions,
+  pageSize,
+  initialSearchTerm,
 }: DataExplorerProps<T>) {
-  const { searchTerm, setSearchTerm, filteredRows } = useDataExplorer({
+  const { searchTerm, setSearchTerm, filteredRows, paginatedRows, page, setPage } = useDataExplorer({
     rows,
     getSearchableText,
+    pageSize,
+    initialSearchTerm,
   });
+
+  const visibleRows = pageSize ? paginatedRows : filteredRows;
 
   const [pendingDeleteRow, setPendingDeleteRow] = useState<T | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -71,15 +85,19 @@ export function DataExplorer<T>({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-[20px] font-black text-brand-greenDark">{title}</h1>
 
-        {createHref && (
-          <Link
-            href={createHref}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-brand-red px-4 py-2.5 text-[14px] font-bold text-white transition hover:bg-brand-redDark"
-          >
-            <Plus className="size-4" />
-            {createLabel}
-          </Link>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {toolbarActions}
+
+          {createHref && (
+            <Link
+              href={createHref}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-brand-red px-4 py-2.5 text-[14px] font-bold text-white transition hover:bg-brand-redDark"
+            >
+              <Plus className="size-4" />
+              {createLabel}
+            </Link>
+          )}
+        </div>
       </div>
 
       <div className="mt-4 flex items-center gap-2 rounded-lg border border-brand-line bg-white px-4 py-2.5">
@@ -133,7 +151,7 @@ export function DataExplorer<T>({
                 </td>
               </tr>
             ) : (
-              filteredRows.map((row) => (
+              visibleRows.map((row) => (
                 <tr
                   key={getRowId(row)}
                   className="border-b border-brand-line last:border-b-0"
@@ -178,6 +196,15 @@ export function DataExplorer<T>({
           </tbody>
         </table>
       </div>
+
+      {pageSize && filteredRows.length > 0 && (
+        <Pagination
+          page={page}
+          pageSize={pageSize}
+          totalItems={filteredRows.length}
+          onPageChange={setPage}
+        />
+      )}
 
       <StatusPopup
         open={pendingDeleteRow !== null}

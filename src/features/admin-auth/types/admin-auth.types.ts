@@ -1,7 +1,11 @@
+import type { PermissionKey } from "@/features/roles";
+
 export type AdminUser = {
   id: string;
   name: string;
   email: string;
+  /** Quyền của admin đang đăng nhập — dùng để gate các tính năng như Import/Export. */
+  permissions: PermissionKey[];
 };
 
 export type AdminLoginCredentials = {
