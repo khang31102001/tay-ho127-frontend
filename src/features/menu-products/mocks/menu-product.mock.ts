@@ -68,4 +68,11 @@ export const SEED_MENU_PRODUCTS: ManagedMenuProduct[] = [
   { id: "mp-myt-10", menuId: "menu-mon-yeu-thich", productId: "product-bc004", sortOrder: 10, isAvailable: true },
   { id: "mp-myt-11", menuId: "menu-mon-yeu-thich", productId: "product-bc006", sortOrder: 11, isAvailable: true },
   { id: "mp-myt-12", menuId: "menu-mon-yeu-thich", productId: "product-mi012", sortOrder: 12, isAvailable: true },
+
+  // ================= menu-goi-y-them (5 món, section "Có thể bạn muốn dùng thêm" ở Cart Page) =================
+  { id: "mp-gyt-01", menuId: "menu-goi-y-them", productId: "product-tp001", sortOrder: 1, isAvailable: true },
+  { id: "mp-gyt-02", menuId: "menu-goi-y-them", productId: "product-tp002", sortOrder: 2, isAvailable: true },
+  { id: "mp-gyt-03", menuId: "menu-goi-y-them", productId: "product-tp003", sortOrder: 3, isAvailable: true },
+  { id: "mp-gyt-04", menuId: "menu-goi-y-them", productId: "product-du001", sortOrder: 4, isAvailable: true },
+  { id: "mp-gyt-05", menuId: "menu-goi-y-them", productId: "product-du005", sortOrder: 5, isAvailable: true },
 ];

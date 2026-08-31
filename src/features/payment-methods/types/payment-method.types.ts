@@ -1,9 +1,17 @@
-export const PAYMENT_METHOD_TYPE_OPTIONS = [
-  { value: "offline", label: "Ngoại tuyến (COD / Chuyển khoản tay)" },
-  { value: "online", label: "Trực tuyến (Cổng thanh toán)" },
+/**
+ * 4 nhóm PHƯƠNG THỨC THANH TOÁN chuẩn hóa (Phase 0 đã chốt) — không dùng
+ * nhị phân online/offline như trước vì gộp nhầm bản chất khác nhau (vd. Apple
+ * Pay không thuộc nhóm "Chuyển khoản ngân hàng"). Admin có thể thêm nhiều
+ * PaymentMethod cùng 1 group (vd. 2 gateway "card" khác nhau).
+ */
+export const PAYMENT_METHOD_GROUP_OPTIONS = [
+  { value: "cod", label: "Tiền mặt khi nhận hàng (COD)" },
+  { value: "card", label: "Thẻ / Cổng thanh toán quốc tế (Visa, Mastercard, Apple Pay)" },
+  { value: "bank_transfer", label: "Chuyển khoản ngân hàng / QR" },
+  { value: "e_wallet", label: "Ví điện tử (Momo, ZaloPay...)" },
 ] as const;
 
-export type PaymentMethodType = (typeof PAYMENT_METHOD_TYPE_OPTIONS)[number]["value"];
+export type PaymentMethodGroup = (typeof PAYMENT_METHOD_GROUP_OPTIONS)[number]["value"];
 
 /**
  * PaymentMethod = lựa chọn thanh toán Admin cấu hình để hiển thị ở Checkout
@@ -21,8 +29,8 @@ export type ManagedPaymentMethod = {
   name: string;
   description?: string;
   iconMediaId: string | null;
-  type: PaymentMethodType;
-  /** Chỉ có ý nghĩa khi type = "online" (vd. "vnpay", "momo", "zalopay", "stripe"). */
+  group: PaymentMethodGroup;
+  /** Chỉ có ý nghĩa khi group = "card" hoặc "e_wallet" (vd. "vnpay", "momo", "zalopay", "stripe"). */
   gateway?: string;
   /** Hướng dẫn hiển thị ở Checkout (vd. nội dung chuyển khoản, lưu ý khi nhận COD). */
   instructions?: string;

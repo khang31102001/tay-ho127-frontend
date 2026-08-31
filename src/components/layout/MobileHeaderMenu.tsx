@@ -231,51 +231,69 @@ export default function MobileHeaderMenu({
               Account
           ==================================================== */}
 
-          <button
-            type="button"
-            onClick={handleLoginClick}
-            className={`
-              mt-4 flex w-full items-center gap-3
-              rounded-xl px-4 py-3.5
-              text-left text-[15px] font-bold
-              transition-colors
-              ${
-                isDark
-                  ? "bg-white/10 hover:bg-white/15"
-                  : "bg-brand-greenDark/5 hover:bg-brand-greenDark/10"
-              }
-            `}
-          >
-            <span
+          {currentUser ? (
+            <Link
+              href="/tai-khoan/don-hang"
+              onClick={() => setMenuOpen(false)}
               className={`
-                flex size-10 shrink-0 items-center justify-center
-                rounded-full
+                mt-4 flex w-full items-center gap-3
+                rounded-xl px-4 py-3.5
+                text-left text-[15px] font-bold
+                transition-colors
                 ${
                   isDark
-                    ? "bg-white/10"
-                    : "bg-brand-greenDark/10"
+                    ? "bg-white/10 hover:bg-white/15"
+                    : "bg-brand-greenDark/5 hover:bg-brand-greenDark/10"
                 }
               `}
             >
-              {currentUser ? (
+              <span
+                className={`
+                  flex size-10 shrink-0 items-center justify-center
+                  rounded-full
+                  ${isDark ? "bg-white/10" : "bg-brand-greenDark/10"}
+                `}
+              >
                 <UserRound className="size-5" />
-              ) : (
+              </span>
+
+              <span className="flex min-w-0 flex-col">
+                <span className="text-xs font-medium opacity-60">Tài khoản</span>
+                <span className="truncate">{currentUser.name}</span>
+              </span>
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={handleLoginClick}
+              className={`
+                mt-4 flex w-full items-center gap-3
+                rounded-xl px-4 py-3.5
+                text-left text-[15px] font-bold
+                transition-colors
+                ${
+                  isDark
+                    ? "bg-white/10 hover:bg-white/15"
+                    : "bg-brand-greenDark/5 hover:bg-brand-greenDark/10"
+                }
+              `}
+            >
+              <span
+                className={`
+                  flex size-10 shrink-0 items-center justify-center
+                  rounded-full
+                  ${isDark ? "bg-white/10" : "bg-brand-greenDark/10"}
+                `}
+              >
                 <LogIn className="size-5" />
-              )}
-            </span>
-
-            <span className="flex min-w-0 flex-col">
-              <span className="text-xs font-medium opacity-60">
-                {currentUser ? "Tài khoản" : "Thành viên"}
               </span>
 
-              <span className="truncate">
-                {currentUser
-                  ? currentUser.name
-                  : "Đăng nhập"}
+              <span className="flex min-w-0 flex-col">
+                <span className="text-xs font-medium opacity-60">Thành viên</span>
+                <span className="truncate">Đăng nhập</span>
               </span>
-            </span>
-          </button>
+            </button>
+          )}
 
           {/* ====================================================
               Cart

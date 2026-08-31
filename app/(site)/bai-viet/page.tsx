@@ -9,11 +9,13 @@ import { Container } from "@/components/ui/Container";
 import { listPublishedArticles } from "@/features/articles/services/article.service";
 import { listMedia } from "@/features/media/services/media.service";
 import { listArticleCategories } from "@/features/article-categories/services/article-category.service";
+import { buildMetadata } from "@/lib/seo/build-metadata";
 
-export const metadata = {
-  title: "Bài viết | Bánh Cuốn Tây Hồ 127",
+export const metadata = buildMetadata({
+  title: "Bài viết",
   description: "Công thức, câu chuyện thương hiệu và tin tức từ Bánh Cuốn Tây Hồ 127.",
-};
+  path: "/bai-viet",
+});
 
 export default async function ArticleListPage() {
   const [articles, mediaList, categories] = await Promise.all([

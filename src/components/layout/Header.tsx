@@ -15,10 +15,15 @@ import {
   useMiniCart,
 } from "@/features/cart";
 import { useScrollThreshold } from "@/hooks/useScrollThreshold";
-import { AuthModal, type AuthUser } from "@/features/auth";
+import { AuthModal, useAuth, type AuthUser } from "@/features/auth";
 
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import MobileHeaderMenu from "./MobileHeaderMenu";
+// Import thẳng hook + type (không qua barrel @/features/navigation) — barrel
+// đó re-export cả Explorer/Editor/Tree admin (UI "use client"), import qua
+// barrel ở Header (Site) sẽ kéo UI admin vào bundle Site.
+import { useLiveNavigation } from "@/features/navigation/hooks/useLiveNavigation";
+import type { NavigationItem } from "@/features/navigation/types/navigation.types";
 
 /* =================================================
  * TYPES
@@ -26,26 +31,19 @@ import MobileHeaderMenu from "./MobileHeaderMenu";
 
 type HeaderProps = {
   variant?: "dark" | "light";
+  /**
+   * Lấy động từ Navigation module (features/navigation) — do
+   * app/(site)/layout.tsx (Server Component) fetch qua
+   * navigationApi.getByLocation("header") rồi truyền xuống làm giá trị KHỞI
+   * TẠO (SSR, không nháy lần đầu). Header tự refetch lại 1 lần khi mount qua
+   * useLiveNavigation để đồng bộ thay đổi Admin vừa lưu trong CÙNG session
+   * (xem chú thích trong hook — SSR không đọc được localStorage của mock).
+   * KHÔNG hard-code danh sách ở đây nữa. MobileHeaderMenu tái sử dụng chung
+   * danh sách này (vị trí "mobile" tồn tại riêng trong mock cho tương lai
+   * nếu mobile cần khác desktop, hiện tại Header vẫn dùng chung 1 nguồn).
+   */
+  navItems: NavigationItem[];
 };
-
-/* =================================================
- * CONSTANTS
- * =============================================== */
-
-const navItems = [
-  {
-    href: "/",
-    label: "Trang chủ",
-  },
-  {
-    href: "/menu",
-    label: "Thực đơn",
-  },
-  {
-    href: "/tin-tuc",
-    label: "Tin tức",
-  },
-];
 
 /* =================================================
  * HEADER
@@ -53,10 +51,13 @@ const navItems = [
 
 export function Header({
   variant = "light",
+  navItems: initialNavItems,
 }: HeaderProps) {
+  const liveNavItems = useLiveNavigation("header", initialNavItems);
+  const navItems = liveNavItems.map((item) => ({ href: item.url ?? "#", label: item.label }));
+
   const [loginOpen, setLoginOpen] = useState(false);
-  const [currentUser, setCurrentUser] =
-    useState<AuthUser | null>(null);
+  const { user: currentUser, login } = useAuth();
 
   const isScrolled = useScrollThreshold();
 
@@ -84,7 +85,7 @@ export function Header({
    * =============================================== */
 
   function handleAuthenticated(user: AuthUser) {
-    setCurrentUser(user);
+    login(user);
     setLoginOpen(false);
   }
 
@@ -261,33 +262,50 @@ export function Header({
              * ĐĂNG NHẬP
              * =============================================== */}
 
-            <button
-              type="button"
-              onClick={() =>
-                setLoginOpen(true)
-              }
-              className="
-                hidden
-                items-center
-                gap-1.5
-                whitespace-nowrap
+            {currentUser ? (
+              <Link
+                href="/tai-khoan/don-hang"
+                className="
+                  hidden
+                  items-center
+                  gap-1.5
+                  whitespace-nowrap
 
-                transition-opacity
-                duration-200
+                  transition-opacity
+                  duration-200
 
-                hover:opacity-70
+                  hover:opacity-70
 
-                md:inline-flex
-              "
-            >
-              <UserRound className="size-[18px]" />
+                  md:inline-flex
+                "
+              >
+                <UserRound className="size-[18px]" />
+                <span>{currentUser.name}</span>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() =>
+                  setLoginOpen(true)
+                }
+                className="
+                  hidden
+                  items-center
+                  gap-1.5
+                  whitespace-nowrap
 
-              <span>
-                {currentUser
-                  ? currentUser.name
-                  : "Đăng nhập"}
-              </span>
-            </button>
+                  transition-opacity
+                  duration-200
+
+                  hover:opacity-70
+
+                  md:inline-flex
+                "
+              >
+                <UserRound className="size-[18px]" />
+                <span>Đăng nhập</span>
+              </button>
+            )}
 
             {/* =================================================
              * MOBILE MENU

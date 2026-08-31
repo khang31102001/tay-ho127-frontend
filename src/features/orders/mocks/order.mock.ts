@@ -21,6 +21,7 @@ export const SEED_ORDERS: ManagedOrder[] = [
     paymentMethodLabel: "Tiền mặt khi nhận hàng",
     deliveryMethodCode: "delivery",
     deliveryMethodLabel: "Giao tận nơi",
+    isPickup: false,
     items: [
       {
         productId: "product-bc001",
@@ -40,6 +41,7 @@ export const SEED_ORDERS: ManagedOrder[] = [
     totalAmount: 112_000,
     orderStatus: "pending",
     paymentStatus: "pending",
+    wantsUtensils: true,
     createdAt: "2026-02-20T08:00:00.000Z",
     updatedAt: "2026-02-20T08:00:00.000Z",
     completedAt: null,
@@ -57,6 +59,7 @@ export const SEED_ORDERS: ManagedOrder[] = [
     paymentMethodLabel: "Chuyển khoản ngân hàng",
     deliveryMethodCode: "delivery",
     deliveryMethodLabel: "Giao tận nơi",
+    isPickup: false,
     items: [
       {
         productId: "product-bc003",
@@ -85,6 +88,7 @@ export const SEED_ORDERS: ManagedOrder[] = [
     totalAmount: 135_000,
     orderStatus: "confirmed",
     paymentStatus: "paid",
+    wantsUtensils: true,
     createdAt: "2026-02-19T09:00:00.000Z",
     updatedAt: "2026-02-19T09:20:00.000Z",
     completedAt: null,
@@ -101,6 +105,7 @@ export const SEED_ORDERS: ManagedOrder[] = [
     paymentMethodLabel: "Tiền mặt khi nhận hàng",
     deliveryMethodCode: "delivery",
     deliveryMethodLabel: "Giao tận nơi",
+    isPickup: false,
     note: "Giao giờ trưa giúp shop.",
     items: [
       {
@@ -123,6 +128,7 @@ export const SEED_ORDERS: ManagedOrder[] = [
     totalAmount: 168_000,
     orderStatus: "preparing",
     paymentStatus: "pending",
+    wantsUtensils: true,
     createdAt: "2026-02-18T10:00:00.000Z",
     updatedAt: "2026-02-18T10:15:00.000Z",
     completedAt: null,
@@ -140,6 +146,7 @@ export const SEED_ORDERS: ManagedOrder[] = [
     paymentMethodLabel: "Tiền mặt khi nhận hàng",
     deliveryMethodCode: "delivery",
     deliveryMethodLabel: "Giao tận nơi",
+    isPickup: false,
     items: [
       {
         productId: "product-bc001",
@@ -164,6 +171,7 @@ export const SEED_ORDERS: ManagedOrder[] = [
     totalAmount: 56_000,
     orderStatus: "completed",
     paymentStatus: "paid",
+    wantsUtensils: true,
     createdAt: "2026-02-10T08:00:00.000Z",
     updatedAt: "2026-02-10T09:10:00.000Z",
     completedAt: "2026-02-10T09:10:00.000Z",
@@ -181,6 +189,7 @@ export const SEED_ORDERS: ManagedOrder[] = [
     paymentMethodLabel: "Chuyển khoản ngân hàng",
     deliveryMethodCode: "delivery",
     deliveryMethodLabel: "Giao tận nơi",
+    isPickup: false,
     items: [
       {
         productId: "product-bc003",
@@ -201,6 +210,7 @@ export const SEED_ORDERS: ManagedOrder[] = [
     totalAmount: 72_000,
     orderStatus: "cancelled",
     paymentStatus: "cancelled",
+    wantsUtensils: true,
     createdAt: "2026-02-08T14:00:00.000Z",
     updatedAt: "2026-02-08T14:05:00.000Z",
     completedAt: null,

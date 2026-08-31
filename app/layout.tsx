@@ -12,10 +12,15 @@ import "./globals.css";
 import "@/styles/components.css";
 // Import thông tin site tập trung từ data.
 import { site } from "@/data/site";
+import { getSiteUrl } from "@/lib/site-url";
 
 // Metadata SEO mặc định của Next.js App Router.
 // (site) và admin có thể override qua metadata riêng ở layout con.
 export const metadata = {
+  // metadataBase bắt buộc để Next.js resolve đúng URL tuyệt đối cho OG
+  // image/canonical ở mọi page con (nếu thiếu, ảnh OG với path tương đối sẽ
+  // bị cảnh báo và có thể ra URL sai khi share link).
+  metadataBase: new URL(getSiteUrl()),
   // Tiêu đề mặc định của website.
   title: `${site.name} | Bánh cuốn truyền thống`,
   // Mô tả ngắn hiển thị cho công cụ tìm kiếm.

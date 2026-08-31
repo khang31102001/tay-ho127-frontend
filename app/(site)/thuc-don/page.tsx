@@ -6,14 +6,14 @@ import {
   FloatingCartBar,
   type MenuResponse,
 } from "@/features/menu";
+import { buildMetadata } from "@/lib/seo/build-metadata";
 
-// Metadata riêng cho trang thực đơn.
-export const metadata = {
-  // Tiêu đề SEO cho trang menu.
-  title: "Thực đơn | Bánh Cuốn Tây Hồ 127",
-  // Mô tả SEO ngắn cho trang menu.
+// Metadata riêng cho trang thực đơn — dữ liệu tĩnh nên build trực tiếp, không cần generateMetadata.
+export const metadata = buildMetadata({
+  title: "Thực đơn",
   description: "Thực đơn bánh cuốn, món thêm và đồ uống của Bánh Cuốn Tây Hồ 127.",
-};
+  path: "/thuc-don",
+});
 
 // Trang thực đơn: layout thứ hai theo yêu cầu.
 export default async function MenuPage() {

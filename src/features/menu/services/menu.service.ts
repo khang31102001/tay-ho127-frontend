@@ -17,6 +17,7 @@ import { listCategories } from "@/features/categories/services/category.service"
 import type { ManagedCategory } from "@/features/categories/types/category.types";
 import { listMedia } from "@/features/media/services/media.service";
 import type { ManagedMedia } from "@/features/media/types/media.types";
+import { listModifierGroupsByIds } from "@/features/modifier-groups/services/modifier-group.service";
 import { normalizeText } from "@/lib/normalize-text";
 
 import type {
@@ -38,6 +39,7 @@ import type {
  */
 const SITE_MAIN_MENU_ID = "menu-thuc-don-chinh";
 const SITE_FAVORITES_MENU_ID = "menu-mon-yeu-thich";
+const SITE_CROSS_SELL_MENU_ID = "menu-goi-y-them";
 const DEFAULT_PRODUCT_IMAGE = "/images/banh-cuon-dish.jpg";
 const RELATED_PRODUCTS_LIMIT = 4;
 
@@ -230,6 +232,48 @@ export async function fetchFeaturedMenu(): Promise<UiProduct[]> {
   return items;
 }
 
+/**
+ * Danh sách gợi ý "Có thể bạn muốn dùng thêm" cho Cart Page — đọc từ Menu
+ * menu-goi-y-them (Admin quản lý qua Catalog → Thực đơn / Liên kết Menu-SP,
+ * y hệt cách menu-mon-yeu-thich chi phối carousel trang chủ). KHÔNG hard-code
+ * danh sách sản phẩm trong UI.
+ */
+export async function fetchCrossSellProducts(): Promise<UiProduct[]> {
+  const { menus, menuProducts, productById, categoryById, mediaById } = await loadCatalogSnapshot();
+
+  const crossSellMenu = menus.find((menu) => menu.id === SITE_CROSS_SELL_MENU_ID);
+
+  const linkedRows = menuProducts
+    .filter((row) => row.menuId === (crossSellMenu?.id ?? SITE_CROSS_SELL_MENU_ID) && row.isAvailable)
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+
+  const items: UiProduct[] = [];
+
+  linkedRows.forEach((row) => {
+    const managedProduct = productById.get(row.productId);
+    if (!managedProduct || managedProduct.status !== "active") {
+      return;
+    }
+
+    const category = resolveParentCategory(managedProduct.categoryId, categoryById);
+
+    items.push({
+      id: items.length + 1,
+      slug: managedProduct.id,
+      name: managedProduct.name,
+      category: resolveMenuCategoryBucket(category?.name ?? ""),
+      price: row.priceOverride ?? managedProduct.price,
+      oldPrice: managedProduct.oldPrice,
+      badge: managedProduct.badge,
+      rating: managedProduct.rating ?? 0,
+      ratingCount: managedProduct.ratingCount ?? 0,
+      image: resolveProductImage(managedProduct, mediaById),
+    });
+  });
+
+  return items;
+}
+
 export interface ProductDetailData {
   product: ProductDetail;
   relatedProducts: UiProduct[];
@@ -262,6 +306,7 @@ export async function getProductDetail(slug: string): Promise<ProductDetailData 
 
   const category = resolveParentCategory(managedProduct.categoryId, categoryById);
   const categoryBucket = resolveMenuCategoryBucket(category?.name ?? "");
+  const modifierGroups = await listModifierGroupsByIds(managedProduct.modifierGroupIds);
 
   const product: ProductDetail = {
     id: managedProduct.id,
@@ -275,6 +320,7 @@ export async function getProductDetail(slug: string): Promise<ProductDetailData 
     ratingCount: managedProduct.ratingCount ?? 0,
     image: resolveProductImage(managedProduct, mediaById),
     description: managedProduct.description,
+    modifierGroups,
   };
 
   const relatedProducts: UiProduct[] = [];

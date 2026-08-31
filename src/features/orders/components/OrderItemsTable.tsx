@@ -31,6 +31,15 @@ export function OrderItemsTable({ items }: OrderItemsTableProps) {
                   </div>
                   <div>
                     <p className="font-bold text-brand-greenDark">{item.productName}</p>
+                    {item.modifiers && item.modifiers.length > 0 && (
+                      <ul className="text-[12px] text-brand-muted">
+                        {item.modifiers.map((modifier) => (
+                          <li key={modifier.optionId}>
+                            {modifier.groupName}: {modifier.optionLabel}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                     {item.note && <p className="text-[12px] text-brand-muted">{item.note}</p>}
                   </div>
                 </div>

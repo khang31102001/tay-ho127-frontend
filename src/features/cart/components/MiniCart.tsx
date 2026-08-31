@@ -138,7 +138,7 @@ export function MiniCart() {
 
         <div className="flex gap-2">
           <Link
-            href="/checkout"
+            href="/gio-hang"
             onClick={close}
             className="flex h-11 flex-1 items-center justify-center rounded-md border-2 border-brand-red text-sm font-bold text-brand-red transition hover:bg-brand-red hover:text-white"
           >

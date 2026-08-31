@@ -12,31 +12,42 @@ import {
   getNewsArticleBySlug,
   listRelatedNewsArticles,
 } from "@/features/news";
+import { buildMetadata } from "@/lib/seo/build-metadata";
+import { resolveSeoPayload } from "@/lib/seo/resolve-seo-payload";
 
 type NewsDetailPageProps = {
   params: { slug: string };
 };
 
 export async function generateMetadata({ params }: NewsDetailPageProps): Promise<Metadata> {
-  const article = await getNewsArticleBySlug(params.slug);
+  const seoPayload = await resolveSeoPayload({
+    // TEMPORARY CONTRACT: endpoint đề xuất cho khi có Backend ASP.NET Core thật.
+    endpoint: `/news/${params.slug}/seo`,
+    mockResolver: async () => {
+      const article = await getNewsArticleBySlug(params.slug);
+      if (!article) return null;
 
-  if (!article) {
-    return { title: "Không tìm thấy bài viết | Bánh Cuốn Tây Hồ 127" };
+      return {
+        title: article.title,
+        description: article.excerpt,
+        path: `/tin-tuc/${params.slug}`,
+        image: article.coverImageUrl ?? undefined,
+        type: "article",
+        publishedTime: article.publishedAt,
+      };
+    },
+  });
+
+  if (!seoPayload) {
+    return buildMetadata({
+      title: "Không tìm thấy bài viết",
+      description: "Bài viết này không tồn tại hoặc chưa được xuất bản.",
+      path: `/tin-tuc/${params.slug}`,
+      noindex: true,
+    });
   }
 
-  return {
-    title: `${article.title} | Bánh Cuốn Tây Hồ 127`,
-    description: article.excerpt,
-    openGraph: article.coverImageUrl
-      ? {
-          title: article.title,
-          description: article.excerpt,
-          images: [{ url: article.coverImageUrl }],
-          type: "article",
-          publishedTime: article.publishedAt ?? undefined,
-        }
-      : undefined,
-  };
+  return buildMetadata(seoPayload);
 }
 
 export default async function NewsDetailPage({ params }: NewsDetailPageProps) {

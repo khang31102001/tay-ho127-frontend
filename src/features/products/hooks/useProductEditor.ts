@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 
 import type { ManagedCategory } from "@/features/categories";
 import type { ManagedMedia } from "@/features/media";
+import type { ManagedModifierGroup } from "@/features/modifier-groups";
 import type { ManagedProduct } from "../types/product.types";
 import { listCategories } from "@/features/categories";
 import { listMedia } from "@/features/media";
+import { listModifierGroups } from "@/features/modifier-groups";
 import {
   createProduct,
   deleteProduct,
@@ -24,6 +26,7 @@ const EMPTY_FORM: ProductFormValue = {
   description: "",
   status: "active",
   mediaIds: [],
+  modifierGroupIds: [],
 };
 
 type UseProductEditorParams = {
@@ -37,11 +40,13 @@ export function useProductEditor({ id }: UseProductEditorParams) {
   const [form, setForm] = useState<ProductFormValue>(EMPTY_FORM);
   const [categoryOptions, setCategoryOptions] = useState<ManagedCategory[]>([]);
   const [mediaOptions, setMediaOptions] = useState<ManagedMedia[]>([]);
+  const [modifierGroupOptions, setModifierGroupOptions] = useState<ManagedModifierGroup[]>([]);
   const [isLoading, setIsLoading] = useState(isEditMode);
 
   useEffect(() => {
     listCategories().then(setCategoryOptions);
     listMedia().then(setMediaOptions);
+    listModifierGroups().then(setModifierGroupOptions);
   }, []);
 
   useEffect(() => {
@@ -88,6 +93,19 @@ export function useProductEditor({ id }: UseProductEditorParams) {
     });
   }
 
+  function toggleModifierGroup(modifierGroupId: string) {
+    setForm((previous) => {
+      const hasGroup = previous.modifierGroupIds.includes(modifierGroupId);
+
+      return {
+        ...previous,
+        modifierGroupIds: hasGroup
+          ? previous.modifierGroupIds.filter((item) => item !== modifierGroupId)
+          : [...previous.modifierGroupIds, modifierGroupId],
+      };
+    });
+  }
+
   async function handleSave() {
     if (isEditMode) {
       await updateProduct(id, form);
@@ -110,8 +128,10 @@ export function useProductEditor({ id }: UseProductEditorParams) {
     form,
     updateField,
     toggleMedia,
+    toggleModifierGroup,
     categoryOptions,
     mediaOptions,
+    modifierGroupOptions,
     isLoading,
     isEditMode,
     handleSave,

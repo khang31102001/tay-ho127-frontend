@@ -7,6 +7,14 @@ import {
   TestimonialsSection,
 } from "@/features/home";
 import { fetchFeaturedMenu } from "@/features/menu";
+import { buildMetadata } from "@/lib/seo/build-metadata";
+import { site } from "@/data/site";
+
+export const metadata = buildMetadata({
+  title: site.name,
+  description: site.tagline,
+  path: "/",
+});
 
 // Trang chủ index: các section nối tiếp nhau theo scroll dọc thông thường.
 // Server Component nên fetch dữ liệu "Món yêu thích" trước khi render, tránh

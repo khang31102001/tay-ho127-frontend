@@ -6,6 +6,8 @@ export type AuthUser = {
   email?: string;
   phone?: string;
   provider: AuthProvider;
+  /** Bridge Auth↔Customer — trỏ ManagedCustomer.id (features/customers), gán khi đăng nhập/đăng ký thành công qua findOrCreateCustomerByContact(). Dùng làm Order.customerId khi đặt hàng và để tra Order History. */
+  customerId?: string;
 };
 
 export type LoginCredentials = {

@@ -8,6 +8,21 @@ import {
   registerAccount,
 } from "../services/auth.service";
 import type { AuthUser } from "../types/auth.types";
+// Import thẳng service (không qua barrel @/features/customers) — barrel đó
+// re-export cả Explorer/Editor admin (UI "use client"), import qua barrel ở
+// đây (Site) sẽ kéo UI admin vào bundle Site. Lý do đầy đủ xem
+// features/menu/services/menu.service.ts.
+import { findOrCreateCustomerByContact } from "@/features/customers/services/customer.service";
+
+/** Bridge Auth↔Customer (Phase 6) — mọi AuthUser trước khi vào onAuthenticated đều có customerId, dùng để đặt hàng/Order History. */
+async function resolveAuthUserWithCustomerId(user: AuthUser): Promise<AuthUser> {
+  const customer = await findOrCreateCustomerByContact({
+    fullName: user.name,
+    phone: user.phone,
+    email: user.email,
+  });
+  return { ...user, customerId: customer.id };
+}
 
 export type AuthMode = "login" | "register" | "forgot-password";
 
@@ -85,7 +100,7 @@ export function useAuthModal({ open, onClose, onAuthenticated }: UseAuthModalPar
 
     try {
       const result = await loginWithCredentials({ email, password });
-      onAuthenticated(result.data.user);
+      onAuthenticated(await resolveAuthUserWithCustomerId(result.data.user));
     } catch (error) {
       setError(error instanceof Error ? error.message : "Đăng nhập thất bại.");
     } finally {
@@ -99,7 +114,7 @@ export function useAuthModal({ open, onClose, onAuthenticated }: UseAuthModalPar
 
     try {
       const result = await loginWithGoogle();
-      onAuthenticated(result.data.user);
+      onAuthenticated(await resolveAuthUserWithCustomerId(result.data.user));
     } catch (error) {
       setError(error instanceof Error ? error.message : "Đăng nhập Google thất bại.");
     } finally {

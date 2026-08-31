@@ -123,6 +123,10 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
                 <dt className="text-brand-muted">Phương thức giao hàng</dt>
                 <dd className="font-bold">{order.deliveryMethodLabel}</dd>
               </div>
+              <div>
+                <dt className="text-brand-muted">Dụng cụ ăn uống</dt>
+                <dd className="font-bold">{order.wantsUtensils ? "Có" : "Không"}</dd>
+              </div>
             </dl>
             {order.note && (
               <p className="mt-3 rounded-lg bg-brand-cream/40 p-3 text-[13px] text-brand-muted">

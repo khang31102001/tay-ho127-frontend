@@ -133,6 +133,7 @@ export async function bulkUpsertProducts(
         description: item.description,
         status: item.status,
         mediaIds: [],
+        modifierGroupIds: [],
       });
     }
   });
