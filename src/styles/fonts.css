@@ -6,8 +6,14 @@
 @font-face {
   /* Font body chính theo file Roboto bạn cung cấp. */
   font-family: "RobotoLocal";
-  /* Browser ưu tiên font local, sau đó mới tải từ public/fonts. */
-  src: local("Roboto"), url("/fonts/Roboto-VariableFont_wdth,wght.ttf") format("truetype");
+  /*
+   * KHÔNG dùng local("Roboto") — nếu máy người dùng đã cài sẵn 1 font hệ
+   * thống trùng tên "Roboto" (thường chỉ có 1 static weight, vd. Regular),
+   * browser sẽ match local() đó trước và bỏ qua hẳn file variable font bên
+   * dưới, khiến mọi font-weight (kể cả 900) render ra cùng 1 nét chữ y hệt
+   * nhau — không có cách nào đậm lên được bằng CSS trong trường hợp đó.
+   */
+  src: url("/fonts/Roboto-VariableFont_wdth,wght.ttf") format("truetype");
   /* Font variable hỗ trợ dải weight rộng. */
   font-weight: 100 900;
   /* Font thường, không nghiêng. */
@@ -17,10 +23,10 @@
 }
 
 @font-face {
-  /* Font body nghiêng theo file Roboto Italic bạn cung cấp. */
+  /* Font body nghiêng theo file Roboto Italic bạn cung cấp — không dùng local(), lý do xem @font-face "RobotoLocal" normal ở trên. */
   font-family: "RobotoLocal";
   /* Đường dẫn font nghiêng trong public/fonts. */
-  src: local("Roboto Italic"), url("/fonts/Roboto-Italic-VariableFont_wdth,wght.ttf") format("truetype");
+  src: url("/fonts/Roboto-Italic-VariableFont_wdth,wght.ttf") format("truetype");
   /* Font variable hỗ trợ dải weight rộng. */
   font-weight: 100 900;
   /* Khai báo style nghiêng. */
