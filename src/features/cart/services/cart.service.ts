@@ -11,6 +11,28 @@ const CART_STORAGE_KEY = "tayho-cart";
  * vì localStorage) — CartProvider và mọi component tiêu thụ (Header, MiniCart,
  * FloatingCartBar, Checkout...) không cần sửa.
  */
+/**
+ * Loại bỏ dòng giỏ hàng lỗi thời/hỏng — chủ yếu là giỏ hàng được lưu từ trước
+ * khi `CartProduct.id` đổi tên thành `productId` (xem cart.types.ts), nên
+ * thiếu `productId`. Bỏ qua âm thầm dòng lỗi thay vì để cả giỏ hàng crash khi
+ * Đặt hàng (cùng nguyên tắc với resolveOrderItemModifiers ở order.service.ts).
+ */
+function isValidCartItem(item: unknown): item is CartItem {
+  if (!item || typeof item !== "object") return false;
+  const candidate = item as Partial<CartItem>;
+
+  return (
+    typeof candidate.id === "string" &&
+    typeof candidate.productId === "string" &&
+    candidate.productId.length > 0 &&
+    typeof candidate.name === "string" &&
+    typeof candidate.price === "number" &&
+    typeof candidate.image === "string" &&
+    typeof candidate.quantity === "number" &&
+    candidate.quantity > 0
+  );
+}
+
 export function readCartFromStorage(): CartItem[] {
   if (typeof window === "undefined") {
     return [];
@@ -21,7 +43,7 @@ export function readCartFromStorage(): CartItem[] {
     if (!saved) return [];
 
     const parsed: unknown = JSON.parse(saved);
-    return Array.isArray(parsed) ? (parsed as CartItem[]) : [];
+    return Array.isArray(parsed) ? parsed.filter(isValidCartItem) : [];
   } catch (error) {
     console.error("Không thể đọc dữ liệu giỏ hàng:", error);
     localStorage.removeItem(CART_STORAGE_KEY);

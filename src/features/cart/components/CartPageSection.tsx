@@ -114,15 +114,15 @@ export function CartPageSection() {
 
         {!isEmpty && (
           <section className="rounded-lg bg-white p-7 shadow-soft">
-            <div className="flex flex-col items-stretch justify-between gap-5 sm:flex-row sm:items-center">
-              <div className="text-[15px] font-bold text-brand-greenDark">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+              <div className="min-w-0 flex-1 text-[15px] font-bold text-brand-greenDark">
                 Tạm tính: <span className="text-[18px] font-black">{formatCurrency(totalPrice)}</span>
                 <p className="mt-0.5 text-[12px] font-medium text-[#4b4b4b]">
                   Phí vận chuyển và khuyến mãi (nếu có) sẽ được tính ở bước tiếp theo.
                 </p>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex shrink-0 gap-3">
                 <Link
                   href="/thuc-don"
                   className="flex h-12 flex-1 items-center justify-center rounded-md border-2 border-brand-red px-6 text-[14px] font-black text-brand-red transition hover:bg-brand-red hover:text-white sm:flex-none"
@@ -132,7 +132,7 @@ export function CartPageSection() {
 
                 <Link
                   href="/checkout"
-                  className="flex h-12 flex-1 items-center justify-center rounded-md bg-brand-red px-8 text-[14px] font-black text-white transition hover:opacity-90 sm:flex-none"
+                  className="flex h-12  items-center justify-center rounded-md bg-brand-red px-8 text-[14px] font-black text-white transition hover:opacity-90 sm:flex-none"
                 >
                   Tiến hành đặt hàng
                 </Link>

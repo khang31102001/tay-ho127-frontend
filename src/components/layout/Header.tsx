@@ -184,8 +184,8 @@ export function Header({
 
                 ${
                   isTransparent
-                    ? "font-bold text-white"
-                    : "font-bold text-brand-greenDark"
+                    ? "font-extrabold text-white"
+                    : "font-extrabold text-brand-greenDark"
                 }
               `}
             >
@@ -216,7 +216,7 @@ export function Header({
               items-center
               gap-4
               text-[15px]
-              font-bold
+              font-black
               md:gap-5
             "
           >

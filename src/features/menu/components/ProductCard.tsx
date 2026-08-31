@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { useCart, useFlyToCart } from "@/features/cart";
+import { useFavorites } from "@/features/favorites";
 import { formatCurrency } from "@/lib/format-currency";
 import { UiProduct } from "../types/menu.types";
 import Image from "next/image";
@@ -17,8 +18,10 @@ type ProductCardProps = {
 export function ProductCard({ item }: ProductCardProps) {
   const { addToCart } = useCart();
   const { flyToCart } = useFlyToCart();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const imageRef = useRef<HTMLImageElement>(null);
   const filledStars = Math.round(item.rating);
+  const favorited = isFavorite(item.slug);
 
   /**
    * Dùng item.slug (= ManagedProduct.id thật, xem menu.types.ts) làm
@@ -45,6 +48,10 @@ export function ProductCard({ item }: ProductCardProps) {
     });
   }
 
+  function handleToggleFavorite() {
+    toggleFavorite(item.slug);
+  }
+
   const detailHref = `/thuc-don/${item.slug}`;
 
   return (
@@ -68,9 +75,28 @@ export function ProductCard({ item }: ProductCardProps) {
         </span>
       </Link>
 
+      {/*
+       * Nút "Yêu thích" — nằm NGOÀI <Link> (không lồng <button> trong <a>, vi
+       * phạm HTML content model + gây hydration mismatch) dù định vị chồng lên
+       * cùng vị trí góc trên-trái ảnh nhờ article cha đã có position: relative.
+       */}
+      <button
+        type="button"
+        onClick={handleToggleFavorite}
+        aria-label={favorited ? `Bỏ ${item.name} khỏi yêu thích` : `Thêm ${item.name} vào yêu thích`}
+        aria-pressed={favorited}
+        className="absolute left-2 top-2 z-10 flex h-7 w-7 items-center justify-center text-white transition hover:scale-110 active:scale-95"
+      >
+        <Star
+          size={22}
+          strokeWidth={2}
+          className={favorited ? "fill-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]" : "fill-transparent drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]"}
+        />
+      </button>
+
       <div className="flex flex-1 flex-col px-3 pb-3 pt-3">
         <h3 className="line-clamp-2 text-[20px] font-extrabold leading-[1.15] text-brand-greenDark sm:text-[22px]">
-          <Link href={detailHref} className="hover:underline">
+          <Link href={detailHref} className="">
             {item.name}
           </Link>
         </h3>
