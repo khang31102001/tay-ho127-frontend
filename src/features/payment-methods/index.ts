@@ -13,5 +13,5 @@ export {
 } from "./services/payment-method.service";
 export type { PaymentMethodUpsertInput } from "./services/payment-method.service";
 
-export { PAYMENT_METHOD_TYPE_OPTIONS } from "./types/payment-method.types";
-export type { PaymentMethodType, ManagedPaymentMethod } from "./types/payment-method.types";
+export { PAYMENT_METHOD_GROUP_OPTIONS } from "./types/payment-method.types";
+export type { PaymentMethodGroup, ManagedPaymentMethod } from "./types/payment-method.types";

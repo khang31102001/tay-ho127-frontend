@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import type { CartItem } from "@/features/cart";
 import type { PopupStatus } from "@/components/shared/StatusPopup";
+import { useAuth } from "@/features/auth";
 import { createOrder } from "@/features/orders";
 import { createPayment } from "@/features/payments";
 import {
@@ -44,8 +45,22 @@ function pickDefault<T extends { id: string; isDefault: boolean }>(methods: T[])
 
 export function useCheckoutForm({ cartItems, totalPrice, clearCart }: UseCheckoutFormParams) {
   const router = useRouter();
+  const { user: currentUser } = useAuth();
 
   const [form, setForm] = useState<CheckoutFormState>(INITIAL_CHECKOUT_FORM);
+
+  // Đã đăng nhập → điền sẵn thông tin đã biết, khách vẫn có thể sửa lại trước khi đặt hàng.
+  useEffect(() => {
+    if (!currentUser) return;
+
+    setForm((previous) => ({
+      ...previous,
+      customerName: previous.customerName || currentUser.name,
+      phone: previous.phone || currentUser.phone || "",
+      email: previous.email || currentUser.email || "",
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser]);
   const [formErrors, setFormErrors] = useState<CheckoutFormErrors>({});
   const [popup, setPopup] = useState<PopupState>({
     open: false,
@@ -54,6 +69,17 @@ export function useCheckoutForm({ cartItems, totalPrice, clearCart }: UseCheckou
     description: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  /**
+   * Sinh 1 lần cho cả vòng đời component (giữ nguyên qua các lần thử lại nếu
+   * đặt hàng thất bại) — chống double-submit (#27). Rời trang/mount lại (đặt
+   * đơn khác) sẽ tự có key mới.
+   */
+  const [idempotencyKey] = useState(() =>
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `checkout-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+  );
 
   const [deliveryMethods, setDeliveryMethods] = useState<ManagedDeliveryMethod[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<ManagedPaymentMethod[]>([]);
@@ -119,7 +145,7 @@ export function useCheckoutForm({ cartItems, totalPrice, clearCart }: UseCheckou
 
   function handleTextInputChange(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const { name, value } = event.target;
-    const field = name as "customerName" | "phone" | "address" | "note";
+    const field = name as "customerName" | "phone" | "email" | "address" | "note";
     updateFormField(field, value);
   }
 
@@ -172,9 +198,10 @@ export function useCheckoutForm({ cartItems, totalPrice, clearCart }: UseCheckou
 
     try {
       const order = await createOrder({
-        customerId: null,
+        customerId: currentUser?.customerId ?? null,
         customerName: form.customerName.trim(),
         phone: form.phone.trim(),
+        email: form.email.trim() || undefined,
         deliveryAddressSnapshot:
           selectedDeliveryMethod.type === "pickup"
             ? (selectedDeliveryMethod.pickupAddress ?? selectedDeliveryMethod.name)
@@ -182,10 +209,16 @@ export function useCheckoutForm({ cartItems, totalPrice, clearCart }: UseCheckou
         paymentMethodCode: selectedPaymentMethod.code,
         deliveryMethodCode: selectedDeliveryMethod.code,
         items: cartItems.map((item) => ({
-          productId: item.id,
+          productId: item.productId,
           quantity: item.quantity,
+          modifiers: item.modifiers?.map((modifier) => ({
+            groupId: modifier.groupId,
+            optionId: modifier.optionId,
+          })),
         })),
+        wantsUtensils: form.utensils === "yes",
         note: form.note.trim() || undefined,
+        idempotencyKey,
       });
 
       try {
@@ -202,7 +235,7 @@ export function useCheckoutForm({ cartItems, totalPrice, clearCart }: UseCheckou
       }
 
       clearCart();
-      router.push(`/checkout/thanh-cong/${order.id}`);
+      router.push(`/don-hang/${order.orderCode}`);
     } catch (error) {
       console.error("Submit checkout error:", error);
       showPopup("error", "Không thể tạo đơn hàng.", error instanceof Error ? error.message : "Vui lòng thử lại.");

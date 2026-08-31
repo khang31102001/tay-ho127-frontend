@@ -4,10 +4,10 @@ import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templa
 import { StatusBadge } from "@/components/admin/templates/StatusBadge";
 
 import { usePaymentMethodsExplorer } from "../hooks/usePaymentMethodsExplorer";
-import { PAYMENT_METHOD_TYPE_OPTIONS, type ManagedPaymentMethod } from "../types/payment-method.types";
+import { PAYMENT_METHOD_GROUP_OPTIONS, type ManagedPaymentMethod } from "../types/payment-method.types";
 
-const TYPE_LABEL = Object.fromEntries(
-  PAYMENT_METHOD_TYPE_OPTIONS.map((option) => [option.value, option.label]),
+const GROUP_LABEL = Object.fromEntries(
+  PAYMENT_METHOD_GROUP_OPTIONS.map((option) => [option.value, option.label]),
 ) as Record<string, string>;
 
 const columns: DataExplorerColumn<ManagedPaymentMethod>[] = [
@@ -15,9 +15,9 @@ const columns: DataExplorerColumn<ManagedPaymentMethod>[] = [
   { key: "name", header: "Tên phương thức" },
   { key: "code", header: "Mã (code)" },
   {
-    key: "type",
-    header: "Loại",
-    render: (row) => TYPE_LABEL[row.type] ?? row.type,
+    key: "group",
+    header: "Nhóm",
+    render: (row) => GROUP_LABEL[row.group] ?? row.group,
   },
   {
     key: "isDefault",

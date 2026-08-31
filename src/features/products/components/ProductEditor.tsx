@@ -20,8 +20,10 @@ export function ProductEditor({ id }: ProductEditorProps) {
     form,
     updateField,
     toggleMedia,
+    toggleModifierGroup,
     categoryOptions,
     mediaOptions,
+    modifierGroupOptions,
     isLoading,
     isEditMode,
     handleSave,
@@ -128,6 +130,35 @@ export function ProductEditor({ id }: ProductEditorProps) {
                 )}
 
                 <span className="truncate">{media.fileName}</span>
+              </label>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div>
+        <span className={adminFieldLabelClassName}>Nhóm tùy chọn món (Modifier — tùy chọn)</span>
+
+        {modifierGroupOptions.length === 0 ? (
+          <p className="mt-2 text-[13px] text-brand-muted">
+            Chưa có nhóm tùy chọn nào — tạo tại Catalog → Tùy chọn món (Modifier).
+          </p>
+        ) : (
+          <div className="mt-2 grid gap-2 sm:grid-cols-2">
+            {modifierGroupOptions.map((group) => (
+              <label
+                key={group.id}
+                className="flex items-center gap-3 rounded-lg border border-brand-line px-3 py-2 text-[13px] font-medium text-brand-ink"
+              >
+                <input
+                  type="checkbox"
+                  checked={form.modifierGroupIds.includes(group.id)}
+                  onChange={() => toggleModifierGroup(group.id)}
+                  className="size-4 shrink-0 accent-brand-green"
+                />
+                <span className="truncate">
+                  {group.name} ({group.options.length} lựa chọn)
+                </span>
               </label>
             ))}
           </div>

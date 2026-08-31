@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { ADMIN_SESSION_COOKIE, ADMIN_SESSION_MAX_AGE_SECONDS } from "@/lib/auth/admin-session-cookie";
+
 // MOCK CONTRACT: chưa có backend admin thật, tài khoản hard-code để demo luồng đăng nhập.
 const DEMO_ADMIN_ACCOUNT = {
   email: "admin@tayho127.vn",
@@ -42,7 +44,7 @@ export async function POST(request: Request) {
     );
   }
 
-  return NextResponse.json({
+  const response = NextResponse.json({
     success: true,
     message: "Đăng nhập thành công.",
     data: {
@@ -57,4 +59,17 @@ export async function POST(request: Request) {
       accessToken: "mock-access-token-admin",
     },
   });
+
+  // Cookie này là điều kiện middleware.ts (chạy server-side) dùng để chặn
+  // /admin/* — khác với localStorage (chỉ đọc được ở client, không giúp gì
+  // cho việc chặn HTML render trước khi JS kịp redirect).
+  response.cookies.set(ADMIN_SESSION_COOKIE, "mock-access-token-admin", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/admin",
+    maxAge: ADMIN_SESSION_MAX_AGE_SECONDS,
+  });
+
+  return response;
 }

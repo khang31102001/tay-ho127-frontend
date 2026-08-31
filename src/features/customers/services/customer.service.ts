@@ -118,3 +118,50 @@ export async function deleteCustomer(id: string): Promise<void> {
 
   writeStore(readStore().filter((customer) => customer.id !== id));
 }
+
+export type FindOrCreateCustomerInput = {
+  fullName: string;
+  phone?: string;
+  email?: string;
+};
+
+/**
+ * Bridge Auth↔Customer (Phase 6) — gọi CLIENT-SIDE sau khi Site đăng nhập/đăng
+ * ký thành công (features/auth), KHÔNG gọi trong Route Handler server-side vì
+ * store này đọc/ghi localStorage (server không có window, xem readStore/writeStore
+ * ở trên) — phải chạy trong trình duyệt mới đọc/ghi đúng.
+ *
+ * Tra theo phone hoặc email đã có (khớp 1 trong 2 là đủ, vì luồng đăng nhập
+ * hiện tại chỉ có email, luồng đăng ký chỉ có phone — 2 field không luôn cùng
+ * tồn tại). Chưa có thì tạo ManagedCustomer mới.
+ */
+export async function findOrCreateCustomerByContact(input: FindOrCreateCustomerInput): Promise<ManagedCustomer> {
+  await delay();
+  const existing = readStore();
+
+  const match = existing.find(
+    (customer) =>
+      (input.phone && customer.phone === input.phone) || (input.email && customer.email === input.email),
+  );
+
+  if (match) {
+    return match;
+  }
+
+  const now = new Date().toISOString();
+  const newCustomer: ManagedCustomer = {
+    id: `customer-${Date.now()}`,
+    customerCode: generateCustomerCode(existing),
+    fullName: input.fullName,
+    phone: input.phone ?? "",
+    email: input.email,
+    avatarMediaId: null,
+    status: "active",
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  writeStore([...existing, newCustomer]);
+
+  return newCustomer;
+}

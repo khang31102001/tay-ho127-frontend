@@ -12,6 +12,8 @@ import type { OrderStatusHistoryEntry } from "./order-status-history.types";
 export type ManagedOrder = {
   id: string;
   orderCode: string;
+  /** Chống double-submit (double click, mất mạng rồi bấm lại...) — cùng 1 idempotencyKey chỉ tạo 1 Order duy nhất, các lần gọi sau trả lại chính Order đã tạo. Không có ở Order cũ trước khi field này tồn tại. */
+  idempotencyKey?: string;
   customerId: string | null;
   customerName: string;
   phone: string;
@@ -22,6 +24,8 @@ export type ManagedOrder = {
   paymentMethodLabel: string;
   deliveryMethodCode: string;
   deliveryMethodLabel: string;
+  /** Snapshot từ DeliveryMethod.type tại thời điểm đặt hàng — dùng để chọn nhánh Timeline đúng cho Order Tracking (#18: Pickup vs Delivery có wording khác nhau). */
+  isPickup: boolean;
   items: OrderItem[];
   statusHistory: OrderStatusHistoryEntry[];
   subtotal: number;
@@ -30,6 +34,8 @@ export type ManagedOrder = {
   totalAmount: number;
   orderStatus: OrderStatus;
   paymentStatus: PaymentStatus;
+  /** Order Preference — áp dụng cho toàn đơn, không thuộc CartItem/Product. Mặc định true (đa số khách nhận đồ ăn ngoài quán cần dụng cụ). */
+  wantsUtensils: boolean;
   note?: string;
   createdAt: string;
   updatedAt: string;

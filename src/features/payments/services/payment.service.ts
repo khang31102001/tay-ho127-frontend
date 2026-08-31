@@ -39,6 +39,12 @@ export async function getPaymentById(id: string): Promise<ManagedPayment | undef
   return readStore().find((payment) => payment.id === id);
 }
 
+/** Dùng bởi Order Tracking (Site) — tra Payment theo Order để hiển thị trạng thái/nút "Thanh toán lại". */
+export async function getPaymentByOrderId(orderId: string): Promise<ManagedPayment | undefined> {
+  await delay();
+  return readStore().find((payment) => payment.orderId === orderId);
+}
+
 export type CreatePaymentInput = {
   orderId: string;
   orderCode: string;
@@ -146,4 +152,14 @@ export async function transitionPayment(
   await updateOrderPaymentStatus(payment.orderId, toStatus);
 
   return updated;
+}
+
+/**
+ * #14 PAYMENT FLOW — Site-facing: khách bấm "[Thanh toán lại]" khi Payment ở
+ * trạng thái failed (Order không biến mất, vẫn giữ nguyên — chỉ Payment đổi
+ * trạng thái). Chuyển về "pending" (chờ xác nhận lại) — mock hiện chưa gọi
+ * cổng thanh toán thật nên không tự nhảy thẳng lên "paid".
+ */
+export async function retryPayment(paymentId: string): Promise<ManagedPayment> {
+  return transitionPayment(paymentId, "pending", "Khách hàng", "Khách hàng yêu cầu thanh toán lại.");
 }

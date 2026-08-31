@@ -5,7 +5,7 @@ import { adminFieldInputClassName, adminFieldLabelClassName } from "@/components
 import { MediaPicker } from "@/components/shared/MediaPicker";
 
 import { usePaymentMethodEditor } from "../hooks/usePaymentMethodEditor";
-import { PAYMENT_METHOD_TYPE_OPTIONS, type PaymentMethodType } from "../types/payment-method.types";
+import { PAYMENT_METHOD_GROUP_OPTIONS, type PaymentMethodGroup } from "../types/payment-method.types";
 
 type PaymentMethodEditorProps = {
   id?: string;
@@ -69,13 +69,13 @@ export function PaymentMethodEditor({ id }: PaymentMethodEditorProps) {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <label className={adminFieldLabelClassName}>
-          Loại
+          Nhóm
           <select
-            value={form.type}
-            onChange={(event) => updateField("type", event.target.value as PaymentMethodType)}
+            value={form.group}
+            onChange={(event) => updateField("group", event.target.value as PaymentMethodGroup)}
             className={adminFieldInputClassName}
           >
-            {PAYMENT_METHOD_TYPE_OPTIONS.map((option) => (
+            {PAYMENT_METHOD_GROUP_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
@@ -83,9 +83,9 @@ export function PaymentMethodEditor({ id }: PaymentMethodEditorProps) {
           </select>
         </label>
 
-        {form.type === "online" && (
+        {(form.group === "card" || form.group === "e_wallet") && (
           <label className={adminFieldLabelClassName}>
-            Gateway (vd. vnpay, momo, zalopay, stripe)
+            Gateway / Provider (vd. vnpay, momo, zalopay, stripe)
             <input
               type="text"
               value={form.gateway}
@@ -106,7 +106,7 @@ export function PaymentMethodEditor({ id }: PaymentMethodEditorProps) {
         />
       </label>
 
-      {form.type === "offline" && (
+      {form.group === "bank_transfer" && (
         <div className="rounded-lg border border-brand-line p-4">
           <p className="text-[13px] font-bold text-brand-greenDark">Thông tin tài khoản ngân hàng (nếu cần)</p>
           <div className="mt-3 grid gap-4 sm:grid-cols-2">

@@ -8,6 +8,7 @@ import { readApiResponse } from "@/services/api-client";
 
 const API_ENDPOINTS = {
   login: "/api/admin/auth/login",
+  logout: "/api/admin/auth/logout",
 } as const;
 
 export async function loginAdmin(
@@ -22,4 +23,9 @@ export async function loginAdmin(
   });
 
   return readApiResponse<AdminAuthResponse>(response, "Đăng nhập thất bại.");
+}
+
+/** Xóa cookie phiên đăng nhập (xem middleware.ts) — gọi song song với việc xóa localStorage phía context. */
+export async function logoutAdmin(): Promise<void> {
+  await fetch(API_ENDPOINTS.logout, { method: "POST" });
 }

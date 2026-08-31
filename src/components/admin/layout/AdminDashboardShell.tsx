@@ -2,12 +2,16 @@
 
 import { useState, type ReactNode } from "react";
 
+import type { NavigationItem } from "@/features/navigation";
+
 import { AdminGuard } from "./AdminGuard";
 import { AdminHeader } from "./AdminHeader";
 import { AdminSidebar } from "./AdminSidebar";
 
 type AdminDashboardShellProps = {
   children: ReactNode;
+  /** Fetch ở app/admin/(dashboard)/layout.tsx (Server Component), truyền xuống AdminSidebar. */
+  navigationItems: NavigationItem[];
 };
 
 /**
@@ -15,7 +19,7 @@ type AdminDashboardShellProps = {
  * (drawer) và AdminHeader (nút hamburger) là 2 component độc lập cần chia sẻ
  * chung 1 state.
  */
-export function AdminDashboardShell({ children }: AdminDashboardShellProps) {
+export function AdminDashboardShell({ children, navigationItems }: AdminDashboardShellProps) {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   return (
@@ -24,6 +28,7 @@ export function AdminDashboardShell({ children }: AdminDashboardShellProps) {
         <AdminSidebar
           isOpen={isMobileNavOpen}
           onClose={() => setIsMobileNavOpen(false)}
+          navigationItems={navigationItems}
         />
 
         <div className="flex min-h-svh flex-1 flex-col">

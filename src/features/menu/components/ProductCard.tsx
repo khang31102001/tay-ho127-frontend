@@ -20,8 +20,18 @@ export function ProductCard({ item }: ProductCardProps) {
   const imageRef = useRef<HTMLImageElement>(null);
   const filledStars = Math.round(item.rating);
 
+  /**
+   * Dùng item.slug (= ManagedProduct.id thật, xem menu.types.ts) làm
+   * CartProduct.productId — KHÔNG dùng item.id (chỉ là số thứ tự hiển thị
+   * trong danh sách hiện tại, đổi khác nhau giữa các trang/section chứa cùng
+   * 1 sản phẩm). Dùng số thứ tự vừa khiến Order (tra cứu lại Catalog theo id)
+   * không tìm thấy sản phẩm, vừa khiến giỏ hàng không gộp đúng số lượng khi
+   * cùng 1 sản phẩm được thêm từ nhiều danh sách khác nhau (trang chủ, thực
+   * đơn, sản phẩm liên quan...). Thêm nhanh từ Product Card không có bước
+   * chọn Modifier (xem ProductActions cho luồng đầy đủ ở trang chi tiết).
+   */
   const cartProduct = {
-    id: String(item.id),
+    productId: item.slug,
     name: item.name,
     price: item.price,
     image: item.image,

@@ -2,8 +2,8 @@ import type { ManagedPaymentMethod } from "../types/payment-method.types";
 
 /**
  * MOCK CONTRACT: khớp 2 phương thức đang xuất hiện trong SEED_ORDERS/SEED_PAYMENTS
- * (cod/bank_transfer), thêm 1 phương thức online (VNPay) đang tắt để minh
- * họa luồng Enable/Disable + Type "online" chưa cần Gateway thật.
+ * (cod/bank_transfer), thêm 2 phương thức nhóm "card"/"e_wallet" đang tắt để
+ * minh họa đủ 4 nhóm PaymentMethodGroup (Phase 0) mà chưa cần Gateway thật.
  */
 export const SEED_PAYMENT_METHODS: ManagedPaymentMethod[] = [
   {
@@ -12,7 +12,7 @@ export const SEED_PAYMENT_METHODS: ManagedPaymentMethod[] = [
     name: "Tiền mặt khi nhận hàng",
     description: "Khách thanh toán trực tiếp cho nhân viên giao hàng.",
     iconMediaId: null,
-    type: "offline",
+    group: "cod",
     instructions: "Vui lòng chuẩn bị đúng số tiền để thuận tiện khi giao hàng.",
     displayOrder: 1,
     isActive: true,
@@ -26,7 +26,7 @@ export const SEED_PAYMENT_METHODS: ManagedPaymentMethod[] = [
     name: "Chuyển khoản ngân hàng",
     description: "Chuyển khoản trước, đơn được xác nhận sau khi nhận được tiền.",
     iconMediaId: null,
-    type: "offline",
+    group: "bank_transfer",
     instructions: "Nội dung chuyển khoản: Mã đơn hàng + Số điện thoại.",
     bankName: "Vietcombank",
     bankAccountNumber: "0123456789",
@@ -44,12 +44,26 @@ export const SEED_PAYMENT_METHODS: ManagedPaymentMethod[] = [
     name: "VNPay",
     description: "Thanh toán qua cổng VNPay (thẻ ATM/Visa/Mastercard/QR).",
     iconMediaId: null,
-    type: "online",
+    group: "card",
     gateway: "vnpay",
     displayOrder: 3,
     isActive: false,
     isDefault: false,
     minOrderAmount: 20_000,
+    createdAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:00:00.000Z",
+  },
+  {
+    id: "pm-4",
+    code: "momo",
+    name: "Ví MoMo",
+    description: "Thanh toán qua ví điện tử MoMo.",
+    iconMediaId: null,
+    group: "e_wallet",
+    gateway: "momo",
+    displayOrder: 4,
+    isActive: false,
+    isDefault: false,
     createdAt: "2026-01-01T00:00:00.000Z",
     updatedAt: "2026-01-01T00:00:00.000Z",
   },

@@ -15,8 +15,15 @@ import type {
   CartItem,
   CartProduct,
 } from "../types/cart.types";
-
-const CART_STORAGE_KEY = "tayho-cart";
+import {
+  addCartItem as addCartItemToList,
+  calculateCartCount,
+  calculateCartTotalPrice,
+  readCartFromStorage,
+  removeCartItem as removeCartItemFromList,
+  updateCartItemQuantity,
+  writeCartToStorage,
+} from "../services/cart.service";
 
 type CartProviderProps = {
   children: ReactNode;
@@ -30,22 +37,8 @@ export function CartProvider({ children }: CartProviderProps) {
 
   // Đọc giỏ hàng đã lưu khi ứng dụng được tải.
   useEffect(() => {
-    try {
-      const savedCart = localStorage.getItem(CART_STORAGE_KEY);
-
-      if (savedCart) {
-        const parsedCart: unknown = JSON.parse(savedCart);
-
-        if (Array.isArray(parsedCart)) {
-          setCartItems(parsedCart as CartItem[]);
-        }
-      }
-    } catch (error) {
-      console.error("Không thể đọc dữ liệu giỏ hàng:", error);
-      localStorage.removeItem(CART_STORAGE_KEY);
-    } finally {
-      setIsCartLoaded(true);
-    }
+    setCartItems(readCartFromStorage());
+    setIsCartLoaded(true);
   }, []);
 
   // Chỉ lưu sau khi đã đọc xong dữ liệu cũ.
@@ -54,91 +47,28 @@ export function CartProvider({ children }: CartProviderProps) {
       return;
     }
 
-    try {
-      localStorage.setItem(
-        CART_STORAGE_KEY,
-        JSON.stringify(cartItems),
-      );
-    } catch (error) {
-      console.error("Không thể lưu dữ liệu giỏ hàng:", error);
-    }
+    writeCartToStorage(cartItems);
   }, [cartItems, isCartLoaded]);
 
   const addToCart = useCallback((product: CartProduct) => {
-    setCartItems((currentItems) => {
-      const existingItem = currentItems.find(
-        (item) => item.id === product.id,
-      );
-
-      if (existingItem) {
-        return currentItems.map((item) =>
-          item.id === product.id
-            ? {
-                ...item,
-                quantity: item.quantity + 1,
-              }
-            : item,
-        );
-      }
-
-      return [
-        ...currentItems,
-        {
-          ...product,
-          quantity: 1,
-        },
-      ];
-    });
+    setCartItems((currentItems) => addCartItemToList(currentItems, product));
   }, []);
 
   const removeFromCart = useCallback((productId: string) => {
-    setCartItems((currentItems) =>
-      currentItems.filter((item) => item.id !== productId),
-    );
+    setCartItems((currentItems) => removeCartItemFromList(currentItems, productId));
   }, []);
 
-  const updateQuantity = useCallback(
-    (productId: string, quantity: number) => {
-      if (quantity <= 0) {
-        removeFromCart(productId);
-        return;
-      }
-
-      setCartItems((currentItems) =>
-        currentItems.map((item) =>
-          item.id === productId
-            ? {
-                ...item,
-                quantity,
-              }
-            : item,
-        ),
-      );
-    },
-    [removeFromCart],
-  );
+  const updateQuantity = useCallback((productId: string, quantity: number) => {
+    setCartItems((currentItems) => updateCartItemQuantity(currentItems, productId, quantity));
+  }, []);
 
   const clearCart = useCallback(() => {
     setCartItems([]);
   }, []);
 
-  const cartCount = useMemo(
-    () =>
-      cartItems.reduce(
-        (total, item) => total + item.quantity,
-        0,
-      ),
-    [cartItems],
-  );
+  const cartCount = useMemo(() => calculateCartCount(cartItems), [cartItems]);
 
-  const totalPrice = useMemo(
-    () =>
-      cartItems.reduce(
-        (total, item) => total + item.price * item.quantity,
-        0,
-      ),
-    [cartItems],
-  );
+  const totalPrice = useMemo(() => calculateCartTotalPrice(cartItems), [cartItems]);
 
   const value = useMemo<CartContextType>(
     () => ({

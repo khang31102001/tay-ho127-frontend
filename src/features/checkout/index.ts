@@ -1,2 +1,2 @@
-export { CheckoutSection } from "./components/CheckoutSection";
-export { OrderConfirmation } from "./components/OrderConfirmation";
+export { CheckoutReview } from "./components/CheckoutReview";
+export { PriceSummary } from "./components/PriceSummary";

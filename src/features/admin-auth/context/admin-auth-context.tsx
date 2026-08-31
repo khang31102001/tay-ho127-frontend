@@ -11,6 +11,7 @@ import {
 } from "react";
 
 import type { AdminUser } from "../types/admin-auth.types";
+import { logoutAdmin } from "../services/admin-auth.service";
 
 const ADMIN_AUTH_STORAGE_KEY = "tayho-admin-auth";
 
@@ -69,6 +70,11 @@ export function AdminAuthProvider({ children }: AdminAuthProviderProps) {
     } catch (error) {
       console.error("Không thể xóa phiên đăng nhập admin:", error);
     }
+
+    // Xóa cookie phiên (middleware.ts dựa vào cookie này) — không chặn UI chờ kết quả.
+    logoutAdmin().catch((error) => {
+      console.error("Không thể xóa cookie phiên đăng nhập admin:", error);
+    });
   }, []);
 
   const value = useMemo<AdminAuthContextType>(

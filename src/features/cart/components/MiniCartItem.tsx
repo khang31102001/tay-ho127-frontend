@@ -42,6 +42,12 @@ export function MiniCartItem({ item, onIncrease, onDecrease, onRemove }: MiniCar
 
         <p className="mt-0.5 text-xs text-brand-muted">{formatCurrency(item.price)}</p>
 
+        {item.modifiers && item.modifiers.length > 0 && (
+          <p className="mt-0.5 line-clamp-2 text-[11px] text-brand-muted">
+            {item.modifiers.map((modifier) => modifier.optionLabel).join(", ")}
+          </p>
+        )}
+
         <div className="mt-auto flex items-center justify-between pt-1.5">
           <div className="flex items-center rounded-md border border-brand-line">
             <button

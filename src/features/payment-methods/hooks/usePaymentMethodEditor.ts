@@ -12,14 +12,14 @@ import {
   getPaymentMethodById,
   updatePaymentMethod,
 } from "../services/payment-method.service";
-import type { PaymentMethodType } from "../types/payment-method.types";
+import type { PaymentMethodGroup } from "../types/payment-method.types";
 
 export type PaymentMethodFormValue = {
   code: string;
   name: string;
   description: string;
   iconMediaId: string | null;
-  type: PaymentMethodType;
+  group: PaymentMethodGroup;
   gateway: string;
   instructions: string;
   bankName: string;
@@ -38,7 +38,7 @@ const EMPTY_FORM: PaymentMethodFormValue = {
   name: "",
   description: "",
   iconMediaId: null,
-  type: "offline",
+  group: "cod",
   gateway: "",
   instructions: "",
   bankName: "",
@@ -81,7 +81,7 @@ export function usePaymentMethodEditor({ id }: UsePaymentMethodEditorParams) {
         name: method.name,
         description: method.description ?? "",
         iconMediaId: method.iconMediaId,
-        type: method.type,
+        group: method.group,
         gateway: method.gateway ?? "",
         instructions: method.instructions ?? "",
         bankName: method.bankName ?? "",
@@ -119,13 +119,13 @@ export function usePaymentMethodEditor({ id }: UsePaymentMethodEditorParams) {
       name: form.name.trim(),
       description: form.description || undefined,
       iconMediaId: form.iconMediaId,
-      type: form.type,
-      gateway: form.type === "online" ? form.gateway || undefined : undefined,
+      group: form.group,
+      gateway: form.group === "card" || form.group === "e_wallet" ? form.gateway || undefined : undefined,
       instructions: form.instructions || undefined,
-      bankName: form.bankName || undefined,
-      bankAccountNumber: form.bankAccountNumber || undefined,
-      bankAccountHolder: form.bankAccountHolder || undefined,
-      bankBranch: form.bankBranch || undefined,
+      bankName: form.group === "bank_transfer" ? form.bankName || undefined : undefined,
+      bankAccountNumber: form.group === "bank_transfer" ? form.bankAccountNumber || undefined : undefined,
+      bankAccountHolder: form.group === "bank_transfer" ? form.bankAccountHolder || undefined : undefined,
+      bankBranch: form.group === "bank_transfer" ? form.bankBranch || undefined : undefined,
       displayOrder: form.displayOrder,
       isActive: form.isActive,
       isDefault: form.isDefault,

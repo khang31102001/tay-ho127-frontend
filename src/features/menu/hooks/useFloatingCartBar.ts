@@ -107,11 +107,13 @@ export function useFloatingCartBar() {
   }, [totalQuantity, clearCollapseTimer, startCollapseTimer]);
 
   /**
-   * Chuyển người dùng đến trang checkout.
+   * Nút hiển thị số lượng + tổng tiền (không phải hành động "đặt ngay") nên
+   * dẫn tới Cart Page (/gio-hang) để xem/sửa giỏ hàng trước, không đi thẳng
+   * /checkout — khớp CTA "Xem giỏ hàng" ở MiniCart.
    */
   function handleCheckout() {
     clearCollapseTimer();
-    router.push("/checkout");
+    router.push("/gio-hang");
   }
 
   /**

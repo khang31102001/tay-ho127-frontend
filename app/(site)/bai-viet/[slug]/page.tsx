@@ -11,22 +11,47 @@ import { getArticleBySlug } from "@/features/articles/services/article.service";
 import { listMedia } from "@/features/media/services/media.service";
 import { listArticleCategories } from "@/features/article-categories/services/article-category.service";
 import { listArticleTags } from "@/features/article-tags/services/article-tag.service";
+import { buildMetadata } from "@/lib/seo/build-metadata";
+import { resolveSeoPayload } from "@/lib/seo/resolve-seo-payload";
 
 type ArticleDetailPageProps = {
   params: { slug: string };
 };
 
 export async function generateMetadata({ params }: ArticleDetailPageProps): Promise<Metadata> {
-  const article = await getArticleBySlug(params.slug);
+  const seoPayload = await resolveSeoPayload({
+    // TEMPORARY CONTRACT: endpoint đề xuất cho khi có Backend ASP.NET Core thật.
+    endpoint: `/articles/${params.slug}/seo`,
+    mockResolver: async () => {
+      const article = await getArticleBySlug(params.slug);
+      if (!article) return null;
 
-  if (!article) {
-    return { title: "Không tìm thấy bài viết | Bánh Cuốn Tây Hồ 127" };
+      const media = article.featuredMediaId ? (await listMedia()).find((item) => item.id === article.featuredMediaId) : undefined;
+
+      return {
+        title: article.title,
+        description: article.summary,
+        path: `/bai-viet/${params.slug}`,
+        image: media?.url,
+        type: "article",
+        publishedTime: article.publishedAt,
+        // Bài chưa publish vẫn xem preview được (xem banner "Xem trước" bên
+        // dưới) nhưng không nên lộ ra kết quả tìm kiếm.
+        noindex: article.status !== "published",
+      };
+    },
+  });
+
+  if (!seoPayload) {
+    return buildMetadata({
+      title: "Không tìm thấy bài viết",
+      description: "Bài viết này không tồn tại hoặc chưa được xuất bản.",
+      path: `/bai-viet/${params.slug}`,
+      noindex: true,
+    });
   }
 
-  return {
-    title: `${article.title} | Bánh Cuốn Tây Hồ 127`,
-    description: article.summary,
-  };
+  return buildMetadata(seoPayload);
 }
 
 export default async function ArticleDetailPage({ params }: ArticleDetailPageProps) {

@@ -5,12 +5,14 @@ import { getPaymentMethodByCode, isPaymentMethodEligible } from "@/features/paym
 // được tin cậy khi tạo Order (xem CreateOrderInput bên dưới).
 import { getProductById } from "@/features/products/services/product.service";
 import { listMedia } from "@/features/media/services/media.service";
+import { getModifierGroupById } from "@/features/modifier-groups/services/modifier-group.service";
 
 import { SEED_ORDERS } from "../mocks/order.mock";
 import { ORDER_STATUS_TRANSITIONS, type OrderStatus } from "../types/order-status";
 import type { PaymentStatus } from "../types/payment-status";
-import type { OrderItem } from "../types/order-item.types";
+import type { OrderItem, OrderItemModifierSnapshot } from "../types/order-item.types";
 import type { ManagedOrder } from "../types/order.types";
+import { generateOrderCode } from "../utils/order-code";
 
 const STORAGE_KEY = "tayho-admin-orders";
 const MOCK_DELAY_MS = 300;
@@ -36,15 +38,6 @@ function writeStore(orders: ManagedOrder[]): void {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
 }
 
-function generateOrderCode(existing: ManagedOrder[]): string {
-  const maxNumber = existing.reduce((max, order) => {
-    const match = /^DH(\d+)$/.exec(order.orderCode);
-    if (!match) return max;
-    return Math.max(max, Number(match[1]));
-  }, 0);
-  return `DH${String(maxNumber + 1).padStart(5, "0")}`;
-}
-
 export async function listOrders(): Promise<ManagedOrder[]> {
   await delay();
   return [...readStore()].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -55,10 +48,35 @@ export async function getOrderById(id: string): Promise<ManagedOrder | undefined
   return readStore().find((order) => order.id === id);
 }
 
+/** Dùng bởi Order Tracking (Site) — route /don-hang/[orderCode] tra theo mã công khai, không dùng id nội bộ. */
+export async function getOrderByCode(orderCode: string): Promise<ManagedOrder | undefined> {
+  await delay();
+  return readStore().find((order) => order.orderCode === orderCode);
+}
+
+/** Dùng bởi Order History (Site, /tai-khoan/don-hang) — chỉ trả Order của đúng customerId đã đăng nhập, mới nhất trước. */
+export async function listCustomerOrders(customerId: string): Promise<ManagedOrder[]> {
+  await delay();
+  return readStore()
+    .filter((order) => order.customerId === customerId)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+/**
+ * Chỉ gửi groupId + optionId — KHÔNG gửi label/priceAdjustment (giống
+ * paymentMethodCode/deliveryMethodCode: service tự tra cứu lại giá/nhãn thật
+ * từ features/modifier-groups, không tin dữ liệu hiển thị do Frontend gửi lên).
+ */
+export type CreateOrderItemModifierInput = {
+  groupId: string;
+  optionId: string;
+};
+
 export type CreateOrderItemInput = {
   productId: string;
   quantity: number;
   note?: string;
+  modifiers?: CreateOrderItemModifierInput[];
 };
 
 export type CreateOrderInput = {
@@ -73,14 +91,57 @@ export type CreateOrderInput = {
   /** Chỉ truyền productId + quantity — tên/ảnh/đơn giá do service tự tra cứu lại từ Catalog, không tin Frontend. */
   items: CreateOrderItemInput[];
   discount?: number;
+  /** Order Preference — áp dụng cho toàn đơn, không thuộc từng CartItem. */
+  wantsUtensils: boolean;
   note?: string;
+  /** Sinh 1 lần phía Client cho mỗi lượt Checkout (giữ nguyên qua các lần thử lại) — chống double-submit, xem createOrder(). */
+  idempotencyKey?: string;
 };
+
+/**
+ * Tra cứu lại nhóm/lựa chọn modifier thật từ features/modifier-groups theo
+ * groupId/optionId — KHÔNG tin groupName/optionLabel/priceAdjustment do
+ * Frontend gửi (Cart ở localStorage, có thể bị chỉnh sửa). Bỏ qua âm thầm
+ * modifier không còn tồn tại/group không còn option đó thay vì throw — dữ
+ * liệu modifier Admin có thể đã đổi giữa lúc khách xem trang và lúc đặt hàng,
+ * không nên chặn toàn bộ đơn hàng chỉ vì 1 modifier lỗi thời.
+ */
+async function resolveOrderItemModifiers(
+  modifierInputs: CreateOrderItemModifierInput[] | undefined,
+): Promise<OrderItemModifierSnapshot[]> {
+  if (!modifierInputs || modifierInputs.length === 0) {
+    return [];
+  }
+
+  const snapshots = await Promise.all(
+    modifierInputs.map(async (input) => {
+      const group = await getModifierGroupById(input.groupId);
+      const option = group?.options.find((candidate) => candidate.id === input.optionId);
+      if (!group || !option) {
+        return null;
+      }
+
+      const snapshot: OrderItemModifierSnapshot = {
+        groupId: group.id,
+        groupName: group.name,
+        optionId: option.id,
+        optionLabel: option.label,
+        priceAdjustment: option.priceAdjustment,
+      };
+      return snapshot;
+    }),
+  );
+
+  return snapshots.filter((snapshot): snapshot is OrderItemModifierSnapshot => snapshot !== null);
+}
 
 /**
  * Tra cứu lại tên/ảnh/đơn giá thật từ Catalog (features/products) theo
  * productId — KHÔNG tin unitPrice/productName do Frontend (giỏ hàng ở
  * localStorage, có thể bị chỉnh sửa) gửi lên. Đây là nơi duy nhất quyết
- * định giá một dòng hàng khi tạo Order.
+ * định giá một dòng hàng khi tạo Order — bao gồm cả phần cộng thêm từ
+ * modifier đã chọn (resolveOrderItemModifiers), không tin priceAdjustment
+ * Frontend gửi.
  */
 async function resolveOrderItems(itemInputs: CreateOrderItemInput[]): Promise<OrderItem[]> {
   const mediaList = await listMedia();
@@ -98,6 +159,8 @@ async function resolveOrderItems(itemInputs: CreateOrderItemInput[]): Promise<Or
       }
 
       const media = product.mediaIds[0] ? mediaById.get(product.mediaIds[0]) : undefined;
+      const modifiers = await resolveOrderItemModifiers(input.modifiers);
+      const modifiersTotal = modifiers.reduce((sum, modifier) => sum + modifier.priceAdjustment, 0);
 
       const item: OrderItem = {
         productId: product.id,
@@ -105,8 +168,9 @@ async function resolveOrderItems(itemInputs: CreateOrderItemInput[]): Promise<Or
         productImage: media?.url ?? DEFAULT_PRODUCT_IMAGE,
         unitPrice: product.price,
         quantity: input.quantity,
-        lineTotal: product.price * input.quantity,
+        lineTotal: (product.price + modifiersTotal) * input.quantity,
         note: input.note,
+        modifiers: modifiers.length > 0 ? modifiers : undefined,
       };
       return item;
     }),
@@ -123,6 +187,17 @@ async function resolveOrderItems(itemInputs: CreateOrderItemInput[]): Promise<Or
 export async function createOrder(input: CreateOrderInput): Promise<ManagedOrder> {
   await delay();
   const existing = readStore();
+
+  // Idempotency (#27): cùng idempotencyKey (double click, submit lại sau mất
+  // mạng...) trả lại chính Order đã tạo trước đó, KHÔNG tạo Order thứ 2 —
+  // kiểm tra trước cả resolveOrderItems để không tốn công tính lại giá.
+  if (input.idempotencyKey) {
+    const alreadyCreated = existing.find((order) => order.idempotencyKey === input.idempotencyKey);
+    if (alreadyCreated) {
+      return alreadyCreated;
+    }
+  }
+
   const now = new Date().toISOString();
   const items = await resolveOrderItems(input.items);
   const subtotal = items.reduce((sum, item) => sum + item.lineTotal, 0);
@@ -145,6 +220,7 @@ export async function createOrder(input: CreateOrderInput): Promise<ManagedOrder
   const order: ManagedOrder = {
     id: `order-${Date.now()}`,
     orderCode: generateOrderCode(existing),
+    idempotencyKey: input.idempotencyKey,
     customerId: input.customerId,
     customerName: input.customerName,
     phone: input.phone,
@@ -154,6 +230,7 @@ export async function createOrder(input: CreateOrderInput): Promise<ManagedOrder
     paymentMethodLabel: paymentMethod.name,
     deliveryMethodCode: deliveryMethod.code,
     deliveryMethodLabel: deliveryMethod.name,
+    isPickup: deliveryMethod.type === "pickup",
     items,
     statusHistory: [{ fromStatus: null, toStatus: "pending", changedAt: now, changedBy: "Khách hàng" }],
     subtotal,
@@ -162,6 +239,7 @@ export async function createOrder(input: CreateOrderInput): Promise<ManagedOrder
     totalAmount: subtotal - discount + deliveryFee,
     orderStatus: "pending",
     paymentStatus: "pending",
+    wantsUtensils: input.wantsUtensils,
     note: input.note,
     createdAt: now,
     updatedAt: now,

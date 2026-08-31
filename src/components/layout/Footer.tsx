@@ -1,3 +1,5 @@
+"use client";
+
 // Import Container để giữ padding/max-width đồng bộ.
 import { Container } from "@/components/ui/Container";
 // Import Logo dùng lại ở footer.
@@ -18,6 +20,13 @@ import {
 } from "lucide-react";
 
 import { Reveal } from "@/components/shared/Reveal";
+// Import thẳng component + type (không qua barrel @/features/navigation) —
+// barrel đó re-export cả Explorer/Editor/Tree admin (UI "use client"), import
+// qua barrel ở Footer (Site) sẽ kéo UI admin vào bundle Site. Lý do đầy đủ
+// xem app/(site)/layout.tsx.
+import { NavigationRenderer } from "@/features/navigation/components/NavigationRenderer";
+import { useLiveNavigation } from "@/features/navigation/hooks/useLiveNavigation";
+import type { NavigationItem } from "@/features/navigation/types/navigation.types";
 
 /* =================================================
  * TYPES
@@ -28,6 +37,19 @@ type SocialItem = {
   label: string;
   href?: string;
   icon: LucideIcon;
+};
+
+type FooterProps = {
+  /**
+   * Lấy động từ Navigation module (features/navigation) — do
+   * app/(site)/layout.tsx (Server Component) fetch qua
+   * navigationApi.getByLocation("footer") rồi truyền xuống làm giá trị khởi
+   * tạo (SSR); Footer tự refetch lại 1 lần khi mount (useLiveNavigation) để
+   * đồng bộ thay đổi Admin vừa lưu trong cùng session. Không truyền = cột
+   * "Điều hướng" tự ẩn — Footer vẫn hoạt động bình thường như trước khi có
+   * Navigation.
+   */
+  navItems?: NavigationItem[];
 };
 
 /* =================================================
@@ -60,7 +82,9 @@ const socialItems: SocialItem[] = [
  * =============================================== */
 
 // Footer chứa thông tin liên hệ và menu phụ.
-export function Footer() {
+export function Footer({ navItems: initialNavItems = [] }: FooterProps) {
+  const navItems = useLiveNavigation("footer", initialNavItems);
+
   return (
     <footer
       id="lien-he"
@@ -135,16 +159,16 @@ export function Footer() {
        * =============================================== */}
 
       <Container
-        className="
+        className={`
           relative
           z-10
           grid
           gap-10
           py-12
 
-          md:grid-cols-[1.2fr_.8fr_.8fr]
+          ${navItems.length > 0 ? "md:grid-cols-[1.1fr_.7fr_.7fr_.8fr]" : "md:grid-cols-[1.2fr_.8fr_.8fr]"}
           md:py-16
-        "
+        `}
       >
         {/* =================================================
          * BRAND / LOGO
@@ -176,6 +200,36 @@ export function Footer() {
             />
           </div>
         </Reveal>
+
+        {/* =================================================
+         * ĐIỀU HƯỚNG — lấy động từ Navigation module (location "footer"),
+         * không hard-code danh sách link. Ẩn cả cột nếu chưa có menu nào
+         * kích hoạt ở vị trí này (navItems rỗng).
+         * =============================================== */}
+
+        {navItems.length > 0 && (
+          <Reveal type="fade-up" delay={0.08} duration={0.5}>
+            <h3
+              className="
+                text-sm
+                font-black
+                uppercase
+                tracking-[0.22em]
+                text-white
+              "
+            >
+              Điều hướng
+            </h3>
+
+            <NavigationRenderer
+              items={navItems}
+              variant="footer"
+              className="mt-5 space-y-2.5 text-sm leading-6"
+              itemClassName="text-white/70 transition-colors duration-300 hover:text-white"
+              nestedListClassName="ml-3 mt-2 space-y-2 border-l border-white/15 pl-3"
+            />
+          </Reveal>
+        )}
 
         {/* =================================================
          * SOCIAL

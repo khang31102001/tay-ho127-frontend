@@ -21,6 +21,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 56_000,
     status: "active",
     mediaIds: ["media-banh-cuon-dish"],
+    modifierGroupIds: [],
     rating: 4.8,
     ratingCount: 25,
     badge: "DISH",
@@ -32,6 +33,8 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 72_000,
     status: "active",
     mediaIds: [],
+    // Minh họa Modifier (Phase 2) — khớp ví dụ nghiệp vụ "Bánh cuốn đặc biệt" với 2 nhóm Nước mắm/Rau.
+    modifierGroupIds: ["modgroup-nuoc-mam", "modgroup-rau"],
     badge: "DISH",
   },
   {
@@ -41,6 +44,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 50_000,
     status: "active",
     mediaIds: ["media-banh-cuon-dish"],
+    modifierGroupIds: [],
     rating: 4.1,
     ratingCount: 2,
     badge: "DISH",
@@ -52,6 +56,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 50_000,
     status: "active",
     mediaIds: ["media-banh-cuon-dish"],
+    modifierGroupIds: [],
     rating: 4.2,
     ratingCount: 25,
     badge: "DISH",
@@ -65,6 +70,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 40_000,
     status: "active",
     mediaIds: ["media-banh-cuon-dish"],
+    modifierGroupIds: [],
     rating: 4.0,
     ratingCount: 2,
     badge: "DISH",
@@ -76,6 +82,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 50_000,
     status: "active",
     mediaIds: ["media-banh-cuon-dish"],
+    modifierGroupIds: [],
     rating: 4.4,
     ratingCount: 2,
     badge: "DISH",
@@ -89,6 +96,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 50_000,
     status: "active",
     mediaIds: ["media-banh-cuon-dish"],
+    modifierGroupIds: [],
     rating: 3.4,
     ratingCount: 2,
     badge: "DISH",
@@ -100,6 +108,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 50_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "DISH",
   },
   {
@@ -109,6 +118,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 44_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "DISH",
   },
   {
@@ -118,6 +128,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 44_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "DISH",
   },
 
@@ -129,6 +140,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 40_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "DISH",
   },
 
@@ -140,6 +152,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 10_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "DISH",
   },
   {
@@ -149,6 +162,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 10_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "DISH",
   },
 
@@ -160,6 +174,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 24_000,
     status: "active",
     mediaIds: ["media-banh-cuon-dish"],
+    modifierGroupIds: [],
     rating: 4.9,
     ratingCount: 25,
     badge: "ADD_ON",
@@ -171,6 +186,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 24_000,
     status: "active",
     mediaIds: ["media-banh-cuon-dish"],
+    modifierGroupIds: [],
     rating: 4.7,
     ratingCount: 25,
     badge: "ADD_ON",
@@ -184,6 +200,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 12_000,
     status: "active",
     mediaIds: ["media-banh-cuon-dish"],
+    modifierGroupIds: [],
     rating: 4.3,
     ratingCount: 2,
     badge: "ADD_ON",
@@ -197,6 +214,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 5_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "ADD_ON",
   },
 
@@ -208,6 +226,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 10_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "ADD_ON",
   },
 
@@ -219,6 +238,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 60_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "PACKAGED_PRODUCT",
   },
 
@@ -230,6 +250,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 5_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "PACKAGED_PRODUCT",
   },
   {
@@ -239,6 +260,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 70_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "PACKAGED_PRODUCT",
   },
 
@@ -250,6 +272,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 20_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "BEVERAGE",
   },
   {
@@ -259,6 +282,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 15_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "BEVERAGE",
   },
 
@@ -270,6 +294,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 15_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "BEVERAGE",
   },
   {
@@ -279,6 +304,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 15_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "BEVERAGE",
   },
 
@@ -290,6 +316,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 15_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "BEVERAGE",
   },
   {
@@ -299,6 +326,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 15_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "BEVERAGE",
   },
   {
@@ -308,6 +336,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 15_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "BEVERAGE",
   },
   {
@@ -317,6 +346,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 15_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "BEVERAGE",
   },
   {
@@ -326,6 +356,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 15_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "BEVERAGE",
   },
   {
@@ -335,6 +366,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 25_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "BEVERAGE",
   },
   {
@@ -344,6 +376,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 15_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "BEVERAGE",
   },
 
@@ -355,6 +388,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 15_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "BEVERAGE",
   },
 
@@ -366,6 +400,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 10_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "BEVERAGE",
   },
 
@@ -377,6 +412,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 15_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "BEVERAGE",
   },
   {
@@ -386,6 +422,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 20_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "BEVERAGE",
   },
   {
@@ -395,6 +432,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 20_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "BEVERAGE",
   },
   {
@@ -404,6 +442,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 15_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "BEVERAGE",
   },
   {
@@ -413,6 +452,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 15_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "BEVERAGE",
   },
   {
@@ -422,6 +462,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 15_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "BEVERAGE",
   },
 
@@ -433,6 +474,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 25_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "BEVERAGE",
   },
   {
@@ -442,6 +484,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 23_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "BEVERAGE",
   },
   {
@@ -451,6 +494,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 18_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "BEVERAGE",
   },
 
@@ -462,6 +506,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 2_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "SERVICE_ITEM",
   },
   {
@@ -471,6 +516,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 1_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "SERVICE_ITEM",
   },
   {
@@ -480,6 +526,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 2_000,
     status: "active",
     mediaIds: [],
+    modifierGroupIds: [],
     badge: "SERVICE_ITEM",
   },
 
@@ -492,6 +539,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     oldPrice: 44_000,
     status: "active",
     mediaIds: ["media-banh-cuon-dish"],
+    modifierGroupIds: [],
     rating: 3.4,
     ratingCount: 2,
     badge: "Món chay",
@@ -504,6 +552,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     oldPrice: 72_000,
     status: "active",
     mediaIds: ["media-banh-cuon-dish"],
+    modifierGroupIds: [],
     rating: 4.6,
     ratingCount: 2,
     badge: "Món mặn",
@@ -515,6 +564,7 @@ export const SEED_PRODUCTS: ManagedProduct[] = [
     price: 78_000,
     status: "active",
     mediaIds: ["media-banh-cuon-dish"],
+    modifierGroupIds: [],
     rating: 4.5,
     ratingCount: 2,
     badge: "Món mặn",

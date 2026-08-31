@@ -1,10 +1,12 @@
 import { Container } from "@/components/ui/Container";
 import { FeaturedArticle, NewsHero, NewsListingSection, listNewsArticles, listNewsCategories } from "@/features/news";
+import { buildMetadata } from "@/lib/seo/build-metadata";
 
-export const metadata = {
-  title: "Tin tức | Bánh Cuốn Tây Hồ 127",
+export const metadata = buildMetadata({
+  title: "Tin tức",
   description: "Công thức, câu chuyện thương hiệu, ưu đãi và hoạt động mới nhất từ Bánh Cuốn Tây Hồ 127.",
-};
+  path: "/tin-tuc",
+});
 
 export default async function NewsPage() {
   const [articles, categories] = await Promise.all([listNewsArticles(), listNewsCategories()]);
