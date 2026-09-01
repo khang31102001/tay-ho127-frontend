@@ -9,7 +9,7 @@ const CART_STORAGE_KEY = "tayho-cart";
  * layer Component → Hook/Context → Service đang áp dụng cho các feature khác.
  * Khi có Backend Cart thật, chỉ cần thay nội dung các hàm này (gọi API thay
  * vì localStorage) — CartProvider và mọi component tiêu thụ (Header, MiniCart,
- * FloatingCartBar, Checkout...) không cần sửa.
+ * FloatingCart, Checkout...) không cần sửa.
  */
 /**
  * Loại bỏ dòng giỏ hàng lỗi thời/hỏng — chủ yếu là giỏ hàng được lưu từ trước
