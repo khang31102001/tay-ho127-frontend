@@ -136,22 +136,19 @@ export function MiniCart() {
           </span>
         </div>
 
-        <div className="flex gap-2">
-          <Link
-            href="/gio-hang"
-            onClick={close}
-            className="flex h-11 flex-1 items-center justify-center rounded-md border-2 border-brand-red text-sm font-bold text-brand-red transition hover:bg-brand-red hover:text-white"
-          >
-            Xem giỏ hàng
-          </Link>
-          <Link
-            href="/checkout"
-            onClick={close}
-            className="flex h-11 flex-1 items-center justify-center rounded-md bg-brand-red text-sm font-bold text-white transition hover:opacity-90"
-          >
-            Đặt ngay
-          </Link>
-        </div>
+        {/*
+         * Chỉ 1 CTA duy nhất: Checkout bắt buộc phải đi qua Cart Page
+         * (/gio-hang) để review trước (xem cart-review.service.ts) — trước
+         * đây có thêm nút "Đặt ngay" nhảy thẳng /checkout, bỏ đi để không còn
+         * đường tắt bỏ qua bước review.
+         */}
+        <Link
+          href="/gio-hang"
+          onClick={close}
+          className="flex h-11 w-full items-center justify-center rounded-md bg-brand-red text-sm font-bold text-white transition hover:opacity-90"
+        >
+          Xem giỏ hàng
+        </Link>
       </div>
     );
   }

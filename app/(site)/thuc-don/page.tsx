@@ -3,7 +3,6 @@ import {
   MenuHero,
   MenuGrid,
   fetchMenu,
-  FloatingCartBar,
   type MenuResponse,
 } from "@/features/menu";
 import { buildMetadata } from "@/lib/seo/build-metadata";
@@ -25,7 +24,6 @@ export default async function MenuPage() {
       <MenuHero />
 
       <MenuGrid groups={groups} />
-      <FloatingCartBar />
       {/* <CTASection /> */}
     </>
   );

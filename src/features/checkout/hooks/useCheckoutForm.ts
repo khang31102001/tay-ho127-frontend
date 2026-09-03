@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
 import type { CartItem } from "@/features/cart";
+import { consumeCartReviewedFlag } from "@/features/cart";
 import type { PopupStatus } from "@/components/shared/StatusPopup";
 import { useAuth } from "@/features/auth";
 import { createOrder } from "@/features/orders";
@@ -48,6 +49,34 @@ export function useCheckoutForm({ cartItems, totalPrice, clearCart }: UseCheckou
   const { user: currentUser } = useAuth();
 
   const [form, setForm] = useState<CheckoutFormState>(INITIAL_CHECKOUT_FORM);
+
+  /**
+   * Checkout bắt buộc phải đi qua Cart Review (/gio-hang) trước — chặn truy
+   * cập trực tiếp (gõ URL, bookmark, back/forward) bằng cờ markCartReviewed()
+   * chỉ được set khi bấm "Tiến hành đặt hàng" ở Cart Page. `null` = đang kiểm
+   * tra, chưa render form để tránh nháy nội dung Checkout trước khi xác nhận.
+   */
+  const [isCartReviewed, setIsCartReviewed] = useState<boolean | null>(null);
+
+  /**
+   * consumeCartReviewedFlag() xóa cờ ngay khi đọc (chỉ hợp lệ 1 lần) nên
+   * effect bên dưới không được chạy 2 lần — nếu không, lần chạy thứ 2 của
+   * React StrictMode (dev) sẽ đọc cờ rỗng do lần đầu đã xóa, tưởng nhầm là
+   * chưa qua Cart Review rồi redirect ngược lại /gio-hang.
+   */
+  const hasVerifiedCartReviewRef = useRef(false);
+
+  useEffect(() => {
+    if (hasVerifiedCartReviewRef.current) return;
+    hasVerifiedCartReviewRef.current = true;
+
+    if (consumeCartReviewedFlag()) {
+      setIsCartReviewed(true);
+    } else {
+      router.replace("/gio-hang");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Đã đăng nhập → điền sẵn thông tin đã biết, khách vẫn có thể sửa lại trước khi đặt hàng.
   useEffect(() => {
@@ -258,6 +287,7 @@ export function useCheckoutForm({ cartItems, totalPrice, clearCart }: UseCheckou
     popup,
     setPopup,
     isSubmitting,
+    isCartReviewed,
     totals,
     deliveryMethods,
     paymentMethods,

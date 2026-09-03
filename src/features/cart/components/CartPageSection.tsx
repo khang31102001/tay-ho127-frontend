@@ -2,10 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { formatCurrency } from "@/lib/format-currency";
 import MenuBackgroundDecoration from "@/components/ui/MenuBackgroundDecoration";
 import { useCart } from "../context/cart-context";
+import { markCartReviewed } from "../services/cart-review.service";
 import { CrossSellProducts } from "./CrossSellProducts";
 
 /**
@@ -13,11 +15,22 @@ import { CrossSellProducts } from "./CrossSellProducts";
  * hàng (số lượng, xóa món), KHÔNG có form thông tin khách hàng/fulfillment/
  * payment. Trước đây toàn bộ việc này bị gộp chung vào CheckoutSection, vi
  * phạm nguyên tắc Cart ≠ Checkout.
+ *
+ * Đây cũng là điểm DUY NHẤT được phép dẫn sang /checkout: bấm "Tiến hành đặt
+ * hàng" đánh dấu markCartReviewed() trước khi điều hướng — Checkout dùng cờ
+ * này để chặn mọi cách vào thẳng /checkout không qua review (xem
+ * cart-review.service.ts).
  */
 export function CartPageSection() {
+  const router = useRouter();
   const { cartItems, totalPrice, updateQuantity, removeFromCart } = useCart();
 
   const isEmpty = cartItems.length === 0;
+
+  function handleProceedToCheckout() {
+    markCartReviewed();
+    router.push("/checkout");
+  }
 
   return (
     <div className="relative isolate w-full min-h-screen bg-[#ff9418] px-5 py-28 md:px-0">
@@ -130,12 +143,13 @@ export function CartPageSection() {
                   Chọn thêm món
                 </Link>
 
-                <Link
-                  href="/checkout"
+                <button
+                  type="button"
+                  onClick={handleProceedToCheckout}
                   className="flex h-12  items-center justify-center rounded-md bg-brand-red px-8 text-[14px] font-black text-white transition hover:opacity-90 sm:flex-none"
                 >
                   Tiến hành đặt hàng
-                </Link>
+                </button>
               </div>
             </div>
           </section>
