@@ -39,7 +39,7 @@ Current features:
 | Feature | Domain | Notes |
 |---|---|---|
 | `features/home` | Homepage sections | `mocks/testimonials.mock.ts` |
-| `features/menu` | Customer menu browse/order UI | `MenuGrid`, `ProductCard`, `FloatingCartBar`, `MenuHero`; mock menu data in `mocks/menu-api-response.mock.json` |
+| `features/menu` | Customer menu browse/order UI | `MenuGrid`, `ProductCard`, `MenuHero`; mock menu data in `mocks/menu-api-response.mock.json` |
 | `features/auth` | Customer login modal | `AuthModal`; calls `app/api/auth/*` |
 | `features/checkout` | Checkout page | — |
 | `features/cart` | Cart + fly-to-cart animation | Owns `context/cart-context.tsx`, `context/fly-to-cart-context.tsx` |

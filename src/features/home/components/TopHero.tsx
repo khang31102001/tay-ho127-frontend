@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Clock3, MapPin, Phone, Play, type LucideIcon } from "lucide-react";
+import { Clock3, MapPin, Phone, type LucideIcon } from "lucide-react";
 
 import { useScrollThreshold } from "@/hooks/useScrollThreshold";
 
@@ -151,13 +151,18 @@ export function TopHero() {
           }
         `}
       >
-        <Image
-          src="/images/hero-cooking.png"
-          alt="Tráng bánh cuốn thủ công"
-          fill
-          priority
-          sizes="100vw"
+        <video
+          src="/videos/tayho12.mp4"
+          poster="/images/hero-cooking.png"
+          autoPlay
+          loop
+          muted
+          playsInline
           className="
+            absolute
+            inset-0
+            h-full
+            w-full
             object-cover
             object-center
           "
@@ -174,67 +179,6 @@ export function TopHero() {
             to-black/30
           "
         />
-
-        {/* =================================================
-         * NÚT PLAY
-         * =============================================== */}
-
-        <div
-          className="
-            absolute
-            inset-0
-            z-10
-
-            flex
-            items-center
-            justify-center
-          "
-        >
-          <button
-            type="button"
-            aria-label="Xem video giới thiệu"
-            className="
-              flex
-              h-14
-              w-14
-              items-center
-              justify-center
-
-              rounded-full
-              bg-orange-500
-              text-white
-
-              shadow-card
-              transition
-              hover:opacity-90
-              active:scale-95
-
-              sm:h-16
-              sm:w-16
-
-              md:h-[72px]
-              md:w-[72px]
-
-              lg:h-20
-              lg:w-20
-            "
-          >
-            <Play
-              className="
-                ml-1
-                size-5
-
-                sm:size-6
-
-                lg:size-7
-              "
-              fill="currentColor"
-              strokeWidth={0}
-            />
-          </button>
-        </div>
-
-    
 
         {/* Michelin */}
         <div
@@ -288,7 +232,6 @@ export function TopHero() {
           transition-opacity
           duration-500
           ease-out
-
           ${
             isScrolled
               ? "opacity-100"

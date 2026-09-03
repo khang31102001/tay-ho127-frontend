@@ -116,10 +116,15 @@ export function useProductDetail(product: ProductDetail) {
     addSelectedQuantityToCart(event.currentTarget);
   }
 
+  /**
+   * "Đặt ngay" thêm món vào giỏ rồi đưa thẳng tới Cart Page (/gio-hang) để
+   * khách review giỏ hàng — không nhảy thẳng /checkout (Checkout bắt buộc
+   * phải đi qua Cart Review trước, xem cart-review.service.ts).
+   */
   function handleOrderNow(event: MouseEvent<HTMLButtonElement>) {
     if (hasMissingRequiredModifier) return;
     addSelectedQuantityToCart(event.currentTarget);
-    router.push("/checkout");
+    router.push("/gio-hang");
   }
 
   return {

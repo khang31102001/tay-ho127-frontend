@@ -29,6 +29,7 @@ export function CheckoutReview() {
     popup,
     setPopup,
     isSubmitting,
+    isCartReviewed,
     totals,
     deliveryMethods,
     paymentMethods,
@@ -39,6 +40,15 @@ export function CheckoutReview() {
     handleSubmit,
     getInputClass,
   } = useCheckoutForm({ cartItems, totalPrice, clearCart });
+
+  /**
+   * `isCartReviewed` bắt đầu ở `null` trong lúc useCheckoutForm kiểm tra cờ
+   * đã review — không render form Checkout cho tới khi xác nhận xong, tránh
+   * nháy nội dung Checkout ngay trước khi bị điều hướng ngược về /gio-hang.
+   */
+  if (!isCartReviewed) {
+    return null;
+  }
 
   return (
     <div className="relative isolate w-full pb-40 pt-24  bg-[#ff9418] min-h-screen px-5 py-28 md:px-0">

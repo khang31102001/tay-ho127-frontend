@@ -9,3 +9,4 @@ export { MiniCart } from "./components/MiniCart";
 export { CartPageSection } from "./components/CartPageSection";
 
 export { calculateCartCount, calculateCartTotalPrice } from "./services/cart.service";
+export { markCartReviewed, consumeCartReviewedFlag } from "./services/cart-review.service";
