@@ -26,17 +26,14 @@ export function ProductCard({ item }: ProductCardProps) {
   /**
    * Dùng item.slug (= ManagedProduct.id thật, xem menu.types.ts) làm
    * CartProduct.productId — KHÔNG dùng item.id (chỉ là số thứ tự hiển thị
-   * trong danh sách hiện tại, đổi khác nhau giữa các trang/section chứa cùng
-   * 1 sản phẩm). Dùng số thứ tự vừa khiến Order (tra cứu lại Catalog theo id)
-   * không tìm thấy sản phẩm, vừa khiến giỏ hàng không gộp đúng số lượng khi
-   * cùng 1 sản phẩm được thêm từ nhiều danh sách khác nhau (trang chủ, thực
-   * đơn, sản phẩm liên quan...). Thêm nhanh từ Product Card không có bước
-   * chọn Modifier (xem ProductActions cho luồng đầy đủ ở trang chi tiết).
+   * trong danh sách hiện tại). Không còn bước chọn Modifier khi Add to Cart —
+   * các tùy chọn dùng chung (Nước mắm/Rau...) giờ là General Order Options,
+   * chọn 1 lần cho cả đơn ở Mini Cart/Cart Page (xem features/order-options).
    */
   const cartProduct = {
     productId: item.slug,
     name: item.name,
-    price: item.price,
+    basePrice: item.price,
     image: item.image,
   };
 
@@ -133,14 +130,6 @@ export function ProductCard({ item }: ProductCardProps) {
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-brand-red text-xl font-black leading-none text-white"
             >
               +
-            </button>
-
-            <button
-              type="button"
-              onClick={handleAddToCart}
-              className="h-10 shrink-0 whitespace-nowrap rounded-md bg-brand-red px-4 text-center text-[15px] font-bold leading-none text-white"
-            >
-              Đặt ngay
             </button>
           </div>
         </div>

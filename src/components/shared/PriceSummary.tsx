@@ -9,9 +9,11 @@ type PriceSummaryProps = {
 };
 
 /**
- * Khối "Chi tiết thanh toán" dùng chung giữa CheckoutReview (đang nhập) và
- * OrderTrackingPage — features/orders (đã đặt xong) — trước đây 2 nơi lặp lại
- * y hệt cấu trúc subtotal/shippingFee/discount/grandTotal, tách ra đây để sửa 1 chỗ.
+ * Khối "Chi tiết thanh toán" dùng chung giữa CartPageSection (features/cart),
+ * CheckoutReview (features/checkout, đang nhập) và OrderTrackingPage
+ * (features/orders, đã đặt xong) — cả 3 lặp lại y hệt cấu trúc subtotal/
+ * shippingFee/discount/grandTotal nên đặt ở components/shared thay vì thuộc
+ * riêng 1 feature.
  */
 export function PriceSummary({ subtotal, shippingFee, discount, grandTotal, title = "CHI TIẾT THANH TOÁN" }: PriceSummaryProps) {
   return (

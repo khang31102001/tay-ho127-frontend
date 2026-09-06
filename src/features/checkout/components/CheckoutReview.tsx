@@ -3,25 +3,32 @@
 import { useCart } from "@/features/cart";
 import { formatCurrency } from "@/lib/format-currency";
 import { StatusPopup } from "@/components/shared/StatusPopup";
+import { PriceSummary } from "@/components/shared/PriceSummary";
 import MenuBackgroundDecoration from "@/components/ui/MenuBackgroundDecoration";
+import { resolvePaymentMethod } from "@/features/payment";
 import { useCheckoutForm } from "../hooks/useCheckoutForm";
 import { CheckoutItemsList } from "./CheckoutItemsList";
-import { CustomerInformationForm } from "./CustomerInformationForm";
-import { OrderPreferenceForm } from "./OrderPreferenceForm";
-import { FulfillmentSelector } from "./FulfillmentSelector";
+import { OrderInformationSection } from "./OrderInformationSection";
 import { PaymentMethodSelector } from "./PaymentMethodSelector";
-import { PriceSummary } from "./PriceSummary";
 
 /**
- * #9 CHECKOUT REVIEW — trang review-only, KHÔNG sửa số lượng/xóa món (việc đó
- * thuộc Cart Page /gio-hang). Compose từ các section nhỏ (mỗi section 1 file
- * riêng) thay vì 1 component vài trăm dòng như trước — mỗi section đúng 1
- * trong 9 mục của #9: 01 Customer Information, 02 Fulfillment, 03+04 Order
- * Items + Modifiers, 05 Order Preferences, 07 Pricing Summary, 08 Payment
- * Method, 09 Place Order. (06 Promotion chưa có trong scope hiện tại.)
+ * #9 CHECKOUT REVIEW — trang review-only: KHÔNG sửa số lượng/xóa món, KHÔNG
+ * sửa Fulfillment/Order Preferences (tất cả thuộc Cart Page /gio-hang — xem
+ * OrderInformationSection). Bố cục theo đúng luồng đọc tự nhiên: đang mua gì
+ * → giao cho ai/nhận thế nào/tùy chọn gì → bao nhiêu tiền → thanh toán bằng
+ * gì → xác nhận:
+ *
+ *   1. THỰC ĐƠN CỦA BẠN HÔM NAY (CheckoutItemsList)
+ *   2. THÔNG TIN ĐẶT HÀNG (OrderInformationSection — Customer [editable] +
+ *      Fulfillment/Order Preferences [read-only, đã chọn ở Cart])
+ *   3. TÓM TẮT THANH TOÁN (PriceSummary)
+ *   4. PHƯƠNG THỨC THANH TOÁN (PaymentMethodSelector)
+ *   5. CTA — nhãn/hành động phụ thuộc payment method đã chọn, xem
+ *      useCheckoutForm.handleSubmit: COD tạo Order ngay, các phương thức còn
+ *      lại tạo CheckoutSession rồi sang Payment Confirmation.
  */
 export function CheckoutReview() {
-  const { cartItems, totalPrice, clearCart } = useCart();
+  const { cartItems, totalPrice, clearCart, address, utensils, note, orderOptionSelections } = useCart();
 
   const {
     form,
@@ -31,8 +38,8 @@ export function CheckoutReview() {
     isSubmitting,
     isCartReviewed,
     totals,
-    deliveryMethods,
     paymentMethods,
+    selectedDeliveryMethod,
     selectedPaymentMethod,
     isLoadingMethods,
     updateFormField,
@@ -50,36 +57,37 @@ export function CheckoutReview() {
     return null;
   }
 
+  // CASH không cần "tiếp tục" sang bước thanh toán online nào nữa — nhãn CTA phản ánh đúng hành động sắp xảy ra.
+  const ctaLabel =
+    selectedPaymentMethod && resolvePaymentMethod(selectedPaymentMethod.group) === "CASH"
+      ? "ĐẶT HÀNG"
+      : "TIẾP TỤC THANH TOÁN";
+
   return (
     <div className="relative isolate w-full pb-40 pt-24  bg-[#ff9418] min-h-screen px-5 py-28 md:px-0">
       <MenuBackgroundDecoration leftColor="#F5C884" rightColor="#F5C884" />
 
       <form onSubmit={handleSubmit} className="mx-auto max-w-[730px] space-y-3">
-        <CheckoutItemsList cartItems={cartItems} />
+        <CheckoutItemsList cartItems={cartItems} orderOptionSelections={orderOptionSelections} />
 
-        <CustomerInformationForm
+        <OrderInformationSection
           form={form}
           formErrors={formErrors}
           onTextInputChange={handleTextInputChange}
           getInputClass={getInputClass}
+          selectedDeliveryMethod={selectedDeliveryMethod}
+          address={address}
+          isLoadingDeliveryMethod={isLoadingMethods}
+          utensils={utensils}
+          note={note}
         />
 
-        <OrderPreferenceForm
-          utensils={form.utensils}
-          onUtensilsChange={(value) => updateFormField("utensils", value)}
-          note={form.note}
-          onNoteChange={handleTextInputChange}
-        />
-
-        <FulfillmentSelector
-          methods={deliveryMethods}
-          selectedMethodId={form.deliveryMethodId}
-          onSelectMethod={(methodId) => updateFormField("deliveryMethodId", methodId)}
-          address={form.address}
-          onAddressChange={handleTextInputChange}
-          addressError={formErrors.address}
+        <PriceSummary
+          title="TÓM TẮT THANH TOÁN"
+          subtotal={totals.subtotal}
           shippingFee={totals.shippingFee}
-          isLoading={isLoadingMethods}
+          discount={totals.discount}
+          grandTotal={totals.grandTotal}
         />
 
         <PaymentMethodSelector
@@ -88,13 +96,6 @@ export function CheckoutReview() {
           selectedMethod={selectedPaymentMethod}
           onSelect={(methodId) => updateFormField("paymentMethodId", methodId)}
           isLoading={isLoadingMethods}
-        />
-
-        <PriceSummary
-          subtotal={totals.subtotal}
-          shippingFee={totals.shippingFee}
-          discount={totals.discount}
-          grandTotal={totals.grandTotal}
         />
 
         {formErrors.submit && (
@@ -111,7 +112,7 @@ export function CheckoutReview() {
             disabled={cartItems.length === 0 || isSubmitting || isLoadingMethods}
             className="rounded-md bg-brand-red px-12 py-4 text-[16px] font-black disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isSubmitting ? "ĐANG XỬ LÝ..." : "ĐẶT ĐƠN"}
+            {isSubmitting ? "ĐANG XỬ LÝ..." : ctaLabel}
           </button>
         </div>
       </form>

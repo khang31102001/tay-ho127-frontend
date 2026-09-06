@@ -4,6 +4,13 @@ import type { ManagedPaymentMethod } from "../types/payment-method.types";
  * MOCK CONTRACT: khớp 2 phương thức đang xuất hiện trong SEED_ORDERS/SEED_PAYMENTS
  * (cod/bank_transfer), thêm 2 phương thức nhóm "card"/"e_wallet" đang tắt để
  * minh họa đủ 4 nhóm PaymentMethodGroup (Phase 0) mà chưa cần Gateway thật.
+ * pm-5 (MB Bank) minh họa "nhiều tài khoản cùng nhóm bank_transfer" — mỗi tài
+ * khoản là 1 ManagedPaymentMethod riêng (đúng quyết định đã chốt: không nhúng
+ * mảng bankAccounts vào 1 method, xem payment-method.types.ts).
+ * pm-6 (Apple Pay, group="card") + pm-7 (Google Pay, group="e_wallet") đang
+ * BẬT — Checkout gộp cả 2 group này thành 1 card "DIGITAL_WALLET" duy nhất
+ * (xem features/payment/utils/resolve-payment-method.ts), minh họa việc gộp
+ * xuyên nhóm hoạt động đúng, không chỉ trong cùng 1 group như bank_transfer.
  */
 export const SEED_PAYMENT_METHODS: ManagedPaymentMethod[] = [
   {
@@ -63,6 +70,52 @@ export const SEED_PAYMENT_METHODS: ManagedPaymentMethod[] = [
     gateway: "momo",
     displayOrder: 4,
     isActive: false,
+    isDefault: false,
+    createdAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:00:00.000Z",
+  },
+  {
+    id: "pm-5",
+    code: "bank_transfer_mb",
+    name: "Chuyển khoản MB Bank",
+    description: "Chuyển khoản trước, đơn được xác nhận sau khi nhận được tiền.",
+    iconMediaId: null,
+    group: "bank_transfer",
+    instructions: "Nội dung chuyển khoản: Mã đơn hàng + Số điện thoại.",
+    bankName: "MB Bank",
+    bankAccountNumber: "0987651234",
+    bankAccountHolder: "CONG TY TNHH BANH CUON TAY HO 127",
+    bankBranch: "Chi nhánh Quận 3, TP. Hồ Chí Minh",
+    displayOrder: 5,
+    isActive: true,
+    isDefault: false,
+    createdAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:00:00.000Z",
+  },
+  {
+    id: "pm-6",
+    code: "apple_pay",
+    name: "Apple Pay",
+    description: "Thanh toán nhanh bằng Apple Pay.",
+    iconMediaId: null,
+    group: "card",
+    gateway: "apple_pay",
+    displayOrder: 6,
+    isActive: true,
+    isDefault: false,
+    createdAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:00:00.000Z",
+  },
+  {
+    id: "pm-7",
+    code: "google_pay",
+    name: "Google Pay",
+    description: "Thanh toán nhanh bằng Google Pay.",
+    iconMediaId: null,
+    group: "e_wallet",
+    gateway: "google_pay",
+    displayOrder: 7,
+    isActive: true,
     isDefault: false,
     createdAt: "2026-01-01T00:00:00.000Z",
     updatedAt: "2026-01-01T00:00:00.000Z",

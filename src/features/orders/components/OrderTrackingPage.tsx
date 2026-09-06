@@ -7,11 +7,7 @@ import Link from "next/link";
 import { formatCurrency } from "@/lib/format-currency";
 import MenuBackgroundDecoration from "@/components/ui/MenuBackgroundDecoration";
 import { StatusTimeline, type StatusTimelineEntry } from "@/components/shared/StatusTimeline";
-// Import thẳng component/service/type (không qua barrel @/features/orders) —
-// barrel đó re-export cả Explorer/Editor/Badge admin (UI "use client"), import
-// qua barrel ở đây (Site) sẽ kéo UI admin vào bundle Site. Lý do đầy đủ xem
-// features/menu/services/menu.service.ts.
-import { PriceSummary } from "@/features/checkout/components/PriceSummary";
+import { PriceSummary } from "@/components/shared/PriceSummary";
 // Import thẳng (không qua barrel @/features/payments) — barrel đó re-export
 // cả Explorer/Detail admin (UI "use client"), lý do đầy đủ xem
 // features/menu/services/menu.service.ts.
@@ -19,6 +15,7 @@ import { getPaymentByOrderId, retryPayment } from "@/features/payments/services/
 import type { ManagedPayment } from "@/features/payments/types/payment.types";
 import { getOrderByCode } from "../services/order.service";
 import { resolveCustomerOrderStatusLabel } from "../utils/customer-order-status-label";
+import { PAYMENT_STATUS_LABEL } from "../types/payment-status";
 import type { ManagedOrder } from "../types/order.types";
 
 type OrderTrackingPageProps = {
@@ -96,6 +93,9 @@ export function OrderTrackingPage({ orderCode }: OrderTrackingPageProps) {
                 Cảm ơn bạn đã đặt hàng tại Bánh Cuốn Tây Hồ 127.
               </p>
               <p className="mt-3 text-[16px] font-black text-brand-greenDark">Mã đơn hàng: {order.orderCode}</p>
+              <p className="mt-1 text-[12px] text-[#4b4b4b]">
+                Ngày đặt: {new Date(order.createdAt).toLocaleString("vi-VN")}
+              </p>
               <p className="mt-1 text-[13px] font-bold text-brand-red">
                 Trạng thái: {resolveCustomerOrderStatusLabel(order.orderStatus, order.isPickup)}
               </p>
@@ -157,6 +157,10 @@ export function OrderTrackingPage({ orderCode }: OrderTrackingPageProps) {
                 </p>
                 <p>
                   <strong className="text-brand-greenDark">Thanh toán:</strong> {order.paymentMethodLabel}
+                </p>
+                <p>
+                  <strong className="text-brand-greenDark">Trạng thái thanh toán:</strong>{" "}
+                  {PAYMENT_STATUS_LABEL[order.paymentStatus]}
                 </p>
                 <p>
                   <strong className="text-brand-greenDark">Dụng cụ ăn uống:</strong>{" "}

@@ -1,7 +1,17 @@
 import { SEED_PAYMENT_METHODS } from "../mocks/payment-method.mock";
 import type { ManagedPaymentMethod } from "../types/payment-method.types";
 
-const STORAGE_KEY = "tayho-admin-payment-methods";
+/**
+ * "-v2" vì `group` từng là nhị phân "online"/"offline" trước khi đổi sang 4
+ * PaymentMethodGroup thật (cod/bank_transfer/card/e_wallet — xem
+ * payment-method.types.ts). Trình duyệt đã cache dữ liệu theo shape cũ sẽ có
+ * `group` không khớp bất kỳ giá trị nào PaymentMethodSelector nhận diện được
+ * (resolvePaymentMethod trả về undefined), khiến toàn bộ danh sách bị lọc
+ * rỗng và Checkout không hiển thị phương thức thanh toán nào — đổi tên key để
+ * buộc các bản cache cũ tự reseed theo SEED_PAYMENT_METHODS mới thay vì kẹt
+ * vĩnh viễn với shape lỗi thời.
+ */
+const STORAGE_KEY = "tayho-admin-payment-methods-v2";
 const MOCK_DELAY_MS = 300;
 
 function delay(): Promise<void> {

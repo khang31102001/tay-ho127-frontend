@@ -33,7 +33,7 @@ export function CrossSellProductCard({ item }: CrossSellProductCardProps) {
   const cartProduct = {
     productId: item.slug,
     name: item.name,
-    price: item.price,
+    basePrice: item.price,
     image: item.image,
   };
 

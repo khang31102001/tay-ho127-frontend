@@ -3,17 +3,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { UserRound } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 
-import {
-  CartTrigger,
-  FloatingCart,
-  MiniCart,
-  useCart,
-  useFlyToCart,
-  useMiniCart,
-} from "@/features/cart";
+import { CartTrigger, MiniCart, useCart, useFlyToCart, useMiniCart } from "@/features/cart";
 import { useScrollThreshold } from "@/hooks/useScrollThreshold";
 import { AuthModal, useAuth, type AuthUser } from "@/features/auth";
 
@@ -67,6 +59,14 @@ export function Header({
 
   const isDarkVariant = variant === "dark";
 
+  /**
+   * Trạng thái 1 (chưa scroll) — Header Cart hiện tại đây; trạng thái 2 (đã
+   * scroll) — CartFloatingTrigger (features/cart) tự hiện góc phải dưới dựa
+   * trên CÙNG `useScrollThreshold()`. 2 nút chỉ là 2 presentation của cùng 1
+   * Mini Cart (cùng cartCount/toggleMiniCart) — không có logic Cart riêng.
+   */
+  const showHeaderCart = !isScrolled && cartCount > 0;
+
   /*
    * Dark variant:
    * - Top page    -> transparent + white
@@ -77,8 +77,6 @@ export function Header({
    */
   const isTransparent =
     isDarkVariant && !isScrolled;
-
-  const displayCart = cartCount > 0;
 
   /* =================================================
    * HANDLERS
@@ -232,31 +230,25 @@ export function Header({
             />
 
             {/* =================================================
-             * GIỎ HÀNG (State 1: Header Cart — ẩn khi đã scroll,
-             * FloatingCart bên dưới sẽ thay thế, xem State 2)
+             * GIỎ HÀNG (Trạng thái 1: Header Cart — ẩn khi đã
+             * scroll, CartFloatingTrigger thay thế, xem State 2)
              * =============================================== */}
 
-            <AnimatePresence initial={false}>
-              {displayCart && !isScrolled && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9, y: -6 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9, y: -6 }}
-                  transition={{ duration: 0.2, ease: "easeOut" }}
-                  className="hidden md:block"
-                >
-                  <CartTrigger
-                    ref={(element) =>
-                      registerCartTarget("desktop", element)
-                    }
-                    variant="header"
-                    cartCount={cartCount}
-                    showLabel
-                    onClick={toggleMiniCart}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <div
+              className={`hidden transition-[opacity,transform,max-width] duration-200 ease-out md:block ${
+                showHeaderCart
+                  ? "max-w-[160px] scale-100 opacity-100"
+                  : "pointer-events-none max-w-0 scale-90 opacity-0"
+              }`}
+            >
+              <CartTrigger
+                ref={(element) => registerCartTarget("desktop", showHeaderCart ? element : null)}
+                variant="header"
+                cartCount={cartCount}
+                showLabel
+                onClick={toggleMiniCart}
+              />
+            </div>
 
             {/* =================================================
              * ĐĂNG NHẬP
@@ -316,7 +308,6 @@ export function Header({
               currentUser={currentUser}
               cartCount={cartCount}
               isDark={isTransparent}
-              isScrolled={isScrolled}
               onLoginClick={() =>
                 setLoginOpen(true)
               }
@@ -326,10 +317,7 @@ export function Header({
         </div>
       </header>
 
-      {/* State 2: Floating Cart — nổi lên khi đã scroll, thay Header Cart */}
-      <FloatingCart />
-
-      {/* Mini Cart dùng chung cho Header Cart + Floating Cart + Cart trong menu mobile */}
+      {/* Nút giỏ hàng floating (góc phải dưới) + Drawer — xem MiniCart.tsx */}
       <MiniCart />
 
       <AuthModal
