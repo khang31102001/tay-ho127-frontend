@@ -1,9 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 
 import { formatCurrency } from "@/lib/format-currency";
+import { QuantityStepper } from "@/components/ui/QuantityStepper";
+import { calculateCartItemTotal, calculateCartItemUnitPrice } from "../services/cart.service";
 import type { CartItem } from "../types/cart.types";
 
 type MiniCartItemProps = {
@@ -13,6 +15,13 @@ type MiniCartItemProps = {
   onRemove: (productId: string) => void;
 };
 
+/**
+ * Mini Cart cố tình KHÔNG hiện lại toàn bộ checkbox modifier trực tiếp (sẽ
+ * làm UI quá dài) — chỉ tóm tắt modifier/ghi chú đã chọn (nếu có, từ dữ liệu
+ * cũ/reorder). Không còn sửa cấu hình theo từng món — Nước mắm/Rau đã là
+ * General Order Options (xem GeneralOrderOptions), quantity sửa trực tiếp
+ * ngay tại đây.
+ */
 export function MiniCartItem({ item, onIncrease, onDecrease, onRemove }: MiniCartItemProps) {
   return (
     <li className="flex gap-3 py-3">
@@ -40,7 +49,7 @@ export function MiniCartItem({ item, onIncrease, onDecrease, onRemove }: MiniCar
           </button>
         </div>
 
-        <p className="mt-0.5 text-xs text-brand-muted">{formatCurrency(item.price)}</p>
+        <p className="mt-0.5 text-xs text-brand-muted">{formatCurrency(calculateCartItemUnitPrice(item))}</p>
 
         {item.modifiers && item.modifiers.length > 0 && (
           <p className="mt-0.5 line-clamp-2 text-[11px] text-brand-muted">
@@ -48,34 +57,19 @@ export function MiniCartItem({ item, onIncrease, onDecrease, onRemove }: MiniCar
           </p>
         )}
 
+        {item.specialInstructions && (
+          <p className="mt-0.5 line-clamp-1 text-[11px] italic text-brand-muted">Ghi chú: {item.specialInstructions}</p>
+        )}
+
         <div className="mt-auto flex items-center justify-between pt-1.5">
-          <div className="flex items-center rounded-md border border-brand-line">
-            <button
-              type="button"
-              onClick={() => onDecrease(item.id)}
-              aria-label={`Giảm số lượng ${item.name}`}
-              className="flex h-6 w-6 items-center justify-center text-brand-ink transition hover:bg-brand-cream"
-            >
-              <Minus size={12} />
-            </button>
+          <QuantityStepper
+            quantity={item.quantity}
+            onIncrement={() => onIncrease(item.id)}
+            onDecrement={() => onDecrease(item.id)}
+            size="sm"
+          />
 
-            <span className="w-6 text-center text-xs font-bold text-brand-ink">
-              {item.quantity}
-            </span>
-
-            <button
-              type="button"
-              onClick={() => onIncrease(item.id)}
-              aria-label={`Tăng số lượng ${item.name}`}
-              className="flex h-6 w-6 items-center justify-center text-brand-ink transition hover:bg-brand-cream"
-            >
-              <Plus size={12} />
-            </button>
-          </div>
-
-          <span className="text-[13px] font-black text-brand-ink">
-            {formatCurrency(item.price * item.quantity)}
-          </span>
+          <span className="text-[13px] font-black text-brand-ink">{formatCurrency(calculateCartItemTotal(item))}</span>
         </div>
       </div>
     </li>

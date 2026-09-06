@@ -27,9 +27,9 @@ function formatEstimate(minMinutes?: number, maxMinutes?: number): string | null
  * (2) nếu DELIVERY mới hiện danh sách DeliveryMethod cụ thể (STANDARD/EXPRESS
  * ở đây là "Giao trong/ngoài bán kính 5km", xem features/delivery-methods) +
  * địa chỉ giao hàng — 2 field này gắn chặt với việc chọn Delivery nên đặt
- * chung 1 component thay vì tách rời như trước (địa chỉ từng nằm ở
- * CustomerInformationForm). Trước đây trang chỉ hiện 1 danh sách phẳng gồm cả
- * pickup lẫn delivery — không đúng khái niệm FulfillmentMethod của #7.
+ * chung 1 component. Đặt ở Cart Page (CartPageSection) — khách chọn cách
+ * nhận hàng ngay tại giỏ hàng, Checkout chỉ còn Customer Information/Review/
+ * Payment/Confirm, không lặp lại section này.
  */
 export function FulfillmentSelector({
   methods,

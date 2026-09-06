@@ -1,33 +1,69 @@
 "use client";
 
-import Image from "next/image";
+import { useState, type ChangeEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { formatCurrency } from "@/lib/format-currency";
 import MenuBackgroundDecoration from "@/components/ui/MenuBackgroundDecoration";
 import { useCart } from "../context/cart-context";
+import { useCartFulfillment } from "../hooks/useCartFulfillment";
 import { markCartReviewed } from "../services/cart-review.service";
+import { CartItemRow } from "./CartItemRow";
 import { CrossSellProducts } from "./CrossSellProducts";
+import { FulfillmentSelector } from "./FulfillmentSelector";
+import { GeneralOrderOptions } from "./GeneralOrderOptions";
 
 /**
- * Cart Page đầy đủ (/gio-hang) — KHÁC Checkout (/checkout): chỉ xem/sửa giỏ
- * hàng (số lượng, xóa món), KHÔNG có form thông tin khách hàng/fulfillment/
- * payment. Trước đây toàn bộ việc này bị gộp chung vào CheckoutSection, vi
- * phạm nguyên tắc Cart ≠ Checkout.
+ * Cart Page đầy đủ (/gio-hang) — KHÁC Checkout (/checkout): Cart giờ đây sở
+ * hữu luôn CÁCH NHẬN HÀNG + Tùy chọn chung cho đơn hàng (gộp General Order
+ * Options + Dụng cụ ăn uống/Ghi chú đơn hàng vào 1 section duy nhất, xem
+ * GeneralOrderOptions showOrderPreferences) — khách cấu hình ngay tại giỏ
+ * hàng, trước khi qua Checkout (chỉ còn Customer Information/Review Order/
+ * Payment Method/Confirm). Giá trị chọn được lưu ở CartContext
+ * (deliveryMethodId/address/utensils/note/orderOptionSelections) nên không
+ * mất khi điều hướng sang /checkout — xem cart.types.ts.
  *
- * Đây cũng là điểm DUY NHẤT được phép dẫn sang /checkout: bấm "Tiến hành đặt
- * hàng" đánh dấu markCartReviewed() trước khi điều hướng — Checkout dùng cờ
- * này để chặn mọi cách vào thẳng /checkout không qua review (xem
- * cart-review.service.ts).
+ * Đây cũng là điểm DUY NHẤT được phép dẫn sang /checkout: bấm "Tiếp tục
+ * thanh toán" đánh dấu markCartReviewed() trước khi điều hướng — Checkout
+ * dùng cờ này để chặn mọi cách vào thẳng /checkout không qua review (xem
+ * cart-review.service.ts). Vì Checkout không còn UI để sửa địa chỉ giao
+ * hàng, việc bắt buộc nhập địa chỉ (khi chọn Giao hàng) phải chặn NGAY tại
+ * đây trước khi cho phép điều hướng.
+ *
+ * KHÔNG hiển thị Price Summary ở đây — Cart chỉ tập trung cấu hình đơn hàng,
+ * Price Summary (tạm tính/phí ship/giảm giá/tổng thanh toán) chỉ hiện ở
+ * Checkout để khách review trước khi xác nhận (xem CheckoutReview.tsx).
  */
 export function CartPageSection() {
   const router = useRouter();
   const { cartItems, totalPrice, updateQuantity, removeFromCart } = useCart();
+  const {
+    deliveryMethods,
+    isLoadingDeliveryMethods,
+    deliveryMethodId,
+    setDeliveryMethodId,
+    address,
+    setAddress,
+    selectedDeliveryMethod,
+    shippingFee,
+  } = useCartFulfillment();
+
+  const [addressError, setAddressError] = useState<string | undefined>();
 
   const isEmpty = cartItems.length === 0;
 
+  function handleAddressChange(event: ChangeEvent<HTMLInputElement>) {
+    setAddress(event.target.value);
+    setAddressError(undefined);
+  }
+
   function handleProceedToCheckout() {
+    // Chỉ bắt buộc địa chỉ khi giao tận nơi — "Tự đến lấy" dùng địa chỉ cửa hàng, không cần khách nhập.
+    if (selectedDeliveryMethod?.type !== "pickup" && !address.trim()) {
+      setAddressError("Vui lòng nhập địa chỉ giao hàng.");
+      return;
+    }
+
     markCartReviewed();
     router.push("/checkout");
   }
@@ -55,70 +91,18 @@ export function CartPageSection() {
           ) : (
             <div>
               {cartItems.map((item) => (
-                <article
+                <CartItemRow
                   key={item.id}
-                  className="grid grid-cols-1 gap-4 border-b border-black py-3 last:border-b-0 sm:grid-cols-[115px_1fr_120px]"
-                >
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    width={105}
-                    height={88}
-                    className="h-[88px] w-[105px] rounded object-cover"
-                  />
-
-                  <div>
-                    <h2 className="text-[16px] font-black text-brand-greenDark">{item.name}</h2>
-                    <p className="mt-1 text-[13px] text-[#4b4b4b]">{formatCurrency(item.price)} / phần</p>
-
-                    {item.modifiers && item.modifiers.length > 0 && (
-                      <ul className="mt-1 text-[12px] text-[#7a7a7a]">
-                        {item.modifiers.map((modifier) => (
-                          <li key={modifier.optionId}>
-                            {modifier.groupName}: {modifier.optionLabel}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-
-                    <div className="mt-2 flex flex-wrap items-center gap-2 text-[13px] font-bold text-black">
-                      <span>Số lượng</span>
-
-                      <button
-                        type="button"
-                        aria-label={`Giảm số lượng ${item.name}`}
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="flex h-7 w-7 items-center justify-center rounded border border-gray-300"
-                      >
-                        −
-                      </button>
-
-                      <strong>{item.quantity}</strong>
-
-                      <button
-                        type="button"
-                        aria-label={`Tăng số lượng ${item.name}`}
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="flex h-7 w-7 items-center justify-center rounded border border-gray-300"
-                      >
-                        +
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => removeFromCart(item.id)}
-                        className="ml-2 text-sm font-bold text-brand-red"
-                      >
-                        Xóa
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="self-center text-left text-[16px] font-black text-black sm:text-right">
-                    {formatCurrency(item.price * item.quantity)}
-                  </div>
-                </article>
+                  item={item}
+                  onIncrease={(cartItemId) => updateQuantity(cartItemId, item.quantity + 1)}
+                  onDecrease={(cartItemId) => updateQuantity(cartItemId, item.quantity - 1)}
+                  onRemove={removeFromCart}
+                />
               ))}
+
+              <div className="mt-4  pt-4">
+                <GeneralOrderOptions showOrderPreferences />
+              </div>
             </div>
           )}
         </section>
@@ -126,31 +110,36 @@ export function CartPageSection() {
         {!isEmpty && <CrossSellProducts />}
 
         {!isEmpty && (
+          <FulfillmentSelector
+            methods={deliveryMethods}
+            selectedMethodId={deliveryMethodId}
+            onSelectMethod={setDeliveryMethodId}
+            address={address}
+            onAddressChange={handleAddressChange}
+            addressError={addressError}
+            shippingFee={shippingFee}
+            isLoading={isLoadingDeliveryMethods}
+          />
+        )}
+
+        {!isEmpty && (
           <section className="rounded-lg bg-white p-7 shadow-soft">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-              <div className="min-w-0 flex-1 text-[15px] font-bold text-brand-greenDark">
-                Tạm tính: <span className="text-[18px] font-black">{formatCurrency(totalPrice)}</span>
-                <p className="mt-0.5 text-[12px] font-medium text-[#4b4b4b]">
-                  Phí vận chuyển và khuyến mãi (nếu có) sẽ được tính ở bước tiếp theo.
-                </p>
-              </div>
+            <div className="flex flex-col items-stretch justify-end gap-3 sm:flex-row sm:items-center">
+              <Link
+                href="/thuc-don"
+                className="flex h-12 flex-1 items-center justify-center rounded-md border-2 border-brand-red px-6 text-[14px] font-black text-brand-red transition hover:bg-brand-red hover:text-white sm:flex-none"
+              >
+                Chọn thêm món
+              </Link>
 
-              <div className="flex shrink-0 gap-3">
-                <Link
-                  href="/thuc-don"
-                  className="flex h-12 flex-1 items-center justify-center rounded-md border-2 border-brand-red px-6 text-[14px] font-black text-brand-red transition hover:bg-brand-red hover:text-white sm:flex-none"
-                >
-                  Chọn thêm món
-                </Link>
-
-                <button
-                  type="button"
-                  onClick={handleProceedToCheckout}
-                  className="flex h-12  items-center justify-center rounded-md bg-brand-red px-8 text-[14px] font-black text-white transition hover:opacity-90 sm:flex-none"
-                >
-                  Tiến hành đặt hàng
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={handleProceedToCheckout}
+                disabled={isLoadingDeliveryMethods}
+                className="flex h-12 items-center justify-center rounded-md bg-brand-red px-8 text-[14px] font-black text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
+              >
+                Tiếp tục thanh toán
+              </button>
             </div>
           </section>
         )}

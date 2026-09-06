@@ -58,15 +58,14 @@ export function useReorder() {
           }
         }
 
-        const modifiersTotal = modifiers.reduce((sum, modifier) => sum + modifier.priceAdjustment, 0);
-
         const cartProduct: CartProduct = {
           productId: product.id,
           name: product.name,
-          price: product.price + modifiersTotal,
+          basePrice: product.price,
           // Dùng lại ảnh snapshot của Order — sai lệch ảnh không ảnh hưởng tiền, không cần tra lại Media.
           image: item.productImage,
           modifiers,
+          specialInstructions: item.note,
         };
 
         for (let i = 0; i < item.quantity; i += 1) {

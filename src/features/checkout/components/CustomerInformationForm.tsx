@@ -8,11 +8,17 @@ type CustomerInformationFormProps = {
   getInputClass: (hasError?: boolean) => string;
 };
 
-/** #8 CUSTOMER INFORMATION — Họ tên/SĐT bắt buộc, Email tùy chọn. Địa chỉ giao hàng thuộc FulfillmentSelector (gắn chặt với lựa chọn Pickup/Delivery). */
+/**
+ * #8 CUSTOMER INFORMATION — Họ tên/SĐT bắt buộc, Email tùy chọn. Địa chỉ
+ * giao hàng thuộc FulfillmentSummary (đã chọn ở Cart). Không tự bọc outer
+ * card — được compose bên trong OrderInformationSection cùng
+ * FulfillmentSummary/OrderPreferenceSummary thành 1 card "THÔNG TIN ĐẶT
+ * HÀNG" duy nhất.
+ */
 export function CustomerInformationForm({ form, formErrors, onTextInputChange, getInputClass }: CustomerInformationFormProps) {
   return (
-    <section className="rounded-lg bg-white p-7 shadow-soft">
-      <h2 className="mb-4 text-[18px] font-black text-brand-green">THÔNG TIN ĐẶT HÀNG</h2>
+    <div>
+      <h3 className="mb-3 text-[14px] font-black text-brand-greenDark">Thông tin khách hàng</h3>
 
       <div className="space-y-3 text-[13px] font-medium text-brand-greenDark">
         <label className="block">
@@ -63,6 +69,6 @@ export function CustomerInformationForm({ form, formErrors, onTextInputChange, g
           />
         </label>
       </div>
-    </section>
+    </div>
   );
 }

@@ -7,11 +7,11 @@ export type DeliveryMethodType = (typeof DELIVERY_METHOD_TYPE_OPTIONS)[number]["
 
 /**
  * DeliveryMethod = lựa chọn giao/nhận hàng Admin cấu hình để hiển thị ở
- * Checkout — khác Shipment (theo dõi giao hàng thực tế sau khi đơn được tạo,
- * chưa xây trong Phase này). Không có DeliveryZone (phí theo quận/huyện) —
- * quyết định "Bắt đầu đơn giản": 1 baseFee cố định mỗi method, giống cách
- * checkout hiện tại phân theo within_5km/over_5km (xem
- * features/checkout/types/checkout.types.ts) thay vì tra cứu theo địa giới.
+ * Cart Page (features/cart, chọn trước khi sang Checkout) — khác Shipment
+ * (theo dõi giao hàng thực tế sau khi đơn được tạo, chưa xây trong Phase
+ * này). Không có DeliveryZone (phí theo quận/huyện) — quyết định "Bắt đầu
+ * đơn giản": 1 baseFee cố định mỗi method, phân theo within_5km/over_5km
+ * thay vì tra cứu theo địa giới.
  */
 export type ManagedDeliveryMethod = {
   id: string;

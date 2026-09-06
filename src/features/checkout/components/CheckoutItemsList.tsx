@@ -1,10 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { formatCurrency } from "@/lib/format-currency";
-import type { CartItem } from "@/features/cart";
+import { calculateCartItemTotal, type CartItem, type CartItemModifierSelection } from "@/features/cart";
 
 type CheckoutItemsListProps = {
   cartItems: CartItem[];
+  /** General Order Options đã chọn (Nước mắm/Rau...) — hiển thị READ-ONLY, sửa phải quay lại /gio-hang (giống OrderPreferenceSummary). */
+  orderOptionSelections: CartItemModifierSelection[];
 };
 
 /**
@@ -12,7 +14,7 @@ type CheckoutItemsListProps = {
  * là REVIEW ONLY (không có nút tăng/giảm/xóa nữa) — sửa số lượng/xóa món phải
  * quay lại Cart Page (/gio-hang), khớp nguyên tắc Cart ≠ Checkout.
  */
-export function CheckoutItemsList({ cartItems }: CheckoutItemsListProps) {
+export function CheckoutItemsList({ cartItems, orderOptionSelections }: CheckoutItemsListProps) {
   return (
     <section className="rounded-lg bg-white p-7 shadow-soft">
       <div className="mb-5 flex items-center justify-between">
@@ -58,13 +60,31 @@ export function CheckoutItemsList({ cartItems }: CheckoutItemsListProps) {
                     ))}
                   </ul>
                 )}
+
+                {item.specialInstructions && (
+                  <p className="mt-1 text-[12px] italic text-[#7a7a7a]">Ghi chú: {item.specialInstructions}</p>
+                )}
               </div>
 
               <div className="self-center text-left text-[16px] font-black text-black sm:text-right">
-                {formatCurrency(item.price * item.quantity)}
+                {formatCurrency(calculateCartItemTotal(item))}
               </div>
             </article>
           ))}
+
+          {orderOptionSelections.length > 0 && (
+            <div className="mt-4 border-t border-black pt-4">
+              <h3 className="mb-2 text-[14px] font-black text-brand-greenDark">Tùy chọn chung cho đơn hàng</h3>
+              <ul className="space-y-0.5 text-[13px] text-[#4b4b4b]">
+                {orderOptionSelections.map((selection) => (
+                  <li key={selection.optionId}>
+                    <span className="font-bold text-brand-greenDark">{selection.groupName}: </span>
+                    {selection.optionLabel}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
     </section>

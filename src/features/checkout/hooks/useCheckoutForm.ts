@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent 
 import { useRouter } from "next/navigation";
 
 import type { CartItem } from "@/features/cart";
-import { consumeCartReviewedFlag } from "@/features/cart";
+import { consumeCartReviewedFlag, useCart } from "@/features/cart";
 import type { PopupStatus } from "@/components/shared/StatusPopup";
 import { useAuth } from "@/features/auth";
 import { createOrder } from "@/features/orders";
@@ -18,6 +18,7 @@ import {
   resolveDeliveryFee,
   type ManagedDeliveryMethod,
 } from "@/features/delivery-methods";
+import { createPaymentSession, resolveDigitalWalletProvider, resolvePaymentMethod } from "@/features/payment";
 
 import {
   CheckoutFormState,
@@ -47,6 +48,13 @@ function pickDefault<T extends { id: string; isDefault: boolean }>(methods: T[])
 export function useCheckoutForm({ cartItems, totalPrice, clearCart }: UseCheckoutFormParams) {
   const router = useRouter();
   const { user: currentUser } = useAuth();
+
+  /**
+   * deliveryMethodId/address/utensils/note đã được khách chọn ở Cart Page
+   * (CartContext) trước khi vào Checkout — đọc lại ở đây để tính totals và
+   * gửi lên createOrder(), Checkout không sở hữu state của 3 mục này nữa.
+   */
+  const { deliveryMethodId, address, utensils, note } = useCart();
 
   const [form, setForm] = useState<CheckoutFormState>(INITIAL_CHECKOUT_FORM);
 
@@ -114,7 +122,12 @@ export function useCheckoutForm({ cartItems, totalPrice, clearCart }: UseCheckou
   const [paymentMethods, setPaymentMethods] = useState<ManagedPaymentMethod[]>([]);
   const [isLoadingMethods, setIsLoadingMethods] = useState(true);
 
-  // Checkout PHẢI lấy danh sách phương thức động từ Admin — không hard-code.
+  /**
+   * Checkout PHẢI lấy danh sách phương thức động từ Admin — không hard-code.
+   * Vẫn fetch deliveryMethods ở đây (dù không còn UI chọn) để tra cứu lại
+   * object đầy đủ (code/pickupAddress/type) ứng với deliveryMethodId đã chọn
+   * từ Cart — cần cho việc tính totals.shippingFee và tạo Order bên dưới.
+   */
   useEffect(() => {
     Promise.all([listAvailableDeliveryMethods(), listAvailablePaymentMethods()]).then(
       ([availableDeliveryMethods, availablePaymentMethods]) => {
@@ -122,7 +135,6 @@ export function useCheckoutForm({ cartItems, totalPrice, clearCart }: UseCheckou
         setPaymentMethods(availablePaymentMethods);
         setForm((previous) => ({
           ...previous,
-          deliveryMethodId: pickDefault(availableDeliveryMethods)?.id ?? "",
           paymentMethodId: pickDefault(availablePaymentMethods)?.id ?? "",
         }));
         setIsLoadingMethods(false);
@@ -131,8 +143,8 @@ export function useCheckoutForm({ cartItems, totalPrice, clearCart }: UseCheckou
   }, []);
 
   const selectedDeliveryMethod = useMemo(
-    () => deliveryMethods.find((method) => method.id === form.deliveryMethodId),
-    [deliveryMethods, form.deliveryMethodId],
+    () => deliveryMethods.find((method) => method.id === deliveryMethodId),
+    [deliveryMethods, deliveryMethodId],
   );
 
   const selectedPaymentMethod = useMemo(
@@ -174,7 +186,7 @@ export function useCheckoutForm({ cartItems, totalPrice, clearCart }: UseCheckou
 
   function handleTextInputChange(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const { name, value } = event.target;
-    const field = name as "customerName" | "phone" | "email" | "address" | "note";
+    const field = name as "customerName" | "phone" | "email";
     updateFormField(field, value);
   }
 
@@ -191,11 +203,6 @@ export function useCheckoutForm({ cartItems, totalPrice, clearCart }: UseCheckou
       errors.phone = "Vui lòng nhập số điện thoại.";
     } else if (!/^(0\d{9}|\+84\d{9})$/.test(normalizedPhone)) {
       errors.phone = "Số điện thoại không đúng định dạng.";
-    }
-
-    // Chỉ bắt buộc địa chỉ khi giao tận nơi — "Tự đến lấy" dùng địa chỉ cửa hàng, không cần khách nhập.
-    if (selectedDeliveryMethod?.type !== "pickup" && !form.address.trim()) {
-      errors.address = "Vui lòng nhập địa chỉ giao hàng.";
     }
 
     return errors;
@@ -225,46 +232,91 @@ export function useCheckoutForm({ cartItems, totalPrice, clearCart }: UseCheckou
     setFormErrors({});
     setIsSubmitting(true);
 
+    const deliveryAddressSnapshot =
+      selectedDeliveryMethod.type === "pickup"
+        ? (selectedDeliveryMethod.pickupAddress ?? selectedDeliveryMethod.name)
+        : address.trim();
+
+    const paymentMethod = resolvePaymentMethod(selectedPaymentMethod.group);
+
     try {
-      const order = await createOrder({
+      // CASE A — CASH: không yêu cầu xác nhận thanh toán online, tạo Order
+      // ngay như trước.
+      if (paymentMethod === "CASH") {
+        const order = await createOrder({
+          customerId: currentUser?.customerId ?? null,
+          customerName: form.customerName.trim(),
+          phone: form.phone.trim(),
+          email: form.email.trim() || undefined,
+          deliveryAddressSnapshot,
+          paymentMethodCode: selectedPaymentMethod.code,
+          deliveryMethodCode: selectedDeliveryMethod.code,
+          items: cartItems.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            note: item.specialInstructions,
+            modifiers: item.modifiers?.map((modifier) => ({
+              groupId: modifier.groupId,
+              optionId: modifier.optionId,
+            })),
+          })),
+          wantsUtensils: utensils === "yes",
+          note: note.trim() || undefined,
+          idempotencyKey,
+        });
+
+        try {
+          await createPayment({
+            orderId: order.id,
+            orderCode: order.orderCode,
+            paymentMethodCode: order.paymentMethodCode,
+            paymentMethodLabel: order.paymentMethodLabel,
+            amount: order.totalAmount,
+          });
+        } catch (paymentError) {
+          // Đơn đã tạo thành công — không chặn điều hướng chỉ vì tạo bản ghi Payment lỗi.
+          console.error("Không thể khởi tạo giao dịch thanh toán:", paymentError);
+        }
+
+        clearCart();
+        router.push(`/don-hang/${order.orderCode}`);
+        return;
+      }
+
+      // CASE B — QR/DIGITAL_WALLET: TUYỆT ĐỐI KHÔNG tạo Order ngay. Tạo
+      // PaymentSession ("giữ chỗ") rồi đưa khách sang Payment Page — Order/
+      // Payment thật chỉ được tạo sau khi khách xác nhận đã thanh toán (xem
+      // confirmPaymentSession trong features/payment). KHÔNG clearCart() ở
+      // đây — nếu khách hủy giữa chừng, Cart vẫn còn nguyên để quay lại
+      // chỉnh sửa.
+      const session = await createPaymentSession({
         customerId: currentUser?.customerId ?? null,
         customerName: form.customerName.trim(),
         phone: form.phone.trim(),
         email: form.email.trim() || undefined,
-        deliveryAddressSnapshot:
-          selectedDeliveryMethod.type === "pickup"
-            ? (selectedDeliveryMethod.pickupAddress ?? selectedDeliveryMethod.name)
-            : form.address.trim(),
-        paymentMethodCode: selectedPaymentMethod.code,
+        items: cartItems,
         deliveryMethodCode: selectedDeliveryMethod.code,
-        items: cartItems.map((item) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-          modifiers: item.modifiers?.map((modifier) => ({
-            groupId: modifier.groupId,
-            optionId: modifier.optionId,
-          })),
-        })),
-        wantsUtensils: form.utensils === "yes",
-        note: form.note.trim() || undefined,
+        deliveryMethodLabel: selectedDeliveryMethod.name,
+        isPickup: selectedDeliveryMethod.type === "pickup",
+        deliveryAddressSnapshot,
+        wantsUtensils: utensils === "yes",
+        note: note.trim() || undefined,
+        subtotal: totals.subtotal,
+        shippingFee: totals.shippingFee,
+        discount: totals.discount,
+        totalAmount: totals.grandTotal,
+        paymentMethod,
+        digitalWalletProvider:
+          paymentMethod === "DIGITAL_WALLET" ? resolveDigitalWalletProvider(selectedPaymentMethod.code) : undefined,
+        paymentMethodCode: selectedPaymentMethod.code,
+        paymentMethodLabel: selectedPaymentMethod.name,
+        bankName: selectedPaymentMethod.bankName,
+        bankAccountNumber: selectedPaymentMethod.bankAccountNumber,
+        bankAccountHolder: selectedPaymentMethod.bankAccountHolder,
         idempotencyKey,
       });
 
-      try {
-        await createPayment({
-          orderId: order.id,
-          orderCode: order.orderCode,
-          paymentMethodCode: order.paymentMethodCode,
-          paymentMethodLabel: order.paymentMethodLabel,
-          amount: order.totalAmount,
-        });
-      } catch (paymentError) {
-        // Đơn đã tạo thành công — không chặn điều hướng chỉ vì tạo bản ghi Payment lỗi.
-        console.error("Không thể khởi tạo giao dịch thanh toán:", paymentError);
-      }
-
-      clearCart();
-      router.push(`/don-hang/${order.orderCode}`);
+      router.push(`/payment/${session.id}`);
     } catch (error) {
       console.error("Submit checkout error:", error);
       showPopup("error", "Không thể tạo đơn hàng.", error instanceof Error ? error.message : "Vui lòng thử lại.");
@@ -289,7 +341,6 @@ export function useCheckoutForm({ cartItems, totalPrice, clearCart }: UseCheckou
     isSubmitting,
     isCartReviewed,
     totals,
-    deliveryMethods,
     paymentMethods,
     selectedDeliveryMethod,
     selectedPaymentMethod,
