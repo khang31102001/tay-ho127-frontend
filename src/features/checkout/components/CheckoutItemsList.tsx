@@ -73,7 +73,7 @@ export function CheckoutItemsList({ cartItems, orderOptionSelections }: Checkout
           ))}
 
           {orderOptionSelections.length > 0 && (
-            <div className="mt-4 border-t border-black pt-4">
+            <div className="mt-4  border-black pt-4">
               <h3 className="mb-2 text-[14px] font-black text-brand-greenDark">Tùy chọn chung cho đơn hàng</h3>
               <ul className="space-y-0.5 text-[13px] text-[#4b4b4b]">
                 {orderOptionSelections.map((selection) => (

@@ -132,6 +132,10 @@ export function OrderTrackingPage({ orderCode }: OrderTrackingPageProps) {
                           ))}
                         </ul>
                       )}
+
+                      {item.note && (
+                        <p className="mt-1 text-[12px] italic text-[#7a7a7a]">Ghi chú: {item.note}</p>
+                      )}
                     </div>
 
                     <div className="self-center text-left text-[16px] font-black text-black sm:text-right">
@@ -169,6 +173,11 @@ export function OrderTrackingPage({ orderCode }: OrderTrackingPageProps) {
                 {order.note && (
                   <p>
                     <strong className="text-brand-greenDark">Ghi chú:</strong> {order.note}
+                  </p>
+                )}
+                {order.discountCode && (
+                  <p>
+                    <strong className="text-brand-greenDark">Mã giảm giá:</strong> {order.discountCode}
                   </p>
                 )}
               </div>

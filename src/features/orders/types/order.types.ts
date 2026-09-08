@@ -30,6 +30,9 @@ export type ManagedOrder = {
   statusHistory: OrderStatusHistoryEntry[];
   subtotal: number;
   discount: number;
+  /** Mã giảm giá khách đã dùng (nếu có) — lưu kèm `discount`/`promotionId` để tra cứu/đối soát sau này, không chỉ lưu số tiền. */
+  discountCode?: string;
+  promotionId?: string;
   deliveryFee: number;
   totalAmount: number;
   orderStatus: OrderStatus;

@@ -36,7 +36,7 @@ import { GeneralOrderOptions } from "./GeneralOrderOptions";
  */
 export function CartPageSection() {
   const router = useRouter();
-  const { cartItems, totalPrice, updateQuantity, removeFromCart } = useCart();
+  const { cartItems, totalPrice, updateQuantity, removeFromCart, updateCartItemNote } = useCart();
   const {
     deliveryMethods,
     isLoadingDeliveryMethods,
@@ -97,6 +97,7 @@ export function CartPageSection() {
                   onIncrease={(cartItemId) => updateQuantity(cartItemId, item.quantity + 1)}
                   onDecrease={(cartItemId) => updateQuantity(cartItemId, item.quantity - 1)}
                   onRemove={removeFromCart}
+                  onSaveNote={updateCartItemNote}
                 />
               ))}
 

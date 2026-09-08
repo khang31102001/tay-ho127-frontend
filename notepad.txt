@@ -1,0 +1,94 @@
+## BANK TRANSFER / QR PAYMENT UI
+
+Khi người dùng chọn `Chuyển khoản ngân hàng / QR`, tại bước Payment Confirmation phải hiển thị một **Bank Transfer QR Card** theo bố cục ảnh tham chiếu.
+
+### Layout
+Header:
+`Thanh toán qua chuyển khoản ngân hàng`
+
+Hướng dẫn ngắn:
+`Cách 1: Mở app ngân hàng / ví → quét mã QR`
+`Cách 2: Chuyển khoản thủ công theo thông tin bên cạnh`
+
+Body chia 2 cột:
+
+LEFT — QR CODE
+- Hiển thị VietQR/QR thanh toán kích thước đủ lớn để scan.
+- Có logo ngân hàng/VietQR nếu phù hợp.
+- QR phải chứa đúng:
+  - Bank account
+  - Amount
+  - Transfer content/payment reference
+
+RIGHT — BANK INFORMATION
+Hiển thị:
+- Ngân hàng: Vietcombank
+- Chủ tài khoản: ...
+- Số tài khoản: ...
+- Số tiền: `xxx.xxx đ`
+- Nội dung CK: `DHxxxxxx`
+
+Cho phép Copy:
+- Số tài khoản
+- Số tiền
+- Nội dung chuyển khoản
+
+### IMPORTANT DATA RULE
+
+Không hard-code số tiền hoặc nội dung chuyển khoản trong UI.
+
+QR phải được generate từ dữ liệu hiện tại:
+
+Checkout Grand Total
+→ Payment Amount
+→ QR Amount
+
+Payment Reference / Draft Order Code
+→ Transfer Content
+→ QR Description
+
+Ví dụ:
+
+{
+  bankCode,
+  accountNumber,
+  accountName,
+  amount,
+  transferContent,
+  qrUrl
+}
+
+Nếu Order chưa được tạo chính thức tại thời điểm thanh toán,
+hãy sử dụng `paymentReference` hoặc `draftOrderCode`
+làm nội dung chuyển khoản thay vì tạo Order hoàn tất trước.
+
+### PAYMENT FLOW
+
+BANK_TRANSFER:
+
+Checkout
+→ chọn Bank Transfer / QR
+→ tạo Payment Session / Reference
+→ mở Payment Confirmation
+→ hiển thị QR Card
+→ khách quét QR/chuyển khoản
+→ Payment được xác nhận
+→ cập nhật Payment Status
+→ Confirm/Create Order
+→ Order Success
+
+### UI/UX
+
+- Card có border nhẹ, background trắng.
+- QR bên trái, thông tin ngân hàng bên phải trên desktop.
+- Mobile → chuyển thành layout dọc:
+  QR
+  ↓
+  Bank Information
+  ↓
+  CTA
+- Làm nổi bật `Số tiền` và `Nội dung chuyển khoản`.
+- Không để text dài phá layout.
+- Đồng bộ style với design system/brand hiện tại.
+
+Ảnh tham chiếu chỉ dùng để lấy cấu trúc và hierarchy, không copy pixel-to-pixel.

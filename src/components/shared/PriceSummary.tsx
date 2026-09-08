@@ -9,11 +9,15 @@ type PriceSummaryProps = {
 };
 
 /**
- * Khối "Chi tiết thanh toán" dùng chung giữa CartPageSection (features/cart),
- * CheckoutReview (features/checkout, đang nhập) và OrderTrackingPage
- * (features/orders, đã đặt xong) — cả 3 lặp lại y hệt cấu trúc subtotal/
- * shippingFee/discount/grandTotal nên đặt ở components/shared thay vì thuộc
- * riêng 1 feature.
+ * Khối "Chi tiết thanh toán" review-only (không có ô nhập mã giảm giá), dùng
+ * chung giữa OrderTrackingPage (features/orders, đã đặt xong) và
+ * PaymentSummary (features/payment) — cả 2 chỉ hiển thị lại subtotal/
+ * shippingFee/discount/grandTotal đã chốt, không cho sửa gì thêm.
+ *
+ * Checkout (features/checkout) có `CheckoutPriceSummary` RIÊNG — không dùng
+ * component này — vì cần thêm ô nhập mã giảm giá tương tác (DiscountCodeSection)
+ * và 2 dòng phí `otherFee`/`tax`, khác trách nhiệm thật sự chứ không chỉ khác
+ * appearance (xem features/checkout/components/CheckoutPriceSummary.tsx).
  */
 export function PriceSummary({ subtotal, shippingFee, discount, grandTotal, title = "CHI TIẾT THANH TOÁN" }: PriceSummaryProps) {
   return (

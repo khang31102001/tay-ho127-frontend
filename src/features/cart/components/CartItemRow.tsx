@@ -6,16 +6,18 @@ import { formatCurrency } from "@/lib/format-currency";
 import { QuantityStepper } from "@/components/ui/QuantityStepper";
 import { calculateCartItemTotal, calculateCartItemUnitPrice } from "../services/cart.service";
 import type { CartItem } from "../types/cart.types";
+import { CartItemNoteButton } from "./CartItemNoteButton";
 
 type CartItemRowProps = {
   item: CartItem;
   onIncrease: (cartItemId: string) => void;
   onDecrease: (cartItemId: string) => void;
   onRemove: (cartItemId: string) => void;
+  onSaveNote: (cartItemId: string, note: string) => void;
 };
 
 /** 1 dòng món trong Cart Page (/gio-hang) — tách từ CartPageSection để dùng chung markup hiển thị modifier/ghi chú với logic đã có ở đó. */
-export function CartItemRow({ item, onIncrease, onDecrease, onRemove }: CartItemRowProps) {
+export function CartItemRow({ item, onIncrease, onDecrease, onRemove, onSaveNote }: CartItemRowProps) {
   return (
     <article className="grid grid-cols-1 gap-4 border-b border-black py-3 last:border-b-0 sm:grid-cols-[115px_1fr_120px]">
       <Image
@@ -40,9 +42,7 @@ export function CartItemRow({ item, onIncrease, onDecrease, onRemove }: CartItem
           </ul>
         )}
 
-        {item.specialInstructions && (
-          <p className="mt-1 text-[12px] italic text-[#7a7a7a]">Ghi chú: {item.specialInstructions}</p>
-        )}
+        <CartItemNoteButton item={item} onSave={onSaveNote} />
 
         <div className="mt-2 flex flex-wrap items-center gap-3 text-[13px] font-bold text-black">
           <QuantityStepper

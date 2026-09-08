@@ -26,6 +26,7 @@ import {
   CheckoutTotals,
   INITIAL_CHECKOUT_FORM,
 } from "../types/checkout.types";
+import { applyDiscountCode, type AppliedDiscount } from "../services/discount-code.service";
 
 interface PopupState {
   open: boolean;
@@ -152,23 +153,60 @@ export function useCheckoutForm({ cartItems, totalPrice, clearCart }: UseCheckou
     [paymentMethods, form.paymentMethodId],
   );
 
-  /*
-   * Giảm giá hiện đang bằng 0.
-   * Sau này có thể thay bằng giá trị voucher hoặc promotion.
+  /**
+   * Mã giảm giá đã áp dụng — Checkout State DUY NHẤT giữ dữ liệu này (Mini
+   * Cart/Cart Page không có khái niệm mã giảm giá, chỉ Checkout mới nhập).
+   * `discountAmount` đã được `applyDiscountCode()` tính sẵn theo subtotal tại
+   * thời điểm áp dụng (snapshot) — Checkout Review không cho sửa số lượng món
+   * nên không cần tính lại khi subtotal đổi.
    */
-  const discountAmount = 0;
+  const [appliedDiscount, setAppliedDiscount] = useState<AppliedDiscount | null>(null);
+  const [isApplyingDiscount, setIsApplyingDiscount] = useState(false);
+  const [discountError, setDiscountError] = useState<string | undefined>();
+
+  async function handleApplyDiscountCode(code: string) {
+    setIsApplyingDiscount(true);
+    setDiscountError(undefined);
+
+    try {
+      const result = await applyDiscountCode(code, totalPrice);
+      setAppliedDiscount(result);
+    } catch (error) {
+      setAppliedDiscount(null);
+      setDiscountError(error instanceof Error ? error.message : "Không thể áp dụng mã giảm giá.");
+    } finally {
+      setIsApplyingDiscount(false);
+    }
+  }
+
+  function handleRemoveDiscountCode() {
+    setAppliedDiscount(null);
+    setDiscountError(undefined);
+  }
+
+  /**
+   * `otherFee`/`tax` luôn 0 — chưa có business rule nào tạo phí khác, và giá
+   * món hiện tại đã bao gồm VAT (không tách riêng) nên KHÔNG cộng thêm lần
+   * hai. Để sẵn field trong CheckoutTotals cho khi có business rule thật, UI
+   * (CheckoutPriceSummary) tự ẩn dòng tương ứng khi giá trị = 0.
+   */
+  const otherFee = 0;
+  const tax = 0;
 
   const totals = useMemo<CheckoutTotals>(() => {
     const shippingFee = selectedDeliveryMethod ? resolveDeliveryFee(selectedDeliveryMethod, totalPrice) : 0;
-    const grandTotal = Math.max(0, totalPrice + shippingFee - discountAmount);
+    const discount = appliedDiscount?.discountAmount ?? 0;
+    const grandTotal = Math.max(0, totalPrice - discount + shippingFee + otherFee + tax);
 
     return {
       subtotal: totalPrice,
       shippingFee,
-      discount: discountAmount,
+      discount,
+      otherFee,
+      tax,
       grandTotal,
     };
-  }, [totalPrice, selectedDeliveryMethod]);
+  }, [totalPrice, selectedDeliveryMethod, appliedDiscount]);
 
   function showPopup(status: PopupStatus, title: string, description: string) {
     setPopup({ open: true, status, title, description });
@@ -262,6 +300,9 @@ export function useCheckoutForm({ cartItems, totalPrice, clearCart }: UseCheckou
           })),
           wantsUtensils: utensils === "yes",
           note: note.trim() || undefined,
+          discount: totals.discount,
+          discountCode: appliedDiscount?.discountCode,
+          promotionId: appliedDiscount?.promotionId,
           idempotencyKey,
         });
 
@@ -304,6 +345,8 @@ export function useCheckoutForm({ cartItems, totalPrice, clearCart }: UseCheckou
         subtotal: totals.subtotal,
         shippingFee: totals.shippingFee,
         discount: totals.discount,
+        discountCode: appliedDiscount?.discountCode,
+        promotionId: appliedDiscount?.promotionId,
         totalAmount: totals.grandTotal,
         paymentMethod,
         digitalWalletProvider:
@@ -341,6 +384,11 @@ export function useCheckoutForm({ cartItems, totalPrice, clearCart }: UseCheckou
     isSubmitting,
     isCartReviewed,
     totals,
+    appliedDiscount,
+    isApplyingDiscount,
+    discountError,
+    handleApplyDiscountCode,
+    handleRemoveDiscountCode,
     paymentMethods,
     selectedDeliveryMethod,
     selectedPaymentMethod,

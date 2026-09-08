@@ -32,7 +32,7 @@ type CartDrawerProps = {
  * đúng trước đây cho chính MiniCart này, không có nguy cơ đó.
  */
 export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
-  const { cartItems, cartCount, totalPrice, updateQuantity, removeFromCart } = useCart();
+  const { cartItems, cartCount, totalPrice, updateQuantity, removeFromCart, updateCartItemNote } = useCart();
 
   const isEmpty = cartItems.length === 0;
 
@@ -100,6 +100,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 onIncrease={handleIncrease}
                 onDecrease={handleDecrease}
                 onRemove={removeFromCart}
+                onSaveNote={updateCartItemNote}
               />
             ))}
           </ul>
