@@ -7,22 +7,24 @@ import { formatCurrency } from "@/lib/format-currency";
 import { QuantityStepper } from "@/components/ui/QuantityStepper";
 import { calculateCartItemTotal, calculateCartItemUnitPrice } from "../services/cart.service";
 import type { CartItem } from "../types/cart.types";
+import { CartItemNoteButton } from "./CartItemNoteButton";
 
 type MiniCartItemProps = {
   item: CartItem;
   onIncrease: (productId: string) => void;
   onDecrease: (productId: string) => void;
   onRemove: (productId: string) => void;
+  onSaveNote: (cartItemId: string, note: string) => void;
 };
 
 /**
  * Mini Cart cố tình KHÔNG hiện lại toàn bộ checkbox modifier trực tiếp (sẽ
- * làm UI quá dài) — chỉ tóm tắt modifier/ghi chú đã chọn (nếu có, từ dữ liệu
- * cũ/reorder). Không còn sửa cấu hình theo từng món — Nước mắm/Rau đã là
+ * làm UI quá dài) — chỉ tóm tắt modifier đã chọn (nếu có). Nước mắm/Rau đã là
  * General Order Options (xem GeneralOrderOptions), quantity sửa trực tiếp
- * ngay tại đây.
+ * ngay tại đây. Ghi chú RIÊNG cho món (`specialInstructions`) sửa được tại
+ * chỗ qua `CartItemNoteButton` (mở popup, xem CartItemNoteDialog).
  */
-export function MiniCartItem({ item, onIncrease, onDecrease, onRemove }: MiniCartItemProps) {
+export function MiniCartItem({ item, onIncrease, onDecrease, onRemove, onSaveNote }: MiniCartItemProps) {
   return (
     <li className="flex gap-3 py-3">
       <Image
@@ -57,9 +59,7 @@ export function MiniCartItem({ item, onIncrease, onDecrease, onRemove }: MiniCar
           </p>
         )}
 
-        {item.specialInstructions && (
-          <p className="mt-0.5 line-clamp-1 text-[11px] italic text-brand-muted">Ghi chú: {item.specialInstructions}</p>
-        )}
+        <CartItemNoteButton item={item} onSave={onSaveNote} />
 
         <div className="mt-auto flex items-center justify-between pt-1.5">
           <QuantityStepper

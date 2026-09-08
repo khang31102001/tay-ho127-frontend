@@ -74,6 +74,8 @@ export type CreatePaymentSessionInput = {
   subtotal: number;
   shippingFee: number;
   discount: number;
+  discountCode?: string;
+  promotionId?: string;
   totalAmount: number;
   paymentMethod: Extract<PaymentMethod, "QR" | "DIGITAL_WALLET">;
   digitalWalletProvider?: DigitalWalletProvider;
@@ -133,6 +135,8 @@ export async function createPaymentSession(input: CreatePaymentSessionInput): Pr
     subtotal: input.subtotal,
     shippingFee: input.shippingFee,
     discount: input.discount,
+    discountCode: input.discountCode,
+    promotionId: input.promotionId,
     totalAmount: input.totalAmount,
     bankName: input.bankName,
     bankAccountNumber: input.bankAccountNumber,
@@ -226,6 +230,9 @@ export async function confirmPaymentSession(
       })),
       wantsUtensils: session.wantsUtensils,
       note: session.note,
+      discount: session.discount,
+      discountCode: session.discountCode,
+      promotionId: session.promotionId,
       idempotencyKey: session.idempotencyKey,
     });
 

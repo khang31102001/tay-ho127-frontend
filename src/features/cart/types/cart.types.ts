@@ -55,6 +55,12 @@ export interface CartContextType {
   addToCart: (product: CartProduct) => void;
   removeFromCart: (cartItemId: string) => void;
   updateQuantity: (cartItemId: string, quantity: number) => void;
+  /**
+   * Sửa/xóa ghi chú riêng (`CartItem.specialInstructions`) của 1 dòng giỏ
+   * hàng — truyền chuỗi rỗng để xóa. Mini Cart, Cart Page và Checkout đều đọc
+   * lại từ CÙNG `cartItems` này nên note luôn đồng bộ, không có state riêng.
+   */
+  updateCartItemNote: (cartItemId: string, note: string) => void;
   clearCart: () => void;
 
   /**

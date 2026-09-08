@@ -92,7 +92,7 @@ export default function MenuGrid({
   return (
     <section className="relative isolate w-full  pb-40 pt-24 " >
        <MenuBackgroundDecoration leftColor="#FF9418" rightColor="#F5C884" />
-      <Container className="mx-auto max-w-[790px] px-5 md:px-0">
+      <Container className="mx-auto  px-5 md:px-0">
         {/* Tiêu đề */}
         <h1 className="heading-1 mb-24 text-center text-brand-green">
           Hôm nay bạn muốn ăn gì?

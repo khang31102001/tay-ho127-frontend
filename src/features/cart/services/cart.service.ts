@@ -122,6 +122,25 @@ export function updateCartItemQuantity(items: CartItem[], productId: string, qua
   return items.map((item) => (item.id === productId ? { ...item, quantity } : item));
 }
 
+/**
+ * Ghi chú RIÊNG cho 1 dòng giỏ hàng (`CartItem.specialInstructions`, xem
+ * cart.types.ts) — KHÁC `note` toàn đơn ở CartContextType. Chuỗi rỗng/toàn
+ * khoảng trắng bị coi như "xóa ghi chú" (set về `undefined`) để mọi nơi hiển
+ * thị chỉ cần check `item.specialInstructions &&` như hiện tại, không cần
+ * phân biệt thêm `""` với "chưa có note".
+ */
+export function updateCartItemSpecialInstructions(
+  items: CartItem[],
+  cartItemId: string,
+  specialInstructions: string,
+): CartItem[] {
+  const trimmed = specialInstructions.trim();
+
+  return items.map((item) =>
+    item.id === cartItemId ? { ...item, specialInstructions: trimmed || undefined } : item,
+  );
+}
+
 export function calculateCartCount(items: CartItem[]): number {
   return items.reduce((total, item) => total + item.quantity, 0);
 }

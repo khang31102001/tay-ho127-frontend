@@ -91,6 +91,9 @@ export type CreateOrderInput = {
   /** Chỉ truyền productId + quantity — tên/ảnh/đơn giá do service tự tra cứu lại từ Catalog, không tin Frontend. */
   items: CreateOrderItemInput[];
   discount?: number;
+  /** Mã giảm giá khách đã áp dụng ở Checkout (nếu có) — lưu nguyên vào Order để tra cứu/đối soát sau này, KHÔNG dùng để tính lại `discount` (Checkout đã tính sẵn amount, service chỉ lưu lại). */
+  discountCode?: string;
+  promotionId?: string;
   /** Order Preference — áp dụng cho toàn đơn, không thuộc từng CartItem. */
   wantsUtensils: boolean;
   note?: string;
@@ -235,6 +238,8 @@ export async function createOrder(input: CreateOrderInput): Promise<ManagedOrder
     statusHistory: [{ fromStatus: null, toStatus: "pending", changedAt: now, changedBy: "Khách hàng" }],
     subtotal,
     discount,
+    discountCode: input.discountCode,
+    promotionId: input.promotionId,
     deliveryFee,
     totalAmount: subtotal - discount + deliveryFee,
     orderStatus: "pending",

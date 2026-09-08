@@ -20,6 +20,19 @@ export interface CheckoutTotals {
   subtotal: number;
   shippingFee: number;
   discount: number;
+  /**
+   * Phí phát sinh khác ngoài phí giao hàng (vd. phí đóng gói) — chưa có
+   * business rule/nguồn dữ liệu nào tạo ra giá trị khác 0, để sẵn field cho
+   * tương lai. UI chỉ hiển thị dòng này khi > 0 (xem CheckoutPriceSummary).
+   */
+  otherFee: number;
+  /**
+   * Thuế/VAT cộng thêm ngoài giá món — giá hiển thị trên thực đơn hiện tại đã
+   * bao gồm VAT (không có business rule tách VAT riêng), nên luôn = 0 để
+   * KHÔNG cộng VAT lần hai vào Grand Total. Để sẵn field cho khi có business
+   * rule tính VAT tách riêng; UI chỉ hiển thị dòng này khi > 0.
+   */
+  tax: number;
   grandTotal: number;
 }
 

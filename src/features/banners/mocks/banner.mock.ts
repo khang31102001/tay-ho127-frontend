@@ -11,7 +11,7 @@ export const SEED_BANNERS: ManagedBanner[] = [
   {
     id: "banner-home-promotion",
     name: "Khuyến mãi trang chủ",
-    desktopMediaId: "media-promotion-zone-1",
+    desktopMediaId: "media-promotion-zone-3",
     mobileMediaId: "media-promotion-zone-2",
     altText: "Ưu đãi bánh cuốn Tây Hồ",
     heading: "Hương vị truyền thống",

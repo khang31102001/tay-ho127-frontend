@@ -3,11 +3,11 @@
 import { useCart } from "@/features/cart";
 import { formatCurrency } from "@/lib/format-currency";
 import { StatusPopup } from "@/components/shared/StatusPopup";
-import { PriceSummary } from "@/components/shared/PriceSummary";
 import MenuBackgroundDecoration from "@/components/ui/MenuBackgroundDecoration";
 import { resolvePaymentMethod } from "@/features/payment";
 import { useCheckoutForm } from "../hooks/useCheckoutForm";
 import { CheckoutItemsList } from "./CheckoutItemsList";
+import { CheckoutPriceSummary } from "./CheckoutPriceSummary";
 import { OrderInformationSection } from "./OrderInformationSection";
 import { PaymentMethodSelector } from "./PaymentMethodSelector";
 
@@ -21,7 +21,8 @@ import { PaymentMethodSelector } from "./PaymentMethodSelector";
  *   1. THỰC ĐƠN CỦA BẠN HÔM NAY (CheckoutItemsList)
  *   2. THÔNG TIN ĐẶT HÀNG (OrderInformationSection — Customer [editable] +
  *      Fulfillment/Order Preferences [read-only, đã chọn ở Cart])
- *   3. TÓM TẮT THANH TOÁN (PriceSummary)
+ *   3. CHI TIẾT THANH TOÁN (CheckoutPriceSummary — mã giảm giá + Tạm tính/
+ *      Giảm giá/Phí giao hàng/Phí khác/Thuế/TỔNG CỘNG, xem file đó)
  *   4. PHƯƠNG THỨC THANH TOÁN (PaymentMethodSelector)
  *   5. CTA — nhãn/hành động phụ thuộc payment method đã chọn, xem
  *      useCheckoutForm.handleSubmit: COD tạo Order ngay, các phương thức còn
@@ -38,6 +39,11 @@ export function CheckoutReview() {
     isSubmitting,
     isCartReviewed,
     totals,
+    appliedDiscount,
+    isApplyingDiscount,
+    discountError,
+    handleApplyDiscountCode,
+    handleRemoveDiscountCode,
     paymentMethods,
     selectedDeliveryMethod,
     selectedPaymentMethod,
@@ -82,12 +88,13 @@ export function CheckoutReview() {
           note={note}
         />
 
-        <PriceSummary
-          title="TÓM TẮT THANH TOÁN"
-          subtotal={totals.subtotal}
-          shippingFee={totals.shippingFee}
-          discount={totals.discount}
-          grandTotal={totals.grandTotal}
+        <CheckoutPriceSummary
+          totals={totals}
+          appliedDiscount={appliedDiscount}
+          isApplyingDiscount={isApplyingDiscount}
+          discountError={discountError}
+          onApplyDiscountCode={handleApplyDiscountCode}
+          onRemoveDiscountCode={handleRemoveDiscountCode}
         />
 
         <PaymentMethodSelector

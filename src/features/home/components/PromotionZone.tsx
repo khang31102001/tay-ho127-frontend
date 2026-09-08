@@ -12,7 +12,7 @@ import { listMedia } from "@/features/media/services/media.service";
  * "HOME_PROMOTION" (banner bị tắt, hết hạn, hoặc bị xóa) — giữ đúng nội dung
  * đã hard-code trước khi có CMS để trang chủ không bao giờ trống.
  */
-const FALLBACK_IMAGE = "/images/promotion-zone-1.png";
+const FALLBACK_IMAGE = "/images/promotion-zone-3.png";
 const FALLBACK_ALT = "Ưu đãi bánh cuốn Tây Hồ";
 const FALLBACK_HEADING = "Hương vị truyền thống";
 const FALLBACK_CTA_LABEL = "Xem ưu đãi";

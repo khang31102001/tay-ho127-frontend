@@ -86,6 +86,9 @@ export interface PaymentSession {
   subtotal: number;
   shippingFee: number;
   discount: number;
+  /** Mã giảm giá đã áp dụng ở Checkout (nếu có) — cần snapshot lại đây để confirmPaymentSession() truyền tiếp vào createOrder() khi tạo Order thật. */
+  discountCode?: string;
+  promotionId?: string;
   totalAmount: number;
 
   bankName?: string;

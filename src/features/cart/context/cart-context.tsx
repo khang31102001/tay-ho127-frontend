@@ -27,6 +27,7 @@ import {
   readCartPreferencesFromStorage,
   removeCartItem as removeCartItemFromList,
   updateCartItemQuantity,
+  updateCartItemSpecialInstructions,
   writeCartToStorage,
   writeCartPreferencesToStorage,
 } from "../services/cart.service";
@@ -96,6 +97,10 @@ export function CartProvider({ children }: CartProviderProps) {
     setCartItems((currentItems) => updateCartItemQuantity(currentItems, productId, quantity));
   }, []);
 
+  const updateCartItemNote = useCallback((cartItemId: string, note: string) => {
+    setCartItems((currentItems) => updateCartItemSpecialInstructions(currentItems, cartItemId, note));
+  }, []);
+
   const clearCart = useCallback(() => {
     setCartItems([]);
     // Đơn hàng đã tạo xong — reset luôn preferences để không mang sang đơn kế tiếp.
@@ -122,6 +127,7 @@ export function CartProvider({ children }: CartProviderProps) {
       addToCart,
       removeFromCart,
       updateQuantity,
+      updateCartItemNote,
       clearCart,
       deliveryMethodId,
       setDeliveryMethodId,
@@ -141,6 +147,7 @@ export function CartProvider({ children }: CartProviderProps) {
       addToCart,
       removeFromCart,
       updateQuantity,
+      updateCartItemNote,
       clearCart,
       deliveryMethodId,
       address,

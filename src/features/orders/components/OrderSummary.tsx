@@ -20,7 +20,10 @@ export function OrderSummary({ order }: OrderSummaryProps) {
         </div>
 
         <div className="flex items-center justify-between">
-          <dt className="text-brand-muted">Giảm giá</dt>
+          <dt className="text-brand-muted">
+            Giảm giá
+            {order.discountCode && <span className="ml-1 text-[12px] font-bold text-brand-greenDark">({order.discountCode})</span>}
+          </dt>
           <dd>-<MoneyDisplay value={order.discount} /></dd>
         </div>
 
