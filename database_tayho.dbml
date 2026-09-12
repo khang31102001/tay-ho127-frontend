@@ -1,0 +1,921 @@
+// =============================================================================
+// database_tayho.dbml
+// Reverse-engineered DB schema for "Bánh Cuốn Tây Hồ 127" (ProjectTayHo127 FE)
+// Source: src/features/**/{types,mocks,services}, src/data/site.ts, app/api/**
+// Paste directly into https://dbdiagram.io
+//
+// IMPORTANT CAVEATS
+// - The current frontend has NO real backend: every admin CRUD feature is a
+//   localStorage-backed mock (`mocks/<name>.mock.ts` SEED array + `services/
+//   <name>.service.ts`). Tables below are the PROPOSED real-backend schema,
+//   not something that exists in a live database today.
+// - Session/identity types `AuthUser` (features/auth) and `AdminUser`
+//   (features/admin-auth) are NOT modeled as tables: they are client-side
+//   session/claims objects. AuthUser carries a `customerId` bridge into
+//   `customers` (via findOrCreateCustomerByContact, matched by phone/email).
+//   AdminUser is NOT linked by any FK to `admin_users` in current FE code
+//   (see ASSUMPTION notes below).
+// - CART DOMAIN: intentionally has NO tables here. `CartItem` / `CartPreferences`
+//   (src/features/cart/types/cart.types.ts) are 100% client-side localStorage
+//   state (keys "tayho-cart", "tayho-cart-preferences") with no backend
+//   persistence today (explicit comment in cart.service.ts). Per task rule
+//   "không đưa UI state ... thành Database Table", no Cart table is fabricated
+//   here — see the `Note cart_domain` block near the bottom for the full
+//   explanation instead of a fake table.
+// - Every `[note: 'ASSUMPTION - ...']` marks something NOT directly confirmed
+//   by a TypeScript type/mock in the frontend — a normalization proposal or a
+//   gap that needs Backend/BA confirmation.
+// =============================================================================
+
+Project tayho127 {
+  database_type: 'PostgreSQL'
+  note: 'Draft schema derived from FE source for Backend design review. See inline ASSUMPTION notes.'
+}
+
+// -----------------------------------------------------------------------------
+// ENUMS
+// -----------------------------------------------------------------------------
+
+Enum entity_status {
+  active
+  inactive
+}
+
+Enum publish_status {
+  draft
+  published
+  archived
+}
+
+Enum media_kind {
+  image
+  video
+  document
+}
+
+Enum gender_type {
+  male
+  female
+  other
+}
+
+Enum modifier_selection_type {
+  single
+  multiple
+}
+
+Enum order_status_type {
+  pending
+  confirmed
+  preparing
+  ready
+  delivering
+  completed
+  cancelled
+}
+
+Enum payment_status_type {
+  pending
+  paid
+  failed
+  refunded
+  cancelled
+}
+
+Enum payment_session_status {
+  pending
+  processing
+  success
+  failed
+  cancelled
+}
+
+Enum payment_channel {
+  CASH
+  QR
+  DIGITAL_WALLET
+}
+
+Enum digital_wallet_provider_type {
+  APPLE_PAY
+  GOOGLE_PAY
+}
+
+Enum payment_method_group {
+  cod
+  card
+  bank_transfer
+  e_wallet
+}
+
+Enum delivery_method_type {
+  delivery
+  pickup
+}
+
+Enum promotion_type {
+  percentage
+  fixed_amount
+  free_shipping
+  product_discount
+}
+
+Enum promotion_status {
+  draft
+  active
+  inactive
+  expired
+}
+
+Enum payment_transaction_action {
+  created
+  charge
+  refund
+  cancel
+  retry
+}
+
+Enum payment_transaction_result {
+  success
+  failed
+}
+
+Enum banner_placement {
+  HOME_HERO
+  HOME_PROMOTION
+  MENU_HERO
+  ARTICLE_BANNER
+}
+
+Enum navigation_location {
+  header
+  footer
+  mobile
+  admin_sidebar
+}
+
+Enum navigation_target_type {
+  page
+  route
+  external
+}
+
+Enum social_platform {
+  website
+  facebook
+  instagram
+  tiktok
+  shopee
+  zalo
+  youtube
+}
+
+Enum section_type {
+  hero
+  introduction
+  promotion
+  highlight
+  testimonial
+  cta
+}
+
+// =============================================================================
+// DOMAIN: CATALOG
+// Evidence: src/features/{categories,products,media,menus,menu-products,
+// modifier-groups,order-options}/{types,mocks,services}
+// =============================================================================
+
+Table categories {
+  id varchar [pk, note: 'e.g. "cat-food-banh-cuon"']
+  parent_id varchar [ref: > categories.id, note: 'nullable; self-referencing 3-tier tree Group->Category->SubCategory. Evidence: category.types.ts:3-10, category.mock.ts:10-30']
+  name varchar [not null]
+  sort_order int [not null]
+  status entity_status [not null, default: 'active']
+
+  Note: 'Catalog taxonomy (Group/Category/SubCategory in one flat self-referencing table). Evidence: src/features/categories/types/category.types.ts:3-10'
+}
+
+Table media {
+  id varchar [pk]
+  file_name varchar [not null]
+  url varchar [not null]
+  kind media_kind [not null, note: 'FE field name is "type"']
+  alt_text varchar
+  size int [not null, note: 'bytes']
+  status entity_status [not null, default: 'active']
+
+  Note: 'Shared media library referenced by Product, Customer, Article, Banner, BrandSettings, PaymentMethod, PageSection. Evidence: src/features/media/types/media.types.ts:11-20'
+}
+
+Table products {
+  id varchar [pk]
+  category_id varchar [ref: > categories.id, not null]
+  name varchar [not null]
+  price decimal(12,2) [not null]
+  description text
+  status entity_status [not null, default: 'active']
+  rating decimal(3,1) [note: 'site-display only, no admin edit UI today']
+  rating_count int
+  old_price decimal(12,2) [note: 'strikethrough price']
+  badge varchar [note: 'e.g. "DISH"; also used as search-matching label']
+
+  Note: 'Evidence: src/features/products/types/product.types.ts:3-22. mediaIds[]/modifierGroupIds[] on the FE type become junction tables product_media / product_modifier_groups below (currently plain id-arrays in code, no join table).'
+}
+
+Table product_media {
+  product_id varchar [ref: > products.id, not null]
+  media_id varchar [ref: > media.id, not null]
+
+  indexes {
+    (product_id, media_id) [pk]
+  }
+
+  Note: 'ASSUMPTION - normalized junction. Today Product.mediaIds is a plain string[] with no join table (product.types.ts:10), explicitly by design per modifier-group.types.ts:1-11 comment (no per-assignment fields needed yet).'
+}
+
+Table modifier_groups {
+  id varchar [pk]
+  name varchar [not null]
+  selection_type modifier_selection_type [not null]
+  is_required boolean [not null, default: false]
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+
+  Note: 'Product-level modifiers (e.g. spice level). Evidence: src/features/modifier-groups/types/modifier-group.types.ts:29-39'
+}
+
+Table modifier_options {
+  id varchar [pk]
+  modifier_group_id varchar [ref: > modifier_groups.id, not null, note: 'ASSUMPTION FK - option is embedded in ManagedModifierGroup.options[] today with no own groupId field (modifier-group.types.ts:1-11); normalized here as its own table.']
+  label varchar [not null]
+  price_adjustment decimal(12,2) [not null, default: 0, note: 'can be negative']
+  is_default boolean [not null, default: false]
+
+  Note: 'Evidence: src/features/modifier-groups/types/modifier-group.types.ts:20-27'
+}
+
+Table product_modifier_groups {
+  product_id varchar [ref: > products.id, not null]
+  modifier_group_id varchar [ref: > modifier_groups.id, not null]
+
+  indexes {
+    (product_id, modifier_group_id) [pk]
+  }
+
+  Note: 'ASSUMPTION - normalized junction. Today Product.modifierGroupIds is a plain string[] (modifier-group.types.ts:1-11), no join table in code.'
+}
+
+Table order_option_groups {
+  id varchar [pk]
+  name varchar [not null]
+  selection_type modifier_selection_type [not null]
+  is_required boolean [not null, default: false]
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+
+  Note: 'Order-level options (e.g. fish sauce / vegetables). Deliberately a SEPARATE catalog from modifier_groups despite identical shape - distinct id namespaces confirmed in order-option.mock.ts:3-9. ASSUMPTION - confirm with BA whether this should instead be one table with a "scope" discriminator.'
+}
+
+Table order_option_values {
+  id varchar [pk]
+  order_option_group_id varchar [ref: > order_option_groups.id, not null, note: 'ASSUMPTION FK - embedded array today, same caveat as modifier_options.']
+  label varchar [not null]
+  price_adjustment decimal(12,2) [not null, default: 0]
+  is_default boolean [not null, default: false]
+
+  Note: 'Evidence: src/features/order-options/types/order-option.types.ts:17-18 (type alias of ModifierGroup/ModifierOption)'
+}
+
+Table menus {
+  id varchar [pk, note: 'literal well-known ids consumed by site logic today, e.g. "menu-thuc-don-chinh" - flagged as a design smell in database-analysis.md']
+  name varchar [not null]
+  status entity_status [not null, default: 'active']
+
+  Note: 'Admin-managed menu (features/menus), distinct from the site-facing aggregation view in features/menu. Evidence: src/features/menus/types/menu.types.ts:8-12'
+}
+
+Table menu_products {
+  id varchar [pk]
+  menu_id varchar [ref: > menus.id, not null]
+  product_id varchar [ref: > products.id, not null]
+  price_override decimal(12,2) [note: 'overrides products.price when present; no seed row currently populates it - UNVERIFIED at runtime']
+  sort_order int [not null]
+  is_available boolean [not null, default: true]
+
+  Note: 'Real junction table with its own attributes (unlike product_media/product_modifier_groups). Evidence: src/features/menu-products/types/menu-product.types.ts:6-14'
+}
+
+// =============================================================================
+// DOMAIN: CUSTOMER / AUTH
+// Evidence: src/features/{customers,auth}/{types,mocks,services}
+// =============================================================================
+
+Table customers {
+  id varchar [pk]
+  customer_code varchar [unique, not null, note: 'auto-generated display code, e.g. "KH00001"']
+  full_name varchar [not null]
+  phone varchar [not null]
+  email varchar
+  avatar_media_id varchar [ref: > media.id, note: 'nullable']
+  date_of_birth date
+  gender gender_type
+  status entity_status [not null, default: 'active']
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+
+  Note: 'End-user account, explicitly a SEPARATE table from admin_users and from the AuthUser session object (customer.types.ts:11-19: "3 domain độc lập"). No order-count/AOV/classification columns - those are computed at query time once orders exist. Evidence: src/features/customers/types/customer.types.ts:21-35'
+}
+
+Table customer_addresses {
+  id varchar [pk]
+  customer_id varchar [ref: > customers.id, not null]
+  receiver_name varchar [not null]
+  phone varchar [not null]
+  address_line varchar [not null]
+  ward varchar
+  district varchar
+  province varchar
+  address_note text
+  is_default boolean [not null, default: false, note: 'app-layer rule enforces only one default per customer; recommend a partial unique index on (customer_id) WHERE is_default']
+
+  Note: 'One customer -> many addresses. Evidence: src/features/customers/types/customer-address.types.ts:1-12'
+}
+
+// Not modeled as a table: `AuthUser` (src/features/auth/types/auth.types.ts:3-11)
+// is a client-side session object (localStorage key "tayho-auth"). Its
+// `customerId` field is the bridge into `customers`, resolved via
+// findOrCreateCustomerByContact() matching on phone/email
+// (customer.service.ts:138-167). Login/register route handlers currently
+// validate against hard-coded demo credentials only - no real password
+// storage exists anywhere in the FE for customers.
+
+// =============================================================================
+// DOMAIN: ADMIN / AUTH
+// Evidence: src/features/{users,roles,admin-auth}/{types,mocks,services}
+// =============================================================================
+
+Table roles {
+  id varchar [pk]
+  name varchar [unique, not null]
+  description text
+  permissions varchar [not null, note: 'JSON array of permission keys today (closed set: menu:manage, user:manage, role:manage, order:manage). ASSUMPTION - may normalize into a role_permissions junction table if the permission set grows.']
+  status entity_status [not null, default: 'active']
+
+  Note: 'Evidence: src/features/roles/types/role.types.ts:12-18'
+}
+
+Table admin_users {
+  id varchar [pk]
+  full_name varchar [not null]
+  email varchar [unique, not null]
+  phone varchar
+  role_id varchar [ref: > roles.id, note: 'ASSUMPTION FK - FE currently stores the ROLE NAME string on ManagedUser.role, not roles.id (confirmed via useUserEditor.ts binding to role.name). Recommend normalizing to role_id before building the real backend.']
+  status entity_status [not null, default: 'active']
+  created_at date [not null]
+  password_hash varchar [note: 'ASSUMPTION - required for real backend auth; no credential/password field exists anywhere on the FE ManagedUser type (frontend correctly never stores secrets).']
+
+  Note: 'Admin/staff account roster managed via Admin > Users CRUD. Distinct from the currently-logged-in admin session object `AdminUser` (features/admin-auth), which carries no FK back to this table in current FE code - ASSUMPTION: confirm whether admin login should resolve to a row here. Evidence: src/features/users/types/user.types.ts:7-16'
+}
+
+// Not modeled as a table: `AdminUser` (src/features/admin-auth/types/admin-auth.types.ts:3-9)
+// is the logged-in admin's session/claims object (localStorage key
+// "tayho-admin-auth" + an httpOnly cookie holding the literal string
+// "mock-access-token-admin" - not a real signed token). Demo admin login
+// (app/api/admin/auth/login/route.ts) is a hard-coded plaintext credential
+// check, unconnected to `admin_users` or `roles` today.
+
+// =============================================================================
+// DOMAIN: CART
+// -----------------------------------------------------------------------------
+// No tables in this domain. `CartItem`, `CartProduct`, `CartItemModifierSelection`,
+// `CartPreferences` (src/features/cart/types/cart.types.ts) are pure client-side
+// localStorage state ("tayho-cart", "tayho-cart-preferences") with an explicit
+// FE comment confirming "chưa có Backend Cart thật" (no real backend cart yet).
+// `FlyToCartContext`/`MiniCartContextType` are animation/UI-toggle state only.
+// Per the task rule against turning UI/runtime state into DB tables, nothing is
+// fabricated here. See `Note cart_domain` below for the full explanation.
+// =============================================================================
+
+// =============================================================================
+// DOMAIN: PROMOTION
+// Evidence: src/features/promotions/{types,mocks,services}
+// =============================================================================
+
+Table promotions {
+  id varchar [pk]
+  code varchar [unique, not null]
+  name varchar [not null]
+  description text
+  promo_type promotion_type [not null, note: 'FE field name is "type"']
+  value decimal(12,2) [not null, note: 'percentage OR fixed amount depending on promo_type']
+  max_discount_amount decimal(12,2)
+  minimum_order_amount decimal(12,2)
+  start_at timestamp
+  end_at timestamp
+  usage_limit int
+  usage_count int [not null, default: 0]
+  status promotion_status [not null, default: 'draft', note: '"expired" is computed/derived at read time (resolvePromotionEffectiveStatus), not a value the admin sets directly']
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+
+  Note: 'Evidence: src/features/promotions/types/promotion.types.ts:37-65. applicableProductIds[]/applicableCategoryIds[] become junction tables below (currently plain id-arrays in code).'
+}
+
+Table promotion_products {
+  promotion_id varchar [ref: > promotions.id, not null]
+  product_id varchar [ref: > products.id, not null]
+
+  indexes {
+    (promotion_id, product_id) [pk]
+  }
+
+  Note: 'ASSUMPTION - normalized junction for Promotion.applicableProductIds: string[] (promotion.types.ts). No join table exists in current FE code.'
+}
+
+Table promotion_categories {
+  promotion_id varchar [ref: > promotions.id, not null]
+  category_id varchar [ref: > categories.id, not null]
+
+  indexes {
+    (promotion_id, category_id) [pk]
+  }
+
+  Note: 'ASSUMPTION - normalized junction for Promotion.applicableCategoryIds: string[]. No join table exists in current FE code.'
+}
+
+// =============================================================================
+// DOMAIN: ORDER
+// Evidence: src/features/orders/{types,mocks,services}, src/features/checkout
+// =============================================================================
+
+Table orders {
+  id varchar [pk]
+  order_code varchar [unique, not null, note: 'e.g. "DH00001"']
+  idempotency_key varchar
+  customer_id varchar [ref: > customers.id, note: 'nullable - guest checkout is allowed (order.types.ts:7-11)']
+  customer_name varchar [not null, note: 'snapshot at order time, not live-joined']
+  phone varchar [not null, note: 'snapshot']
+  email varchar [note: 'snapshot']
+  delivery_address_snapshot text [not null]
+  payment_method_code varchar [not null, note: 'ASSUMPTION - denormalized code string today, not a true FK to payment_methods.id (order.service.ts resolves it server-side but never stores the id).']
+  delivery_method_code varchar [not null, note: 'ASSUMPTION - same denormalization caveat as payment_method_code.']
+  is_pickup boolean [not null, note: 'snapshot of DeliveryMethod.type at order time']
+  subtotal decimal(12,2) [not null]
+  discount decimal(12,2) [not null, default: 0]
+  discount_code varchar
+  promotion_id varchar [ref: > promotions.id, note: 'nullable']
+  shipping_discount decimal(12,2) [not null, default: 0]
+  delivery_fee decimal(12,2) [not null, default: 0]
+  total_amount decimal(12,2) [not null]
+  order_status order_status_type [not null, default: 'pending']
+  payment_status payment_status_type [not null, default: 'pending', note: 'order-level payment status, distinct enum values from payment_session_status']
+  wants_utensils boolean [not null, default: false]
+  customer_note text
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+  completed_at timestamp [note: 'nullable']
+  cancelled_at timestamp [note: 'nullable']
+
+  Note: 'Core transactional entity. Evidence: src/features/orders/types/order.types.ts:12-56'
+}
+
+Table order_items {
+  id varchar [pk, note: 'ASSUMPTION - FE type has no own id field (embedded array inside ManagedOrder.items); required here as a relational PK.']
+  order_id varchar [ref: > orders.id, not null]
+  product_id varchar [ref: > products.id, not null, note: 'snapshot reference - server always re-resolves current price/name from Catalog, never trusts client-sent values (order.service.ts:186-193)']
+  product_name varchar [not null, note: 'snapshot']
+  product_image varchar [not null, note: 'snapshot']
+  unit_price decimal(12,2) [not null, note: 'base price, pre-modifier']
+  quantity int [not null]
+  discount decimal(12,2)
+  line_total decimal(12,2) [not null]
+  item_note text
+
+  Note: 'Evidence: src/features/orders/types/order-item.types.ts:20-30'
+}
+
+Table order_item_modifiers {
+  id varchar [pk, note: 'ASSUMPTION - FE type has no own id field.']
+  order_item_id varchar [ref: > order_items.id, note: 'nullable - set when this row is a per-product modifier selection (OrderItem.modifiers[])']
+  order_id varchar [ref: > orders.id, note: 'nullable - set when this row is an order-level option selection (Order.orderOptionSelections[]); exactly one of order_item_id/order_id should be set per row']
+  group_id varchar [not null, note: 'ASSUMPTION - snapshot reference, polymorphic: points to modifier_groups.id when order_item_id is set, or order_option_groups.id when order_id is set. Not expressed as a hard FK because of this polymorphism.']
+  group_name varchar [not null, note: 'snapshot']
+  option_id varchar [not null, note: 'snapshot reference, same polymorphism as group_id (modifier_options.id or order_option_values.id)']
+  option_label varchar [not null, note: 'snapshot']
+  price_adjustment decimal(12,2) [not null]
+
+  Note: 'Immutable snapshot rows - admin changes to modifier_groups/order_option_groups later must NOT alter historical orders (order.service.ts:2-6). Evidence: src/features/orders/types/order-item.types.ts:6-12'
+}
+
+Table order_status_histories {
+  id varchar [pk, note: 'ASSUMPTION - FE type has no own id field (embedded array inside ManagedOrder.statusHistory).']
+  order_id varchar [ref: > orders.id, not null]
+  from_status order_status_type [note: 'nullable = initial creation event']
+  to_status order_status_type [not null]
+  changed_at timestamp [not null]
+  changed_by varchar [not null, note: 'ASSUMPTION - free text today ("Khách hàng"/"Admin"/admin name), not an FK to admin_users. Recommend normalizing to an actor_id FK if audit precision is required.']
+  history_note text
+
+  Note: 'Append-only audit trail of order status transitions. Evidence: src/features/orders/types/order-status-history.types.ts:8-16'
+}
+
+// =============================================================================
+// DOMAIN: PAYMENT
+// Evidence: src/features/{payment,payments,payment-methods,delivery-methods}/{types,mocks,services}
+// =============================================================================
+
+Table payment_methods {
+  id varchar [pk]
+  code varchar [unique, not null]
+  name varchar [not null]
+  description text
+  icon_media_id varchar [ref: > media.id, note: 'nullable']
+  method_group payment_method_group [not null, note: 'FE field name is "group"']
+  gateway varchar
+  instructions text
+  bank_name varchar
+  bank_account_number varchar
+  bank_account_holder varchar
+  bank_branch varchar
+  display_order int [not null]
+  is_active boolean [not null, default: true]
+  is_default boolean [not null, default: false]
+  min_order_amount decimal(12,2)
+  max_order_amount decimal(12,2)
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+
+  Note: 'Admin-configured catalog, referenced by orders/payment_sessions via denormalized code (see ASSUMPTION on orders.payment_method_code). Bank fields embedded directly rather than a separate BankAccount entity, by design. Evidence: src/features/payment-methods/types/payment-method.types.ts:26-48'
+}
+
+Table delivery_methods {
+  id varchar [pk]
+  code varchar [unique, not null]
+  name varchar [not null]
+  description text
+  delivery_type delivery_method_type [not null, note: 'FE field name is "type"']
+  base_fee decimal(12,2) [not null, default: 0]
+  free_shipping_threshold decimal(12,2)
+  estimated_min_minutes int
+  estimated_max_minutes int
+  pickup_address varchar [note: 'only meaningful when delivery_type = pickup']
+  display_order int [not null]
+  is_active boolean [not null, default: true]
+  is_default boolean [not null, default: false]
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+
+  Note: 'Admin-configured catalog. Evidence: src/features/delivery-methods/types/delivery-method.types.ts:16-34'
+}
+
+Table payment_sessions {
+  id varchar [pk]
+  reference_code varchar [unique, not null]
+  status payment_session_status [not null, default: 'pending', note: 'distinct enum from payments.status - explicitly noted as different in payment.types.ts:31-36']
+  payment_method payment_channel [not null]
+  digital_wallet_provider digital_wallet_provider_type [note: 'nullable']
+  payment_method_code varchar [not null]
+  customer_id varchar [ref: > customers.id, note: 'nullable']
+  customer_name varchar [not null]
+  phone varchar [not null]
+  email varchar
+  delivery_method_code varchar [not null]
+  is_pickup boolean [not null]
+  delivery_address_snapshot text [not null]
+  wants_utensils boolean [not null]
+  customer_note text
+  subtotal decimal(12,2) [not null]
+  shipping_fee decimal(12,2) [not null]
+  discount decimal(12,2) [not null, default: 0]
+  discount_code varchar
+  promotion_id varchar [ref: > promotions.id, note: 'nullable']
+  shipping_discount decimal(12,2) [not null, default: 0]
+  total_amount decimal(12,2) [not null]
+  bank_name varchar
+  bank_account_number varchar
+  bank_account_holder varchar
+  idempotency_key varchar
+  order_id varchar [ref: - orders.id, note: 'nullable - set only after successful confirm; ASSUMPTION one-to-one, since a session converts into at most one order']
+  order_code varchar
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+  expires_at timestamp [not null]
+
+  Note: 'Pre-order staging entity for QR / digital-wallet checkout flows only - the CASH flow skips this entirely (useCheckoutForm.ts:293-340). Evidence: src/features/payment/types/payment.types.ts:58-113'
+}
+
+Table payments {
+  id varchar [pk]
+  order_id varchar [ref: - orders.id, not null, note: 'mock data implies 1:1 with orders ("1 Payment / 1 Order", payment.mock.ts:4-6) but the FE type does not enforce uniqueness - ASSUMPTION: confirm with Backend/BA whether split/partial payments are needed (would make this N:1 instead).']
+  order_code varchar [not null, note: 'denormalized']
+  payment_method_code varchar [not null]
+  payment_method_label varchar [not null]
+  amount decimal(12,2) [not null]
+  status payment_status_type [not null, default: 'pending']
+  transaction_id varchar
+  gateway varchar
+  gateway_reference varchar
+  paid_at timestamp
+  failed_at timestamp
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+
+  Note: 'The durable, post-order payment record (admin/backend ledger). Evidence: src/features/payments/types/payment.types.ts:10-25. Note this "payments" (plural feature) is distinct from "payment_sessions" (features/payment, singular) - the pre-order staging entity above.'
+}
+
+Table payment_transactions {
+  id varchar [pk]
+  payment_id varchar [ref: > payments.id, not null]
+  action payment_transaction_action [not null]
+  result payment_transaction_result [not null]
+  gateway varchar
+  gateway_reference varchar
+  message text
+  changed_by varchar [not null, note: 'free text, not an FK today']
+  created_at timestamp [not null, default: `now()`]
+
+  Note: 'Append-only audit log, no update/delete (payment-transaction.service.ts:48-52). Evidence: src/features/payments/types/payment-transaction.types.ts:18-28'
+}
+
+// Not modeled as a table: `MockGatewaySession` (mock-payment-gateway.service.ts)
+// explicitly simulates an EXTERNAL payment gateway (VNPay/MoMo/etc). It is not
+// owned by this application's database - only referenced via
+// payments.gateway_reference / payments.transaction_id.
+
+// =============================================================================
+// DOMAIN: CMS / CONTENT
+// (Not one of the 7 domains requested, but part of the full ERD analyzed
+// previously - included here for schema completeness; drop this section if
+// out of scope for the current backend milestone.)
+// Evidence: src/features/{articles,article-categories,article-tags,pages,
+// page-sections,banners,navigation,brand,home}/{types,mocks,services}
+// =============================================================================
+
+Table article_categories {
+  id varchar [pk]
+  name varchar [not null]
+  slug varchar [not null]
+  parent_id varchar [ref: > article_categories.id, note: 'nullable, self-referencing']
+  sort_order int [not null]
+  status entity_status [not null, default: 'active']
+
+  Note: 'Deliberately separate taxonomy from `categories` (Catalog) - confirmed by comment at article-category.types.ts:5-6. Evidence: src/features/article-categories/types/article-category.types.ts:8-15'
+}
+
+Table article_tags {
+  id varchar [pk]
+  name varchar [not null]
+  slug varchar [not null]
+
+  Note: 'Evidence: src/features/article-tags/types/article-tag.types.ts:7-11'
+}
+
+Table articles {
+  id varchar [pk]
+  title varchar [not null]
+  slug varchar [unique, not null]
+  summary text [not null]
+  content text [not null, note: 'HTML from Tiptap editor']
+  featured_media_id varchar [ref: > media.id, note: 'nullable']
+  category_id varchar [ref: > article_categories.id, note: 'nullable']
+  author_name varchar [not null]
+  status publish_status [not null, default: 'draft']
+  published_at timestamp [note: 'nullable']
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+
+  Note: 'Evidence: src/features/articles/types/article.types.ts:3-18'
+}
+
+Table article_tag_map {
+  article_id varchar [ref: > articles.id, not null]
+  tag_id varchar [ref: > article_tags.id, not null]
+
+  indexes {
+    (article_id, tag_id) [pk]
+  }
+
+  Note: 'ASSUMPTION - normalized junction for Article.tagIds: string[] (no join table in current FE code, by explicit design per article-tag.types.ts:1-6).'
+}
+
+Table pages {
+  id varchar [pk]
+  name varchar [not null]
+  slug varchar [unique, not null]
+  status publish_status [not null, default: 'draft']
+  published_at timestamp [note: 'nullable']
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+
+  Note: 'Holds identity + publish status only; content lives in page_sections. Evidence: src/features/pages/types/page.types.ts:8-16'
+}
+
+Table page_sections {
+  id varchar [pk]
+  page_id varchar [ref: > pages.id, not null]
+  section_kind section_type [not null, note: 'FE field name is "sectionType"']
+  eyebrow varchar
+  heading varchar
+  subheading varchar
+  body text
+  media_id varchar [ref: > media.id, note: 'nullable']
+  cta_label varchar
+  cta_url varchar
+  display_order int [not null]
+  is_visible boolean [not null, default: true]
+
+  Note: 'Evidence: src/features/page-sections/types/page-section.types.ts:21-34'
+}
+
+Table banners {
+  id varchar [pk]
+  name varchar [not null]
+  desktop_media_id varchar [ref: > media.id, note: 'nullable']
+  mobile_media_id varchar [ref: > media.id, note: 'nullable']
+  alt_text varchar [not null]
+  heading varchar
+  subheading varchar
+  cta_label varchar
+  cta_url varchar
+  placement banner_placement [not null]
+  start_at timestamp [note: 'nullable']
+  end_at timestamp [note: 'nullable']
+  display_order int [not null]
+  is_active boolean [not null, default: true]
+
+  Note: 'Deliberately has NO FK to pages - site queries by placement enum instead (banner.types.ts:3-5). Evidence: src/features/banners/types/banner.types.ts:15-32'
+}
+
+Table navigation_menus {
+  id varchar [pk]
+  code varchar [unique, not null, note: 'e.g. "MAIN_HEADER"']
+  name varchar [not null]
+  location navigation_location [not null]
+  is_active boolean [not null, default: true]
+
+  Note: 'Evidence: src/features/navigation/types/navigation.types.ts:39-46,61'
+}
+
+Table navigation_items {
+  id varchar [pk]
+  menu_id varchar [ref: > navigation_menus.id, not null]
+  parent_id varchar [ref: > navigation_items.id, note: 'nullable, self-referencing tree']
+  label varchar [not null]
+  target_type navigation_target_type [not null]
+  target_id varchar [note: 'ASSUMPTION - nullable, polymorphic: only references pages.id when target_type = page (resolved at read time via getPageById, navigation.service.ts:36-42). Not expressed as a hard FK because of this polymorphism.']
+  url varchar
+  icon varchar [note: 'Lucide icon name string']
+  sort_order int [not null]
+  is_visible boolean [not null, default: true]
+  open_in_new_tab boolean
+
+  Note: 'Evidence: src/features/navigation/types/navigation.types.ts:25-37,56-58'
+}
+
+Table brand_settings {
+  id varchar [pk, note: 'fixed singleton value "brand-settings" - only ever 1 row, service exposes get/update only, no create/delete']
+  name varchar [not null]
+  tagline varchar [not null]
+  description text
+  phone varchar [not null]
+  hotline varchar
+  email varchar
+  address_line varchar [not null]
+  ward varchar
+  district varchar
+  province varchar
+  tax_code varchar
+  legal_name varchar
+  logo_media_id varchar [ref: > media.id, note: 'nullable']
+  logo_dark_media_id varchar [ref: > media.id, note: 'nullable']
+  logo_light_media_id varchar [ref: > media.id, note: 'nullable']
+  favicon_media_id varchar [ref: > media.id, note: 'nullable']
+  og_image_media_id varchar [ref: > media.id, note: 'nullable']
+  open_time varchar [not null]
+  close_time varchar [not null]
+  business_hours_note text
+  updated_at timestamp [not null, default: `now()`]
+
+  Note: 'Singleton site settings. Seeded from (but now decoupled from) src/data/site.ts - the two are explicitly separate sources per brand-settings.mock.ts:3-9. Evidence: src/features/brand/types/brand-settings.types.ts:11-50'
+}
+
+Table social_links {
+  id varchar [pk]
+  brand_settings_id varchar [ref: > brand_settings.id, not null, note: 'ASSUMPTION FK - embedded in ManagedBrandSettings.socialLinks[] today with no own FK field.']
+  platform social_platform [not null]
+  url varchar [not null]
+  display_order int [not null]
+  is_active boolean [not null, default: true]
+
+  Note: 'Evidence: src/features/brand/types/social-link.types.ts:17-23'
+}
+
+Table testimonials {
+  id int [pk, increment, note: 'ASSUMPTION - numeric PK, inconsistent with the rest of the schema (everything else uses string ids). Least-developed mock: read-only service, no CRUD/localStorage backing yet.']
+  customer_name varchar [not null]
+  avatar_text varchar [not null, note: 'single-letter avatar initial, not a media reference']
+  rating int [not null]
+  time_ago varchar [not null, note: 'pre-formatted relative time text (e.g. "1 tuần trước"), NOT a real timestamp']
+  content text [not null]
+
+  Note: 'Evidence: src/features/home/mocks/testimonials.mock.ts:4-11. No confirmed relationship to page_sections (section_kind=testimonial) or to any product/order in current code - flagged ASSUMPTION if a link is later required.'
+}
+
+// =============================================================================
+// Standalone notes (not tables) - documents domains with intentionally no
+// backing table, per the "don't fabricate UI state as tables" rule.
+// =============================================================================
+
+Note cart_domain {
+  '''
+  CART DOMAIN - no tables by design.
+  Evidence: src/features/cart/types/cart.types.ts + src/features/cart/services/cart.service.ts.
+  CartItem { id, productId, name, basePrice, image, modifiers?, specialInstructions?, quantity }
+  and CartPreferences { deliveryMethodId, address, utensils, note, orderOptionSelections } are
+  persisted ONLY to browser localStorage ("tayho-cart", "tayho-cart-preferences"). Explicit FE
+  comment: "Cart hien tai la state thuan phia trinh duyet (chua co Backend Cart that)".
+  FlyToCartContext / MiniCartContextType are pure UI animation/toggle state, never persisted.
+  If a server-side cart (e.g. to sync across devices for logged-in customers) is required in the
+  future, CartItem/CartPreferences above are the best reference shapes for it - ASSUMPTION,
+  not evidenced as a current requirement.
+  '''
+}
+
+Note favorites_domain {
+  '''
+  FAVORITES - no table proposed (unlike Cart, not even a client-side type exists).
+  Evidence: src/features/favorites/services/favorite.service.ts has NO favorite.types.ts file at
+  all; it only persists a flat string[] of productId to localStorage key "tayho-favorites",
+  unscoped to any customerId. A normalized favorites(id, customer_id FK, product_id FK,
+  created_at) table is a reasonable recommendation but is NOT included in this schema because
+  rule 7 forbids inventing fields/relationships without code evidence - flagged here as
+  ASSUMPTION - can xac nhan voi Backend/BA truoc khi them bang nay.
+  '''
+}
+
+// =============================================================================
+// TABLE GROUPS
+// =============================================================================
+
+TableGroup "Catalog" {
+  categories
+  media
+  products
+  product_media
+  modifier_groups
+  modifier_options
+  product_modifier_groups
+  order_option_groups
+  order_option_values
+  menus
+  menu_products
+}
+
+TableGroup "Customer_Auth" {
+  customers
+  customer_addresses
+}
+
+TableGroup "Admin_Auth" {
+  roles
+  admin_users
+}
+
+TableGroup "Promotion" {
+  promotions
+  promotion_products
+  promotion_categories
+}
+
+TableGroup "Order" {
+  orders
+  order_items
+  order_item_modifiers
+  order_status_histories
+}
+
+TableGroup "Payment" {
+  payment_methods
+  delivery_methods
+  payment_sessions
+  payments
+  payment_transactions
+}
+
+TableGroup "CMS_Content" {
+  article_categories
+  article_tags
+  articles
+  article_tag_map
+  pages
+  page_sections
+  banners
+  navigation_menus
+  navigation_items
+  brand_settings
+  social_links
+  testimonials
+}
+
+// NOTE: There is intentionally no "Cart" TableGroup — see `Note cart_domain`
+// above; a TableGroup cannot be declared empty in DBML.

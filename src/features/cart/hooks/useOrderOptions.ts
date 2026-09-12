@@ -2,7 +2,15 @@
 
 import { useEffect, useState } from "react";
 
-import { listGeneralOrderOptions, type ManagedOrderOptionGroup } from "@/features/order-options";
+// Đi thẳng vào api/type thay vì qua index.ts (barrel) — barrel còn re-export
+// "use client" OrderOptionsExplorer/OrderOptionEditor (Admin UI), import qua
+// đó sẽ kéo thêm UI Admin vào bundle JS của site công khai (Mini Cart/Cart
+// Page/Checkout đều dùng hook này), giống lý do order.service.ts đi thẳng vào
+// product.service.ts thay vì qua barrel features/products. orderOptionApi
+// (không phải service trực tiếp) để khi NEXT_PUBLIC_API_MODE=real, Cart tự
+// chuyển sang gọi Backend thật mà không cần sửa hook này.
+import { orderOptionApi } from "@/features/order-options/api/order-option-api";
+import type { ManagedOrderOptionGroup } from "@/features/order-options/types/order-option.types";
 import { useCart } from "../context/cart-context";
 import {
   buildDefaultSelectionMap,
@@ -27,7 +35,7 @@ export function useOrderOptions() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    listGeneralOrderOptions().then((result) => {
+    orderOptionApi.list().then((result) => {
       setGroups(result);
       setIsLoading(false);
 

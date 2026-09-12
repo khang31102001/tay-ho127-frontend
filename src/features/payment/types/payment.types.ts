@@ -1,4 +1,4 @@
-import type { CartItem } from "@/features/cart";
+import type { CartItem, CartItemModifierSelection } from "@/features/cart";
 
 /**
  * 3 phương thức thanh toán cố định hiển thị ở Checkout (PHƯƠNG THỨC THANH
@@ -82,6 +82,8 @@ export interface PaymentSession {
   /** Order Preference — áp dụng cho toàn đơn, đã chọn ở Cart Page. */
   wantsUtensils: boolean;
   note?: string;
+  /** General Order Options đã chọn (Nước mắm/Rau...) — lưu raw (chưa resolve) giống `items`, confirmPaymentSession() truyền tiếp groupId/optionId vào createOrder() để tự tra cứu lại label/giá thật. */
+  orderOptionSelections: CartItemModifierSelection[];
 
   subtotal: number;
   shippingFee: number;
@@ -89,6 +91,8 @@ export interface PaymentSession {
   /** Mã giảm giá đã áp dụng ở Checkout (nếu có) — cần snapshot lại đây để confirmPaymentSession() truyền tiếp vào createOrder() khi tạo Order thật. */
   discountCode?: string;
   promotionId?: string;
+  /** Số tiền giảm trên shippingFee (mã "free_shipping") — snapshot để confirmPaymentSession() truyền tiếp vào createOrder(), giống discount/discountCode. */
+  shippingDiscount: number;
   totalAmount: number;
 
   bankName?: string;

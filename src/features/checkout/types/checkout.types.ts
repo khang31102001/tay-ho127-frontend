@@ -20,6 +20,8 @@ export interface CheckoutTotals {
   subtotal: number;
   shippingFee: number;
   discount: number;
+  /** Số tiền giảm trên phí giao hàng (mã "free_shipping") — luôn ≤ shippingFee. UI chỉ hiển thị dòng này khi > 0 (xem CheckoutPriceSummary). */
+  shippingDiscount: number;
   /**
    * Phí phát sinh khác ngoài phí giao hàng (vd. phí đóng gói) — chưa có
    * business rule/nguồn dữ liệu nào tạo ra giá trị khác 0, để sẵn field cho

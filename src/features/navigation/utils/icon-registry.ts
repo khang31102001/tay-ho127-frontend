@@ -15,8 +15,10 @@ import {
   ShieldCheck,
   Store,
   Tags,
+  TicketPercent,
   Truck,
   Users,
+  Utensils,
   Wallet,
   type LucideIcon,
 } from "lucide-react";
@@ -44,8 +46,10 @@ export const NAVIGATION_ICON_REGISTRY: Record<string, LucideIcon> = {
   ShieldCheck,
   Store,
   Tags,
+  TicketPercent,
   Truck,
   Users,
+  Utensils,
   Wallet,
 };
 

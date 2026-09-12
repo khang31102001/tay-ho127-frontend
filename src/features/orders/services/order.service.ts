@@ -6,6 +6,8 @@ import { getPaymentMethodByCode, isPaymentMethodEligible } from "@/features/paym
 import { getProductById } from "@/features/products/services/product.service";
 import { listMedia } from "@/features/media/services/media.service";
 import { getModifierGroupById } from "@/features/modifier-groups/services/modifier-group.service";
+import { getOrderOptionGroupById } from "@/features/order-options/services/order-option.service";
+import { incrementPromotionUsage } from "@/features/promotions/services/promotion.service";
 
 import { SEED_ORDERS } from "../mocks/order.mock";
 import { ORDER_STATUS_TRANSITIONS, type OrderStatus } from "../types/order-status";
@@ -94,9 +96,17 @@ export type CreateOrderInput = {
   /** Mã giảm giá khách đã áp dụng ở Checkout (nếu có) — lưu nguyên vào Order để tra cứu/đối soát sau này, KHÔNG dùng để tính lại `discount` (Checkout đã tính sẵn amount, service chỉ lưu lại). */
   discountCode?: string;
   promotionId?: string;
+  /** Số tiền giảm trên phí giao hàng (mã "free_shipping") — Checkout đã tính sẵn, service chỉ chặn không vượt quá deliveryFee thật vừa tra cứu lại. */
+  shippingDiscount?: number;
   /** Order Preference — áp dụng cho toàn đơn, không thuộc từng CartItem. */
   wantsUtensils: boolean;
   note?: string;
+  /**
+   * General Order Options đã chọn (Nước mắm/Rau...) — chỉ truyền groupId +
+   * optionId (giống `items[].modifiers`), service tự tra cứu lại label/giá
+   * thật từ features/order-options, không tin dữ liệu Frontend gửi lên.
+   */
+  orderOptions?: CreateOrderItemModifierInput[];
   /** Sinh 1 lần phía Client cho mỗi lượt Checkout (giữ nguyên qua các lần thử lại) — chống double-submit, xem createOrder(). */
   idempotencyKey?: string;
 };
@@ -119,6 +129,41 @@ async function resolveOrderItemModifiers(
   const snapshots = await Promise.all(
     modifierInputs.map(async (input) => {
       const group = await getModifierGroupById(input.groupId);
+      const option = group?.options.find((candidate) => candidate.id === input.optionId);
+      if (!group || !option) {
+        return null;
+      }
+
+      const snapshot: OrderItemModifierSnapshot = {
+        groupId: group.id,
+        groupName: group.name,
+        optionId: option.id,
+        optionLabel: option.label,
+        priceAdjustment: option.priceAdjustment,
+      };
+      return snapshot;
+    }),
+  );
+
+  return snapshots.filter((snapshot): snapshot is OrderItemModifierSnapshot => snapshot !== null);
+}
+
+/**
+ * Tra cứu lại nhóm/lựa chọn General Order Options thật từ features/order-options
+ * theo groupId/optionId — cùng nguyên tắc không tin Frontend với
+ * resolveOrderItemModifiers(), nhưng đây là domain Order Configuration (áp
+ * dụng cho TOÀN đơn), không phải Product Modifier của từng dòng hàng.
+ */
+async function resolveOrderOptionSelections(
+  optionInputs: CreateOrderItemModifierInput[] | undefined,
+): Promise<OrderItemModifierSnapshot[]> {
+  if (!optionInputs || optionInputs.length === 0) {
+    return [];
+  }
+
+  const snapshots = await Promise.all(
+    optionInputs.map(async (input) => {
+      const group = await getOrderOptionGroupById(input.groupId);
       const option = group?.options.find((candidate) => candidate.id === input.optionId);
       if (!group || !option) {
         return null;
@@ -203,7 +248,13 @@ export async function createOrder(input: CreateOrderInput): Promise<ManagedOrder
 
   const now = new Date().toISOString();
   const items = await resolveOrderItems(input.items);
-  const subtotal = items.reduce((sum, item) => sum + item.lineTotal, 0);
+  const orderOptionSelections = await resolveOrderOptionSelections(input.orderOptions);
+  // General Order Options (Nước mắm/Rau...) cộng phụ phí 1 lần cho cả đơn, KHÔNG
+  // nhân theo quantity món nào — cùng công thức calculateOrderOptionsSurcharge()
+  // bên Cart (features/cart/services/cart.service.ts) để subtotal ở Order khớp
+  // đúng số đã hiển thị cho khách ở Checkout (CheckoutTotals.subtotal).
+  const orderOptionsSurcharge = orderOptionSelections.reduce((sum, option) => sum + option.priceAdjustment, 0);
+  const subtotal = items.reduce((sum, item) => sum + item.lineTotal, 0) + orderOptionsSurcharge;
   const discount = input.discount ?? 0;
 
   const deliveryMethod = await getDeliveryMethodByCode(input.deliveryMethodCode);
@@ -211,6 +262,8 @@ export async function createOrder(input: CreateOrderInput): Promise<ManagedOrder
     throw new Error("Phương thức giao hàng không khả dụng.");
   }
   const deliveryFee = resolveDeliveryFee(deliveryMethod, subtotal);
+  // Chặn không vượt quá deliveryFee thật vừa tra cứu lại — không tin thẳng giá trị Checkout gửi lên.
+  const shippingDiscount = Math.min(input.shippingDiscount ?? 0, deliveryFee);
 
   const paymentMethod = await getPaymentMethodByCode(input.paymentMethodCode);
   if (!paymentMethod || !paymentMethod.isActive) {
@@ -240,12 +293,14 @@ export async function createOrder(input: CreateOrderInput): Promise<ManagedOrder
     discount,
     discountCode: input.discountCode,
     promotionId: input.promotionId,
+    shippingDiscount,
     deliveryFee,
-    totalAmount: subtotal - discount + deliveryFee,
+    totalAmount: subtotal - discount + deliveryFee - shippingDiscount,
     orderStatus: "pending",
     paymentStatus: "pending",
     wantsUtensils: input.wantsUtensils,
     note: input.note,
+    orderOptionSelections,
     createdAt: now,
     updatedAt: now,
     completedAt: null,
@@ -253,6 +308,15 @@ export async function createOrder(input: CreateOrderInput): Promise<ManagedOrder
   };
 
   writeStore([...existing, order]);
+
+  // Ghi nhận lượt sử dụng SAU KHI Order đã tạo thành công (không phải lúc chỉ
+  // "áp dụng thử" ở Checkout) — lỗi ghi nhận không nên chặn cả đơn hàng vừa tạo.
+  if (order.promotionId) {
+    incrementPromotionUsage(order.promotionId).catch((error) => {
+      console.error("Không thể ghi nhận lượt sử dụng mã giảm giá:", error);
+    });
+  }
+
   return order;
 }
 

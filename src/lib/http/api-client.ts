@@ -18,6 +18,21 @@ import type { ApiEnvelope, ApiQueryParams, ApiRequestOptions, HttpMethod } from 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 const DEFAULT_TIMEOUT_MS = 15_000;
 
+/**
+ * EXTENSION POINT cho Authentication (mục 5) — CHƯA có Backend ASP.NET Core
+ * Bearer Token nào thật hôm nay nên KHÔNG gắn logic đọc token cụ thể (localStorage,
+ * cookie...) ở đây, tránh fake security logic. Khi Auth thật sẵn sàng, gọi
+ * `setAuthTokenProvider(() => currentAccessToken)` một lần ở nơi khởi tạo phiên
+ * đăng nhập — mọi request qua `api.get/post/...` sau đó tự đính kèm header
+ * `Authorization: Bearer <token>`, không phải sửa lại api-client hay từng feature.
+ */
+type AuthTokenProvider = () => string | null | undefined;
+let authTokenProvider: AuthTokenProvider | null = null;
+
+export function setAuthTokenProvider(provider: AuthTokenProvider | null): void {
+  authTokenProvider = provider;
+}
+
 function buildQueryString(params?: ApiQueryParams): string {
   if (!params) return "";
 
@@ -83,12 +98,15 @@ async function request<TResponse>(
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), options.timeoutMs ?? DEFAULT_TIMEOUT_MS);
 
+  const token = authTokenProvider?.();
+
   let response: Response;
   try {
     response = await fetch(buildUrl(path, options.params), {
       method,
       headers: {
         "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options.headers,
       },
       credentials: options.credentials ?? "same-origin",
