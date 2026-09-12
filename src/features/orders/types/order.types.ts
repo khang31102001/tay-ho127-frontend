@@ -1,6 +1,6 @@
 import type { OrderStatus } from "./order-status";
 import type { PaymentStatus } from "./payment-status";
-import type { OrderItem } from "./order-item.types";
+import type { OrderItem, OrderItemModifierSnapshot } from "./order-item.types";
 import type { OrderStatusHistoryEntry } from "./order-status-history.types";
 
 /**
@@ -33,6 +33,8 @@ export type ManagedOrder = {
   /** Mã giảm giá khách đã dùng (nếu có) — lưu kèm `discount`/`promotionId` để tra cứu/đối soát sau này, không chỉ lưu số tiền. */
   discountCode?: string;
   promotionId?: string;
+  /** Số tiền được giảm trên `deliveryFee` (mã giảm giá loại "free_shipping") — 0 nếu không áp dụng. */
+  shippingDiscount: number;
   deliveryFee: number;
   totalAmount: number;
   orderStatus: OrderStatus;
@@ -40,6 +42,13 @@ export type ManagedOrder = {
   /** Order Preference — áp dụng cho toàn đơn, không thuộc CartItem/Product. Mặc định true (đa số khách nhận đồ ăn ngoài quán cần dụng cụ). */
   wantsUtensils: boolean;
   note?: string;
+  /**
+   * General Order Options đã chọn (Nước mắm/Rau...) — snapshot tại thời điểm
+   * đặt hàng (label/giá lúc đó), KHÔNG tham chiếu sống tới
+   * ManagedOrderOptionGroup (features/order-options). Áp dụng cho TOÀN đơn,
+   * không thuộc từng OrderItem — đã cộng vào `subtotal` (xem order.service.ts).
+   */
+  orderOptionSelections: OrderItemModifierSnapshot[];
   createdAt: string;
   updatedAt: string;
   completedAt: string | null;

@@ -1,6 +1,6 @@
 import { createOrder, type ManagedOrder } from "@/features/orders";
 import { createPayment, getPaymentByOrderId, transitionPayment } from "@/features/payments";
-import type { CartItem } from "@/features/cart";
+import type { CartItem, CartItemModifierSelection } from "@/features/cart";
 
 import {
   cancelPayment as cancelGatewayPayment,
@@ -71,11 +71,13 @@ export type CreatePaymentSessionInput = {
   deliveryAddressSnapshot: string;
   wantsUtensils: boolean;
   note?: string;
+  orderOptionSelections: CartItemModifierSelection[];
   subtotal: number;
   shippingFee: number;
   discount: number;
   discountCode?: string;
   promotionId?: string;
+  shippingDiscount: number;
   totalAmount: number;
   paymentMethod: Extract<PaymentMethod, "QR" | "DIGITAL_WALLET">;
   digitalWalletProvider?: DigitalWalletProvider;
@@ -132,11 +134,13 @@ export async function createPaymentSession(input: CreatePaymentSessionInput): Pr
     deliveryAddressSnapshot: input.deliveryAddressSnapshot,
     wantsUtensils: input.wantsUtensils,
     note: input.note,
+    orderOptionSelections: input.orderOptionSelections,
     subtotal: input.subtotal,
     shippingFee: input.shippingFee,
     discount: input.discount,
     discountCode: input.discountCode,
     promotionId: input.promotionId,
+    shippingDiscount: input.shippingDiscount,
     totalAmount: input.totalAmount,
     bankName: input.bankName,
     bankAccountNumber: input.bankAccountNumber,
@@ -230,9 +234,14 @@ export async function confirmPaymentSession(
       })),
       wantsUtensils: session.wantsUtensils,
       note: session.note,
+      orderOptions: session.orderOptionSelections.map((selection) => ({
+        groupId: selection.groupId,
+        optionId: selection.optionId,
+      })),
       discount: session.discount,
       discountCode: session.discountCode,
       promotionId: session.promotionId,
+      shippingDiscount: session.shippingDiscount,
       idempotencyKey: session.idempotencyKey,
     });
 

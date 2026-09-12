@@ -1,85 +1,51 @@
-import { formatCurrency } from "@/lib/format-currency";
-
-const MOCK_DELAY_MS = 400;
-
-function delay(): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, MOCK_DELAY_MS));
-}
+// Đi thẳng vào api/type của Promotion thay vì qua index.ts (barrel) — barrel
+// còn re-export "use client" PromotionsExplorer/PromotionEditor (Admin UI), import
+// qua đó sẽ kéo thêm UI Admin vào bundle JS của Checkout (site công khai), giống lý
+// do order.service.ts đi thẳng vào product.service.ts thay vì barrel features/products.
+// promotionApi (không phải service trực tiếp) để khi NEXT_PUBLIC_API_MODE=real,
+// Checkout tự chuyển sang gọi Backend thật qua POST /promotions/validate mà
+// không cần sửa file này.
+import { promotionApi } from "@/features/promotions/api/promotion-api";
+import type { PromotionValidateRequestItem } from "@/features/promotions/types/promotion.types";
 
 /** Kết quả áp dụng mã thành công — Checkout State giữ nguyên object này để gửi lên `createOrder()`/`createPaymentSession()`. */
 export interface AppliedDiscount {
   promotionId: string;
   discountCode: string;
   discountAmount: number;
+  /** Số tiền được giảm trên phí giao hàng (mã "free_shipping") — 0 với các loại mã khác. */
+  shippingDiscount: number;
   description: string;
-}
-
-interface DiscountCodeDefinition {
-  code: string;
-  promotionId: string;
-  description: string;
-  type: "percent" | "fixed";
-  /** percent: 0-100, fixed: số tiền VNĐ. */
-  value: number;
-  /** Chỉ áp dụng cho type "percent" — chặn số tiền giảm không vượt trần. */
-  maxDiscountAmount?: number;
-  minSubtotal?: number;
 }
 
 /**
- * MOCK CONTRACT — chưa có module Promotion/Discount Code thật ở Backend.
- * Danh sách mã hợp lệ hard-code tạm để demo luồng nhập mã → validate → tính
- * discountAmount → cộng vào Checkout Totals. Khi có API thật, chỉ cần thay
- * nội dung applyDiscountCode() bằng lời gọi API — chữ ký hàm và shape
- * AppliedDiscount trả về giữ nguyên để useCheckoutForm không phải sửa lại.
+ * Cầu nối giữa Checkout và domain Promotion (features/promotions) — Checkout
+ * KHÔNG tự hiểu business rule (percentage/fixed/free_shipping/product_discount),
+ * chỉ gọi `validatePromotion()` rồi map kết quả chuẩn hóa sang shape
+ * `AppliedDiscount` mà `useCheckoutForm`/`DiscountCodeSection` đang dùng —
+ * đổi/thêm loại mã mới chỉ cần sửa features/promotions, KHÔNG phải sửa file
+ * này hay bất kỳ component Checkout nào.
  */
-const MOCK_DISCOUNT_CODES: DiscountCodeDefinition[] = [
-  {
-    code: "TAYHO10",
-    promotionId: "promo-tayho10",
-    description: "Giảm 10%, tối đa 20.000 đ",
-    type: "percent",
-    value: 10,
-    maxDiscountAmount: 20000,
-  },
-  {
-    code: "FREESHIP15",
-    promotionId: "promo-freeship15",
-    description: "Giảm 15.000 đ cho đơn từ 100.000 đ",
-    type: "fixed",
-    value: 15000,
-    minSubtotal: 100000,
-  },
-];
+export async function applyDiscountCode(
+  rawCode: string,
+  params: { subtotal: number; shippingFee: number; items: PromotionValidateRequestItem[] },
+): Promise<AppliedDiscount> {
+  const result = await promotionApi.validate({
+    code: rawCode,
+    subtotal: params.subtotal,
+    shippingFee: params.shippingFee,
+    items: params.items,
+  });
 
-/** Validate mã + tính sẵn `discountAmount` theo `subtotal` hiện tại (snapshot tại thời điểm áp dụng, không tính lại sau đó — Checkout Review không cho sửa số lượng món nên subtotal không đổi giữa chừng). */
-export async function applyDiscountCode(rawCode: string, subtotal: number): Promise<AppliedDiscount> {
-  await delay();
-
-  const code = rawCode.trim().toUpperCase();
-  if (!code) {
-    throw new Error("Vui lòng nhập mã giảm giá.");
+  if (!result.isValid || !result.promotion) {
+    throw new Error(result.message ?? "Mã giảm giá không hợp lệ hoặc đã hết hạn.");
   }
-
-  const definition = MOCK_DISCOUNT_CODES.find((item) => item.code === code);
-  if (!definition) {
-    throw new Error("Mã giảm giá không hợp lệ hoặc đã hết hạn.");
-  }
-
-  if (definition.minSubtotal && subtotal < definition.minSubtotal) {
-    throw new Error(`Đơn hàng cần tối thiểu ${formatCurrency(definition.minSubtotal)} để áp dụng mã này.`);
-  }
-
-  const rawDiscountAmount =
-    definition.type === "percent" ? Math.round((subtotal * definition.value) / 100) : definition.value;
-  const cappedDiscountAmount = definition.maxDiscountAmount
-    ? Math.min(rawDiscountAmount, definition.maxDiscountAmount)
-    : rawDiscountAmount;
 
   return {
-    promotionId: definition.promotionId,
-    discountCode: definition.code,
-    discountAmount: Math.min(cappedDiscountAmount, subtotal),
-    description: definition.description,
+    promotionId: result.promotion.id,
+    discountCode: result.promotion.code,
+    discountAmount: result.discountAmount,
+    shippingDiscount: result.shippingDiscount,
+    description: result.promotion.name,
   };
 }

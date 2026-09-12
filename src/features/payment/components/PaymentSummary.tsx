@@ -21,6 +21,7 @@ export function PaymentSummary({ session }: PaymentSummaryProps) {
         subtotal={session.subtotal}
         shippingFee={session.shippingFee}
         discount={session.discount}
+        shippingDiscount={session.shippingDiscount}
         grandTotal={session.totalAmount}
       />
     </>

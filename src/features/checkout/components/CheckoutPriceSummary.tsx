@@ -62,6 +62,13 @@ export function CheckoutPriceSummary({
           <strong>{formatCurrency(totals.shippingFee)}</strong>
         </div>
 
+        {totals.shippingDiscount > 0 && (
+          <div className="flex justify-between gap-4">
+            <span>Giảm phí vận chuyển</span>
+            <strong className="text-brand-red">-{formatCurrency(totals.shippingDiscount)}</strong>
+          </div>
+        )}
+
         {totals.otherFee > 0 && (
           <div className="flex justify-between gap-4">
             <span>Phí khác</span>

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent 
 import { useRouter } from "next/navigation";
 
 import type { CartItem } from "@/features/cart";
-import { consumeCartReviewedFlag, useCart } from "@/features/cart";
+import { calculateCartItemTotal, consumeCartReviewedFlag, useCart } from "@/features/cart";
 import type { PopupStatus } from "@/components/shared/StatusPopup";
 import { useAuth } from "@/features/auth";
 import { createOrder } from "@/features/orders";
@@ -51,11 +51,12 @@ export function useCheckoutForm({ cartItems, totalPrice, clearCart }: UseCheckou
   const { user: currentUser } = useAuth();
 
   /**
-   * deliveryMethodId/address/utensils/note đã được khách chọn ở Cart Page
-   * (CartContext) trước khi vào Checkout — đọc lại ở đây để tính totals và
-   * gửi lên createOrder(), Checkout không sở hữu state của 3 mục này nữa.
+   * deliveryMethodId/address/utensils/note/orderOptionSelections đã được
+   * khách chọn ở Cart Page (CartContext) trước khi vào Checkout — đọc lại ở
+   * đây để tính totals và gửi lên createOrder()/createPaymentSession(),
+   * Checkout không sở hữu state của các mục này nữa.
    */
-  const { deliveryMethodId, address, utensils, note } = useCart();
+  const { deliveryMethodId, address, utensils, note, orderOptionSelections } = useCart();
 
   const [form, setForm] = useState<CheckoutFormState>(INITIAL_CHECKOUT_FORM);
 
@@ -169,7 +170,12 @@ export function useCheckoutForm({ cartItems, totalPrice, clearCart }: UseCheckou
     setDiscountError(undefined);
 
     try {
-      const result = await applyDiscountCode(code, totalPrice);
+      const shippingFee = selectedDeliveryMethod ? resolveDeliveryFee(selectedDeliveryMethod, totalPrice) : 0;
+      const result = await applyDiscountCode(code, {
+        subtotal: totalPrice,
+        shippingFee,
+        items: cartItems.map((item) => ({ productId: item.productId, lineTotal: calculateCartItemTotal(item) })),
+      });
       setAppliedDiscount(result);
     } catch (error) {
       setAppliedDiscount(null);
@@ -196,12 +202,16 @@ export function useCheckoutForm({ cartItems, totalPrice, clearCart }: UseCheckou
   const totals = useMemo<CheckoutTotals>(() => {
     const shippingFee = selectedDeliveryMethod ? resolveDeliveryFee(selectedDeliveryMethod, totalPrice) : 0;
     const discount = appliedDiscount?.discountAmount ?? 0;
-    const grandTotal = Math.max(0, totalPrice - discount + shippingFee + otherFee + tax);
+    // Chặn shippingDiscount không vượt quá shippingFee thật tại thời điểm tính lại
+    // (vd. đổi Delivery Method sau khi đã áp mã "free_shipping" khiến phí thấp hơn snapshot).
+    const shippingDiscount = Math.min(appliedDiscount?.shippingDiscount ?? 0, shippingFee);
+    const grandTotal = Math.max(0, totalPrice - discount + shippingFee - shippingDiscount + otherFee + tax);
 
     return {
       subtotal: totalPrice,
       shippingFee,
       discount,
+      shippingDiscount,
       otherFee,
       tax,
       grandTotal,
@@ -300,9 +310,14 @@ export function useCheckoutForm({ cartItems, totalPrice, clearCart }: UseCheckou
           })),
           wantsUtensils: utensils === "yes",
           note: note.trim() || undefined,
+          orderOptions: orderOptionSelections.map((selection) => ({
+            groupId: selection.groupId,
+            optionId: selection.optionId,
+          })),
           discount: totals.discount,
           discountCode: appliedDiscount?.discountCode,
           promotionId: appliedDiscount?.promotionId,
+          shippingDiscount: totals.shippingDiscount,
           idempotencyKey,
         });
 
@@ -342,11 +357,13 @@ export function useCheckoutForm({ cartItems, totalPrice, clearCart }: UseCheckou
         deliveryAddressSnapshot,
         wantsUtensils: utensils === "yes",
         note: note.trim() || undefined,
+        orderOptionSelections,
         subtotal: totals.subtotal,
         shippingFee: totals.shippingFee,
         discount: totals.discount,
         discountCode: appliedDiscount?.discountCode,
         promotionId: appliedDiscount?.promotionId,
+        shippingDiscount: totals.shippingDiscount,
         totalAmount: totals.grandTotal,
         paymentMethod,
         digitalWalletProvider:

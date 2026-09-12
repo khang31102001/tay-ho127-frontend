@@ -128,6 +128,16 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
                 <dd className="font-bold">{order.wantsUtensils ? "Có" : "Không"}</dd>
               </div>
             </dl>
+            {order.orderOptionSelections.length > 0 && (
+              <ul className="mt-3 space-y-0.5 text-[13px] text-brand-muted">
+                {order.orderOptionSelections.map((selection) => (
+                  <li key={selection.optionId}>
+                    <span className="font-bold text-brand-greenDark">{selection.groupName}: </span>
+                    {selection.optionLabel}
+                  </li>
+                ))}
+              </ul>
+            )}
             {order.note && (
               <p className="mt-3 rounded-lg bg-brand-cream/40 p-3 text-[13px] text-brand-muted">
                 Ghi chú: {order.note}

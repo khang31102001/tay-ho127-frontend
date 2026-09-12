@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { StarIcon } from "lucide-react";
 
@@ -7,10 +8,7 @@ import { Container } from "@/components/ui/Container";
 import { Reveal } from "@/components/shared/Reveal";
 import { SwiperCarousel } from "@/components/ui/SwiperCarousel";
 
-import {
-  testimonials,
-  type TestimonialItem,
-} from "../mocks/testimonials.mock";
+import { listTestimonials, type TestimonialItem } from "../services/testimonial.service";
 
 /**
  * Thời gian tự chuyển đánh giá.
@@ -115,6 +113,12 @@ function TestimonialCard({ item }: { item: TestimonialItem }) {
  * ======================================================= */
 
 export function TestimonialsSection() {
+  const [testimonials, setTestimonials] = useState<TestimonialItem[]>([]);
+
+  useEffect(() => {
+    listTestimonials().then(setTestimonials);
+  }, []);
+
   return (
     <section
       className="

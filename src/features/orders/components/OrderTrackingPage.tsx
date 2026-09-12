@@ -144,6 +144,20 @@ export function OrderTrackingPage({ orderCode }: OrderTrackingPageProps) {
                   </article>
                 ))}
               </div>
+
+              {order.orderOptionSelections.length > 0 && (
+                <div className="mt-4 border-black pt-4">
+                  <h3 className="mb-2 text-[14px] font-black text-brand-greenDark">Tùy chọn chung cho đơn hàng</h3>
+                  <ul className="space-y-0.5 text-[13px] text-[#4b4b4b]">
+                    {order.orderOptionSelections.map((selection) => (
+                      <li key={selection.optionId}>
+                        <span className="font-bold text-brand-greenDark">{selection.groupName}: </span>
+                        {selection.optionLabel}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </section>
 
             <section className="rounded-lg bg-white p-7 shadow-soft">
@@ -187,6 +201,7 @@ export function OrderTrackingPage({ orderCode }: OrderTrackingPageProps) {
               subtotal={order.subtotal}
               shippingFee={order.deliveryFee}
               discount={order.discount}
+              shippingDiscount={order.shippingDiscount}
               grandTotal={order.totalAmount}
             />
 

@@ -288,6 +288,7 @@ export const SEED_NAVIGATION_ITEMS: ManagedNavigationItem[] = [
   { id: "nav-item-admin-catalog-menus", menuId: "nav-menu-admin", parentId: "nav-item-admin-catalog", label: "Thực đơn", targetType: "route", targetId: null, url: "/admin/catalog/menus", icon: "BookOpen", sortOrder: 4, isVisible: true },
   { id: "nav-item-admin-catalog-menu-products", menuId: "nav-menu-admin", parentId: "nav-item-admin-catalog", label: "Liên kết Menu-SP", targetType: "route", targetId: null, url: "/admin/catalog/menu-products", icon: "ListChecks", sortOrder: 5, isVisible: true },
   { id: "nav-item-admin-catalog-modifier-groups", menuId: "nav-menu-admin", parentId: "nav-item-admin-catalog", label: "Tùy chọn món (Modifier)", targetType: "route", targetId: null, url: "/admin/catalog/modifier-groups", icon: "Tags", sortOrder: 6, isVisible: true },
+  { id: "nav-item-admin-catalog-promotions", menuId: "nav-menu-admin", parentId: "nav-item-admin-catalog", label: "Mã giảm giá", targetType: "route", targetId: null, url: "/admin/catalog/promotions", icon: "TicketPercent", sortOrder: 7, isVisible: true },
 
   { id: "nav-item-admin-content", menuId: "nav-menu-admin", parentId: null, label: "Content", targetType: "route", targetId: null, url: null, icon: null, sortOrder: 6, isVisible: true },
   { id: "nav-item-admin-content-pages", menuId: "nav-menu-admin", parentId: "nav-item-admin-content", label: "Page", targetType: "route", targetId: null, url: "/admin/content/pages", icon: "FileText", sortOrder: 1, isVisible: true },
@@ -303,4 +304,5 @@ export const SEED_NAVIGATION_ITEMS: ManagedNavigationItem[] = [
   { id: "nav-item-admin-config-payment-methods", menuId: "nav-menu-admin", parentId: "nav-item-admin-config", label: "Phương thức thanh toán", targetType: "route", targetId: null, url: "/admin/settings/payment-methods", icon: "Wallet", sortOrder: 1, isVisible: true },
   { id: "nav-item-admin-config-delivery-methods", menuId: "nav-menu-admin", parentId: "nav-item-admin-config", label: "Phương thức giao hàng", targetType: "route", targetId: null, url: "/admin/settings/delivery-methods", icon: "Truck", sortOrder: 2, isVisible: true },
   { id: "nav-item-admin-config-navigation", menuId: "nav-menu-admin", parentId: "nav-item-admin-config", label: "Navigation", targetType: "route", targetId: null, url: "/admin/settings/navigation", icon: "Route", sortOrder: 3, isVisible: true },
+  { id: "nav-item-admin-config-order-options", menuId: "nav-menu-admin", parentId: "nav-item-admin-config", label: "Tùy chọn chung đơn hàng", targetType: "route", targetId: null, url: "/admin/settings/order-options", icon: "Utensils", sortOrder: 4, isVisible: true },
 ];

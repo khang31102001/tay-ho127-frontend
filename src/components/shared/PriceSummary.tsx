@@ -4,6 +4,8 @@ type PriceSummaryProps = {
   subtotal: number;
   shippingFee: number;
   discount: number;
+  /** Số tiền giảm trên shippingFee (mã "free_shipping") — không truyền hoặc 0 thì ẩn dòng này. */
+  shippingDiscount?: number;
   grandTotal: number;
   title?: string;
 };
@@ -19,7 +21,14 @@ type PriceSummaryProps = {
  * và 2 dòng phí `otherFee`/`tax`, khác trách nhiệm thật sự chứ không chỉ khác
  * appearance (xem features/checkout/components/CheckoutPriceSummary.tsx).
  */
-export function PriceSummary({ subtotal, shippingFee, discount, grandTotal, title = "CHI TIẾT THANH TOÁN" }: PriceSummaryProps) {
+export function PriceSummary({
+  subtotal,
+  shippingFee,
+  discount,
+  shippingDiscount = 0,
+  grandTotal,
+  title = "CHI TIẾT THANH TOÁN",
+}: PriceSummaryProps) {
   return (
     <section className="rounded-lg bg-white p-7 shadow-soft">
       <h2 className="mb-4 text-[18px] font-black text-brand-green">{title}</h2>
@@ -34,6 +43,13 @@ export function PriceSummary({ subtotal, shippingFee, discount, grandTotal, titl
           <span>Phí vận chuyển</span>
           <strong>{formatCurrency(shippingFee)}</strong>
         </div>
+
+        {shippingDiscount > 0 && (
+          <div className="flex justify-between gap-4">
+            <span>Giảm phí vận chuyển</span>
+            <strong>-{formatCurrency(shippingDiscount)}</strong>
+          </div>
+        )}
 
         <div className="flex justify-between gap-4">
           <span>Giảm giá</span>
