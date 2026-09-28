@@ -10,8 +10,8 @@ export function useAdminLoginForm() {
   const router = useRouter();
   const { login } = useAdminAuth();
 
-  const [email, setEmail] = useState("admin@tayho127.vn");
-  const [password, setPassword] = useState("admin123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -21,8 +21,7 @@ export function useAdminLoginForm() {
     setIsLoading(true);
 
     try {
-      const result = await loginAdmin({ email, password });
-      login(result.data.user);
+      login(await loginAdmin({ email, password }));
       router.push("/admin");
     } catch (submitError) {
       setError(

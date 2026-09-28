@@ -36,9 +36,9 @@ export function ProductsExplorer() {
   const { rows, categories, isLoading, handleDelete, reload } = useProductsExplorer();
   const { user } = useAdminAuth();
 
-  // Import/Export chỉ hiện cho admin có quyền quản lý thực đơn (Product thuộc
-  // domain "thực đơn" sau khi gộp Catalog) — kiểm tra quyền trước khi cho dùng.
-  const canManageProducts = user?.permissions?.includes("menu:manage") ?? false;
+  // Import/Export ghi đè hàng loạt sản phẩm. Catalog chưa có module Backend nên
+  // chưa có mã quyền riêng — tạm chỉ cho role super-admin (role Backend có toàn quyền).
+  const canManageProducts = user?.roles.includes("super-admin") ?? false;
 
   return (
     <DataExplorer<ProductRow>

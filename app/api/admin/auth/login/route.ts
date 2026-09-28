@@ -1,75 +1,54 @@
 import { NextResponse } from "next/server";
 
-import { ADMIN_SESSION_COOKIE, ADMIN_SESSION_MAX_AGE_SECONDS } from "@/lib/auth/admin-session-cookie";
+import {
+  type BackendMeResponse,
+  fetchBackend,
+  loginWithPassword,
+  toAdminSessionUser,
+  writeSessionCookies,
+} from "@/lib/auth/admin-backend-session";
 
-// MOCK CONTRACT: chưa có backend admin thật, tài khoản hard-code để demo luồng đăng nhập.
-const DEMO_ADMIN_ACCOUNT = {
-  email: "admin@tayho127.vn",
-  password: "admin123",
-} as const;
+/**
+ * BFF login: xác thực với Backend (POST /api/v1/auth/login), lấy hồ sơ + quyền
+ * (GET /api/v1/me), lưu token vào cookie HttpOnly và chỉ trả thông tin user
+ * cho trình duyệt. Response dạng ApiEnvelope { success, message, data } —
+ * api-client tự bóc "data" khi thành công và đọc "message" khi lỗi.
+ */
+function failure(message: string, status: number) {
+  return NextResponse.json({ success: false, message }, { status });
+}
+
+function loginFailureMessage(status: number): string {
+  if (status === 401) return "Email hoặc mật khẩu không đúng.";
+  if (status === 429) return "Bạn đã thử đăng nhập quá nhiều lần. Vui lòng thử lại sau ít phút.";
+  if (status === 400) return "Email và mật khẩu là bắt buộc.";
+  return "Đăng nhập thất bại.";
+}
 
 export async function POST(request: Request) {
-  await new Promise((resolve) => setTimeout(resolve, 650));
+  const body = (await request.json().catch(() => null)) as { email?: unknown; password?: unknown } | null;
 
-  const body = (await request.json().catch(() => null)) as
-    | { email?: unknown; password?: unknown }
-    | null;
-
-  if (
-    !body ||
-    typeof body.email !== "string" ||
-    typeof body.password !== "string"
-  ) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Email và mật khẩu là bắt buộc.",
-      },
-      { status: 400 },
-    );
+  if (!body || typeof body.email !== "string" || typeof body.password !== "string" || !body.email.trim() || !body.password) {
+    return failure("Email và mật khẩu là bắt buộc.", 400);
   }
 
-  const email = body.email.trim().toLowerCase();
+  try {
+    const result = await loginWithPassword(body.email.trim(), body.password, request.headers.get("user-agent"));
+    if ("error" in result) {
+      return failure(loginFailureMessage(result.error.status), result.error.status);
+    }
 
-  if (
-    email !== DEMO_ADMIN_ACCOUNT.email ||
-    body.password !== DEMO_ADMIN_ACCOUNT.password
-  ) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Email hoặc mật khẩu không đúng.",
-      },
-      { status: 401 },
-    );
+    const meResponse = await fetchBackend("/me", { accessToken: result.tokens.accessToken });
+    if (!meResponse.ok) {
+      return failure("Tài khoản không có quyền truy cập trang quản trị.", meResponse.status === 403 ? 403 : 401);
+    }
+
+    const user = toAdminSessionUser((await meResponse.json()) as BackendMeResponse);
+    const response = NextResponse.json({ success: true, message: "Đăng nhập thành công.", data: { user } });
+    writeSessionCookies(response, result.tokens);
+    return response;
+  } catch (error) {
+    console.error("Admin login: không gọi được Backend", error);
+    return failure("Không thể kết nối tới máy chủ. Vui lòng thử lại sau.", 503);
   }
-
-  const response = NextResponse.json({
-    success: true,
-    message: "Đăng nhập thành công.",
-    data: {
-      user: {
-        id: "admin-demo-001",
-        name: "Quản trị viên",
-        email: DEMO_ADMIN_ACCOUNT.email,
-        // MOCK CONTRACT: tài khoản demo duy nhất, cấp toàn bộ permission hiện có
-        // (xem PERMISSION_OPTIONS ở src/features/roles/types/role.types.ts).
-        permissions: ["menu:manage", "user:manage", "role:manage", "order:manage"],
-      },
-      accessToken: "mock-access-token-admin",
-    },
-  });
-
-  // Cookie này là điều kiện middleware.ts (chạy server-side) dùng để chặn
-  // /admin/* — khác với localStorage (chỉ đọc được ở client, không giúp gì
-  // cho việc chặn HTML render trước khi JS kịp redirect).
-  response.cookies.set(ADMIN_SESSION_COOKIE, "mock-access-token-admin", {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/admin",
-    maxAge: ADMIN_SESSION_MAX_AGE_SECONDS,
-  });
-
-  return response;
 }
