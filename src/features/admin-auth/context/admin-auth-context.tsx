@@ -21,7 +21,8 @@ type AdminAuthContextType = {
    */
   isAuthLoaded: boolean;
   login: (user: AdminUser) => void;
-  logout: () => void;
+  /** Thu hồi phiên ở Backend + xóa cookie, xong mới xóa user khỏi context. */
+  logout: () => Promise<void>;
   /** Admin có quyền Backend `permissionCode` (vd. "users.create") hay không. */
   hasPermission: (permissionCode: string) => boolean;
 };
@@ -64,13 +65,16 @@ export function AdminAuthProvider({ children }: AdminAuthProviderProps) {
     setUser(nextUser);
   }, []);
 
-  const logout = useCallback(() => {
-    setUser(null);
-
-    // Thu hồi phiên ở Backend + xóa cookie — không chặn UI chờ kết quả.
-    logoutAdmin().catch((error) => {
+  const logout = useCallback(async () => {
+    // Chờ BFF xóa cookie phiên TRƯỚC khi điều hướng: còn cookie thì middleware.ts
+    // sẽ đẩy /admin/login ngược về /admin.
+    try {
+      await logoutAdmin();
+    } catch (error) {
       console.error("Không thể đăng xuất phiên admin:", error);
-    });
+    } finally {
+      setUser(null);
+    }
   }, []);
 
   const hasPermission = useCallback(
