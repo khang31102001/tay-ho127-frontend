@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import type { ManagedMedia } from "@/features/media";
 import { listMedia } from "@/features/media";
+import { useAsyncData } from "@/hooks/useAsyncData";
 
 import type { CustomerUpsertInput } from "../services/customer.service";
-import { createCustomer, deleteCustomer, getCustomerById, updateCustomer } from "../services/customer.service";
+import { createCustomer, getCustomerById, updateCustomer } from "../services/customer.service";
 
 export type CustomerFormValue = CustomerUpsertInput;
 
@@ -35,38 +35,19 @@ export function useCustomerEditor({ id }: UseCustomerEditorParams) {
 
   const [form, setForm] = useState<CustomerFormValue>(EMPTY_FORM);
   const [customerCode, setCustomerCode] = useState<string | null>(null);
-  const [mediaOptions, setMediaOptions] = useState<ManagedMedia[]>([]);
-  const [isLoading, setIsLoading] = useState(isEditMode);
+
+  const media = useAsyncData(listMedia, [], { fallbackError: "Không thể tải thư viện media." });
+  const existing = useAsyncData(() => getCustomerById(id ?? ""), [id], {
+    enabled: isEditMode,
+    fallbackError: "Không thể tải khách hàng.",
+  });
 
   useEffect(() => {
-    listMedia().then(setMediaOptions);
-  }, []);
-
-  useEffect(() => {
-    if (!isEditMode) {
-      return;
-    }
-
-    let isCancelled = false;
-
-    getCustomerById(id).then((customer) => {
-      if (isCancelled) {
-        return;
-      }
-
-      if (customer) {
-        const { id: _id, customerCode: code, createdAt: _createdAt, updatedAt: _updatedAt, ...rest } = customer;
-        setForm(rest);
-        setCustomerCode(code);
-      }
-
-      setIsLoading(false);
-    });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [id, isEditMode]);
+    if (!existing.data) return;
+    const { id: _id, customerCode: code, createdAt: _createdAt, updatedAt: _updatedAt, ...rest } = existing.data;
+    setForm(rest);
+    setCustomerCode(code);
+  }, [existing.data]);
 
   function updateField<K extends keyof CustomerFormValue>(field: K, value: CustomerFormValue[K]) {
     setForm((previous) => ({ ...previous, [field]: value }));
@@ -97,6 +78,7 @@ export function useCustomerEditor({ id }: UseCustomerEditorParams) {
 
     const payload: CustomerFormValue = {
       ...form,
+      phone: form.phone.trim(),
       email: form.email?.trim() || undefined,
       dateOfBirth: form.dateOfBirth || null,
     };
@@ -108,12 +90,6 @@ export function useCustomerEditor({ id }: UseCustomerEditorParams) {
     }
   }
 
-  async function handleDelete() {
-    if (isEditMode) {
-      await deleteCustomer(id);
-    }
-  }
-
   function goToExplore() {
     router.push("/admin/sales/customers");
   }
@@ -122,11 +98,11 @@ export function useCustomerEditor({ id }: UseCustomerEditorParams) {
     form,
     updateField,
     customerCode,
-    mediaOptions,
-    isLoading,
+    mediaOptions: media.data ?? [],
+    isLoading: existing.isLoading,
+    loadError: existing.error,
     isEditMode,
     handleSave,
-    handleDelete,
     goToExplore,
   };
 }

@@ -1,7 +1,10 @@
 import type { ManagedCustomer } from "../types/customer.types";
 
 /**
- * MOCK CONTRACT: seed tối thiểu cho Phase 02 (Customer Management).
+ * MOCK CONTRACT — CHỈ dùng cho cầu nối đăng nhập Site ↔ khách hàng
+ * (services/site-customer-bridge.service.ts) và đơn hàng mock (orders mock trỏ
+ * "customer-1"/"customer-2"). Màn Admin Khách hàng đã dùng Backend thật. Xóa
+ * file này khi đăng nhập khách hàng của Site chuyển sang Backend.
  */
 export const SEED_CUSTOMERS: ManagedCustomer[] = [
   {

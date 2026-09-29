@@ -13,8 +13,8 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
   const router = useRouter();
   const { user, logout } = useAdminAuth();
 
-  function handleLogout() {
-    logout();
+  async function handleLogout() {
+    await logout();
     router.replace("/admin/login");
   }
 

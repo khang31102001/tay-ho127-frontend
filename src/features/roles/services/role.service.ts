@@ -1,88 +1,41 @@
-import type { ManagedRole } from "../types/role.types";
-import { SEED_ROLES } from "../mocks/role.mock";
+import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/lib/http/admin-api";
+import type { PaginatedResult } from "@/lib/http/api-types";
 
-/**
- * MOCK CONTRACT: chưa có backend quản lý vai trò thật.
- * Dữ liệu seed (xem ../mocks/role.mock.ts) + đồng bộ 2 chiều với localStorage
- * để không mất khi reload trang. Khi có backend thật, chỉ cần thay nội dung
- * các hàm dưới đây.
- */
-const STORAGE_KEY = "tayho-admin-roles";
-const MOCK_DELAY_MS = 300;
+import type { CreateRoleInput, ManagedRole, UpdateRoleInput } from "../types/role.types";
 
-function delay(ms: number = MOCK_DELAY_MS): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function readStore(): ManagedRole[] {
-  if (typeof window === "undefined") {
-    return SEED_ROLES;
-  }
-
-  try {
-    const saved = window.localStorage.getItem(STORAGE_KEY);
-
-    if (saved) {
-      const parsed: unknown = JSON.parse(saved);
-
-      if (Array.isArray(parsed)) {
-        return parsed as ManagedRole[];
-      }
-    }
-  } catch (error) {
-    console.error("Không thể đọc dữ liệu vai trò admin:", error);
-  }
-
-  return SEED_ROLES;
-}
-
-function writeStore(roles: ManagedRole[]): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(roles));
-  } catch (error) {
-    console.error("Không thể lưu dữ liệu vai trò admin:", error);
-  }
-}
-
+/** Backend: /api/v1/roles (module AccessControl). */
 export async function listRoles(): Promise<ManagedRole[]> {
-  await delay();
-  return readStore();
+  const page = await adminApi.get<PaginatedResult<ManagedRole>>("/roles", { params: { pageSize: ADMIN_LIST_PAGE_SIZE } });
+  return page.items;
 }
 
-export async function getRoleById(id: string): Promise<ManagedRole | null> {
-  await delay();
-  return readStore().find((role) => role.id === id) ?? null;
+/** Tổng số vai trò (chỉ đọc totalItems, không tải danh sách). */
+export async function countRoles(): Promise<number> {
+  return (await adminApi.get<PaginatedResult<ManagedRole>>("/roles", { params: { pageSize: 1 } })).totalItems;
 }
 
-export async function createRole(payload: Omit<ManagedRole, "id">): Promise<ManagedRole> {
-  await delay();
-
-  const newRole: ManagedRole = { ...payload, id: `role-${Date.now()}` };
-
-  writeStore([...readStore(), newRole]);
-
-  return newRole;
+export function getRoleById(id: string): Promise<ManagedRole> {
+  return adminApi.get<ManagedRole>(`/roles/${id}`);
 }
 
-export async function updateRole(
-  id: string,
-  payload: Omit<ManagedRole, "id">,
-): Promise<ManagedRole> {
-  await delay();
-
-  const updatedRole: ManagedRole = { ...payload, id };
-
-  writeStore(readStore().map((role) => (role.id === id ? updatedRole : role)));
-
-  return updatedRole;
+export function createRole(input: CreateRoleInput): Promise<ManagedRole> {
+  return adminApi.post<ManagedRole, CreateRoleInput>("/roles", input);
 }
 
-export async function deleteRole(id: string): Promise<void> {
-  await delay();
+export function updateRole(id: string, input: UpdateRoleInput): Promise<ManagedRole> {
+  return adminApi.put<ManagedRole, UpdateRoleInput>(`/roles/${id}`, input);
+}
 
-  writeStore(readStore().filter((role) => role.id !== id));
+/** Backend trả 409 nếu vai trò còn được gán cho người dùng. */
+export function deleteRole(id: string): Promise<void> {
+  return adminApi.delete<void>(`/roles/${id}`);
+}
+
+export function getRolePermissionIds(id: string): Promise<string[]> {
+  return adminApi.get<string[]>(`/roles/${id}/permissions`);
+}
+
+/** Thay toàn bộ quyền của vai trò bằng danh sách mới. */
+export function setRolePermissionIds(id: string, permissionIds: string[]): Promise<void> {
+  return adminApi.put<void, { permissionIds: string[] }>(`/roles/${id}/permissions`, { permissionIds });
 }

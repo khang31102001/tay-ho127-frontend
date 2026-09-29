@@ -7,24 +7,20 @@ import type { ApiEnvelope, ApiQueryParams, ApiRequestOptions, HttpMethod } from 
  * logic của bất kỳ domain nào (Product/Order/Customer...) — domain đó thuộc
  * về service riêng của từng feature (features/<feature>/api hoặc services).
  *
- * TEMPORARY CONTRACT: Backend ASP.NET Core Web API chưa hoàn thiện.
- * - BASE_URL rỗng ("") => request gọi tương đối trên chính origin hiện tại
- *   (dùng được cho Next.js Route Handler nội bộ dạng /api/*, chỉ nên gọi từ
- *   Client Component vì fetch tương đối không đáng tin cậy ở server runtime).
- * - Khi Backend thật sẵn sàng: set NEXT_PUBLIC_API_URL trỏ tới domain ASP.NET
- *   Core (vd. https://api.tayho127.vn). Không cần sửa gì trong client hay bất
- *   kỳ feature nào đang gọi qua `api.get/post/put/patch/delete`.
+ * - `api` (client mặc định): base URL = NEXT_PUBLIC_API_URL. Rỗng ("") => gọi
+ *   tương đối trên chính origin hiện tại (Route Handler nội bộ /api/*, chỉ nên
+ *   gọi từ Client Component vì fetch tương đối không đáng tin cậy ở server).
+ * - Admin Portal KHÔNG dùng client này để gọi Backend — dùng `adminApi`
+ *   (src/lib/http/admin-api.ts) đi qua BFF Route Handler; token nằm trong
+ *   cookie HttpOnly nên trình duyệt không bao giờ thấy Authorization header.
  */
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 const DEFAULT_TIMEOUT_MS = 15_000;
 
 /**
- * EXTENSION POINT cho Authentication (mục 5) — CHƯA có Backend ASP.NET Core
- * Bearer Token nào thật hôm nay nên KHÔNG gắn logic đọc token cụ thể (localStorage,
- * cookie...) ở đây, tránh fake security logic. Khi Auth thật sẵn sàng, gọi
- * `setAuthTokenProvider(() => currentAccessToken)` một lần ở nơi khởi tạo phiên
- * đăng nhập — mọi request qua `api.get/post/...` sau đó tự đính kèm header
- * `Authorization: Bearer <token>`, không phải sửa lại api-client hay từng feature.
+ * EXTENSION POINT cho Authentication kiểu Bearer phía client — hiện chưa ai
+ * gọi (Admin Portal xác thực qua cookie HttpOnly + BFF). Dành cho luồng đăng
+ * nhập khách hàng của Site khi chuyển sang Backend thật.
  */
 type AuthTokenProvider = () => string | null | undefined;
 let authTokenProvider: AuthTokenProvider | null = null;
@@ -38,7 +34,7 @@ function buildQueryString(params?: ApiQueryParams): string {
 
   const searchParams = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => {
-    if (value === undefined || value === null) return;
+    if (value === undefined || value === null || value === "") return;
     searchParams.set(key, String(value));
   });
 
@@ -46,36 +42,55 @@ function buildQueryString(params?: ApiQueryParams): string {
   return query ? `?${query}` : "";
 }
 
-function buildUrl(path: string, params?: ApiQueryParams): string {
-  return `${BASE_URL}${path}${buildQueryString(params)}`;
-}
-
 /**
- * Bóc response về đúng kiểu TResponse mà nơi gọi mong muốn.
- * MOCK/TEMPORARY CONTRACT: nếu backend trả ApiEnvelope ({ success, data, ... })
- * thì tự bóc "data"; nếu không, trả nguyên payload. Khi Backend ASP.NET Core
- * xác nhận đúng hình dạng response thật, chỉ cần sửa hàm này — không sửa
- * từng feature đang gọi api.get/post/...
+ * Bóc response về đúng kiểu TResponse mà nơi gọi mong muốn: ApiEnvelope
+ * ({ success, data, ... }) của Route Handler nội bộ thì bóc "data"; Backend
+ * ASP.NET Core trả thẳng resource (không wrapper) nên giữ nguyên payload.
  */
 function unwrapPayload<TResponse>(payload: unknown): TResponse {
-  if (payload && typeof payload === "object" && "data" in payload) {
+  if (payload && typeof payload === "object" && "success" in payload && "data" in payload) {
     return (payload as ApiEnvelope<TResponse>).data;
   }
   return payload as TResponse;
 }
 
-function extractErrorMessage(payload: unknown, fallback: string): string {
-  if (payload && typeof payload === "object" && "message" in payload) {
-    const message = (payload as { message?: unknown }).message;
-    if (typeof message === "string" && message.trim()) {
-      return message;
-    }
+function firstNonEmptyString(...values: unknown[]): string | null {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim()) return value;
   }
-  return fallback;
+  return null;
+}
+
+/**
+ * Lấy message lỗi hiển thị được từ payload. Hiểu 2 hình dạng:
+ * - ApiEnvelope ({ message }) — Route Handler nội bộ app/api/*.
+ * - ProblemDetails ({ title, detail, errors }) — Backend ASP.NET Core
+ *   (GlobalExceptionHandler + ValidationActionFilter). Với lỗi validate, ưu tiên
+ *   message của field đầu tiên vì "detail" chỉ là câu chung chung.
+ */
+function extractErrorMessage(payload: unknown, fallback: string): string {
+  if (!payload || typeof payload !== "object") return fallback;
+
+  const { message, detail, title, errors } = payload as {
+    message?: unknown;
+    detail?: unknown;
+    title?: unknown;
+    errors?: unknown;
+  };
+
+  const firstFieldError =
+    errors && typeof errors === "object"
+      ? Object.values(errors as Record<string, unknown>)
+          .flatMap((value) => (Array.isArray(value) ? value : []))
+          .find((value): value is string => typeof value === "string" && value.trim() !== "")
+      : undefined;
+
+  return firstNonEmptyString(message, firstFieldError, detail, title) ?? fallback;
 }
 
 async function parseResponse<TResponse>(response: Response): Promise<TResponse> {
-  const isJson = response.headers.get("content-type")?.includes("application/json") ?? false;
+  // "json" (không phải "application/json") để nhận cả "application/problem+json" của ProblemDetails.
+  const isJson = response.headers.get("content-type")?.includes("json") ?? false;
   const payload = isJson ? await response.json().catch(() => null) : null;
 
   if (!response.ok) {
@@ -89,7 +104,8 @@ async function parseResponse<TResponse>(response: Response): Promise<TResponse> 
   return unwrapPayload<TResponse>(payload);
 }
 
-async function request<TResponse>(
+async function sendRequest<TResponse>(
+  baseUrl: string,
   method: HttpMethod,
   path: string,
   body: unknown,
@@ -102,7 +118,7 @@ async function request<TResponse>(
 
   let response: Response;
   try {
-    response = await fetch(buildUrl(path, options.params), {
+    response = await fetch(`${baseUrl}${path}${buildQueryString(options.params)}`, {
       method,
       headers: {
         "Content-Type": "application/json",
@@ -125,20 +141,24 @@ async function request<TResponse>(
   return parseResponse<TResponse>(response);
 }
 
-export const api = {
-  get<TResponse>(path: string, options?: ApiRequestOptions): Promise<TResponse> {
-    return request<TResponse>("GET", path, undefined, options);
-  },
-  post<TResponse, TRequest = unknown>(path: string, body?: TRequest, options?: ApiRequestOptions): Promise<TResponse> {
-    return request<TResponse>("POST", path, body, options);
-  },
-  put<TResponse, TRequest = unknown>(path: string, body?: TRequest, options?: ApiRequestOptions): Promise<TResponse> {
-    return request<TResponse>("PUT", path, body, options);
-  },
-  patch<TResponse, TRequest = unknown>(path: string, body?: TRequest, options?: ApiRequestOptions): Promise<TResponse> {
-    return request<TResponse>("PATCH", path, body, options);
-  },
-  delete<TResponse>(path: string, options?: ApiRequestOptions): Promise<TResponse> {
-    return request<TResponse>("DELETE", path, undefined, options);
-  },
+export type HttpClient = {
+  get<TResponse>(path: string, options?: ApiRequestOptions): Promise<TResponse>;
+  post<TResponse, TRequest = unknown>(path: string, body?: TRequest, options?: ApiRequestOptions): Promise<TResponse>;
+  put<TResponse, TRequest = unknown>(path: string, body?: TRequest, options?: ApiRequestOptions): Promise<TResponse>;
+  patch<TResponse, TRequest = unknown>(path: string, body?: TRequest, options?: ApiRequestOptions): Promise<TResponse>;
+  delete<TResponse>(path: string, options?: ApiRequestOptions): Promise<TResponse>;
 };
+
+/** Tạo HTTP client gắn với 1 base URL — dùng chung toàn bộ logic header/timeout/parse/lỗi ở trên. */
+export function createHttpClient(baseUrl: string): HttpClient {
+  return {
+    get: (path, options) => sendRequest(baseUrl, "GET", path, undefined, options),
+    post: (path, body, options) => sendRequest(baseUrl, "POST", path, body, options),
+    put: (path, body, options) => sendRequest(baseUrl, "PUT", path, body, options),
+    patch: (path, body, options) => sendRequest(baseUrl, "PATCH", path, body, options),
+    delete: (path, options) => sendRequest(baseUrl, "DELETE", path, undefined, options),
+  };
+}
+
+/** Client mặc định — base URL = NEXT_PUBLIC_API_URL (xem ghi chú đầu file). */
+export const api = createHttpClient(BASE_URL);

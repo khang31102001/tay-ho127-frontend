@@ -1,12 +1,12 @@
 "use client";
 
+import { ActiveStatusField } from "@/components/admin/templates/ActiveStatusField";
 import { DataEditor } from "@/components/admin/templates/DataEditor/DataEditor";
 import {
   adminFieldInputClassName,
   adminFieldLabelClassName,
 } from "@/components/admin/templates/formFieldClassName";
-import type { EntityStatus } from "@/components/admin/templates/StatusBadge";
-import { PERMISSION_OPTIONS } from "../types/role.types";
+import { useAdminAuth } from "@/features/admin-auth";
 
 import { useRoleEditor } from "../hooks/useRoleEditor";
 
@@ -15,80 +15,92 @@ type RoleEditorProps = {
 };
 
 export function RoleEditor({ id }: RoleEditorProps) {
+  const { hasPermission } = useAdminAuth();
+  const canManagePermissions = hasPermission("roles.permissions.manage");
   const {
     form,
     updateField,
     togglePermission,
+    permissionGroups,
     isLoading,
+    loadError,
     isEditMode,
     handleSave,
     handleDelete,
     goToExplore,
-  } = useRoleEditor({ id });
+  } = useRoleEditor({ id, canManagePermissions });
 
   return (
     <DataEditor
       title={isEditMode ? "Sửa vai trò" : "Thêm vai trò"}
       backHref="/admin/roles"
       isLoading={isLoading}
+      loadError={loadError}
       onSave={handleSave}
       onSaved={goToExplore}
-      onDelete={isEditMode ? handleDelete : undefined}
+      onDelete={isEditMode && hasPermission("roles.delete") ? handleDelete : undefined}
       onDeleted={goToExplore}
+      deleteConfirmDescription="Không xóa được vai trò đang gán cho người dùng — hãy gỡ khỏi người dùng trước."
     >
-      <label className={adminFieldLabelClassName}>
-        Tên vai trò
-        <input
-          type="text"
-          required
-          value={form.name}
-          onChange={(event) => updateField("name", event.target.value)}
-          className={adminFieldInputClassName}
-        />
-      </label>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className={adminFieldLabelClassName}>
+          Tên vai trò
+          <input
+            type="text"
+            required
+            value={form.name}
+            onChange={(event) => updateField("name", event.target.value)}
+            className={adminFieldInputClassName}
+          />
+        </label>
 
-      <label className={adminFieldLabelClassName}>
-        Mô tả (tùy chọn)
-        <input
-          type="text"
-          value={form.description ?? ""}
-          onChange={(event) => updateField("description", event.target.value)}
-          className={adminFieldInputClassName}
-        />
-      </label>
+        <label className={adminFieldLabelClassName}>
+          Mã vai trò
+          <input
+            type="text"
+            required
+            disabled={isEditMode}
+            placeholder="vd. cashier"
+            value={form.code}
+            onChange={(event) => updateField("code", event.target.value)}
+            className={`${adminFieldInputClassName} font-mono disabled:bg-brand-line/30`}
+          />
+        </label>
+      </div>
 
       <div>
         <span className={adminFieldLabelClassName}>Quyền hạn</span>
+        {!canManagePermissions && (
+          <p className="mt-1 text-[12px] text-brand-muted">Bạn không có quyền thay đổi quyền hạn của vai trò.</p>
+        )}
 
-        <div className="mt-2 grid gap-2 sm:grid-cols-2">
-          {PERMISSION_OPTIONS.map((permission) => (
-            <label
-              key={permission.key}
-              className="flex items-center gap-2 rounded-lg border border-brand-line px-3 py-2 text-[13px] font-medium text-brand-ink"
-            >
-              <input
-                type="checkbox"
-                checked={form.permissions.includes(permission.key)}
-                onChange={() => togglePermission(permission.key)}
-                className="size-4 accent-brand-green"
-              />
-              {permission.label}
-            </label>
+        <div className="mt-2 space-y-3">
+          {permissionGroups.map((group) => (
+            <fieldset key={group.domain} className="rounded-lg border border-brand-line px-3 py-2">
+              <legend className="px-1 font-mono text-[12px] font-bold text-brand-muted">{group.domain}</legend>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {group.permissions.map((permission) => (
+                  <label key={permission.id} className="flex items-center gap-2 text-[13px] font-medium text-brand-ink">
+                    <input
+                      type="checkbox"
+                      disabled={!canManagePermissions}
+                      checked={form.permissionIds.includes(permission.id)}
+                      onChange={() => togglePermission(permission.id)}
+                      className="size-4 accent-brand-green"
+                    />
+                    <span>
+                      {permission.name}
+                      <span className="ml-1 font-mono text-[11px] text-brand-muted">{permission.code}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
           ))}
         </div>
       </div>
 
-      <label className={adminFieldLabelClassName}>
-        Trạng thái
-        <select
-          value={form.status}
-          onChange={(event) => updateField("status", event.target.value as EntityStatus)}
-          className={adminFieldInputClassName}
-        >
-          <option value="active">Hoạt động</option>
-          <option value="inactive">Ngừng hoạt động</option>
-        </select>
-      </label>
+      {isEditMode && <ActiveStatusField isActive={form.isActive} onChange={(value) => updateField("isActive", value)} />}
     </DataEditor>
   );
 }

@@ -3,8 +3,8 @@
  * - Ném lỗi với message từ backend nếu request thất bại hoặc success=false.
  * - Trả về nhánh success:true đã narrow type khi thành công.
  *
- * Dùng chung cho mọi service gọi app/api/* (customer + admin) để tránh
- * lặp lại logic parse response giống hệt nhau ở từng service.
+ * Dùng cho các service Site (features/auth) gọi Route Handler app/api/auth/*.
+ * Admin Portal dùng src/lib/http (api-client / admin-api) thay cho hàm này.
  */
 export async function readApiResponse<TResponse extends { success: boolean; message: string }>(
   response: Response,

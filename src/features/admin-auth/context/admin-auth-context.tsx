@@ -11,19 +11,20 @@ import {
 } from "react";
 
 import type { AdminUser } from "../types/admin-auth.types";
-import { logoutAdmin } from "../services/admin-auth.service";
-
-const ADMIN_AUTH_STORAGE_KEY = "tayho-admin-auth";
+import { getAdminSession, logoutAdmin } from "../services/admin-auth.service";
 
 type AdminAuthContextType = {
   user: AdminUser | null;
   /**
-   * true khi đã đọc xong localStorage lúc khởi tạo.
-   * Dùng để tránh AdminGuard redirect nhầm trước khi kịp hydrate.
+   * true khi đã hỏi xong phiên hiện tại (GET /api/admin/auth/session).
+   * Dùng để tránh AdminGuard redirect nhầm trước khi kịp khôi phục phiên.
    */
   isAuthLoaded: boolean;
   login: (user: AdminUser) => void;
-  logout: () => void;
+  /** Thu hồi phiên ở Backend + xóa cookie, xong mới xóa user khỏi context. */
+  logout: () => Promise<void>;
+  /** Admin có quyền Backend `permissionCode` (vd. "users.create") hay không. */
+  hasPermission: (permissionCode: string) => boolean;
 };
 
 type AdminAuthProviderProps = {
@@ -32,54 +33,58 @@ type AdminAuthProviderProps = {
 
 const AdminAuthContext = createContext<AdminAuthContextType | null>(null);
 
+/**
+ * Phiên đăng nhập Admin. Nguồn sự thật là cookie HttpOnly do BFF quản lý —
+ * context chỉ giữ bản sao hồ sơ/quyền trong bộ nhớ, khôi phục khi tải trang
+ * bằng cách hỏi BFF (không lưu gì vào localStorage).
+ */
 export function AdminAuthProvider({ children }: AdminAuthProviderProps) {
   const [user, setUser] = useState<AdminUser | null>(null);
   const [isAuthLoaded, setIsAuthLoaded] = useState(false);
 
-  // Đọc phiên đăng nhập admin đã lưu khi ứng dụng được tải.
   useEffect(() => {
-    try {
-      const savedUser = localStorage.getItem(ADMIN_AUTH_STORAGE_KEY);
+    let isCancelled = false;
 
-      if (savedUser) {
-        setUser(JSON.parse(savedUser) as AdminUser);
-      }
-    } catch (error) {
-      console.error("Không thể đọc phiên đăng nhập admin:", error);
-      localStorage.removeItem(ADMIN_AUTH_STORAGE_KEY);
-    } finally {
-      setIsAuthLoaded(true);
-    }
+    getAdminSession()
+      .then((sessionUser) => {
+        if (!isCancelled) setUser(sessionUser);
+      })
+      .catch((error) => {
+        console.error("Không thể khôi phục phiên đăng nhập admin:", error);
+      })
+      .finally(() => {
+        if (!isCancelled) setIsAuthLoaded(true);
+      });
+
+    return () => {
+      isCancelled = true;
+    };
   }, []);
 
   const login = useCallback((nextUser: AdminUser) => {
     setUser(nextUser);
+  }, []);
 
+  const logout = useCallback(async () => {
+    // Chờ BFF xóa cookie phiên TRƯỚC khi điều hướng: còn cookie thì middleware.ts
+    // sẽ đẩy /admin/login ngược về /admin.
     try {
-      localStorage.setItem(ADMIN_AUTH_STORAGE_KEY, JSON.stringify(nextUser));
+      await logoutAdmin();
     } catch (error) {
-      console.error("Không thể lưu phiên đăng nhập admin:", error);
+      console.error("Không thể đăng xuất phiên admin:", error);
+    } finally {
+      setUser(null);
     }
   }, []);
 
-  const logout = useCallback(() => {
-    setUser(null);
-
-    try {
-      localStorage.removeItem(ADMIN_AUTH_STORAGE_KEY);
-    } catch (error) {
-      console.error("Không thể xóa phiên đăng nhập admin:", error);
-    }
-
-    // Xóa cookie phiên (middleware.ts dựa vào cookie này) — không chặn UI chờ kết quả.
-    logoutAdmin().catch((error) => {
-      console.error("Không thể xóa cookie phiên đăng nhập admin:", error);
-    });
-  }, []);
+  const hasPermission = useCallback(
+    (permissionCode: string) => user?.permissions.includes(permissionCode) ?? false,
+    [user],
+  );
 
   const value = useMemo<AdminAuthContextType>(
-    () => ({ user, isAuthLoaded, login, logout }),
-    [user, isAuthLoaded, login, logout],
+    () => ({ user, isAuthLoaded, login, logout, hasPermission }),
+    [user, isAuthLoaded, login, logout, hasPermission],
   );
 
   return (

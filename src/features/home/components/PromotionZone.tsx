@@ -5,7 +5,7 @@ import { ButtonLink } from "@/components/ui/ButtonLink";
 // (barrel 2 feature này re-export cả UI Admin Explorer/Editor — import qua
 // barrel sẽ kéo UI admin vào bundle Site, xem menu.service.ts để biết lý do).
 import { listActiveBannersByPlacement } from "@/features/banners/services/banner.service";
-import { listMedia } from "@/features/media/services/media.service";
+import { listMedia } from "@/features/media/services/public-media.service";
 
 /**
  * MOCK CONTRACT: nội dung mặc định khi chưa có Banner nào bật cho vị trí

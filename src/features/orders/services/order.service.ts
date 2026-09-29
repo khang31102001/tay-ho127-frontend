@@ -4,7 +4,7 @@ import { getPaymentMethodByCode, isPaymentMethodEligible } from "@/features/paym
 // features/menu/services/menu.service.ts. Đây là nguồn giá SẢN PHẨM duy nhất
 // được tin cậy khi tạo Order (xem CreateOrderInput bên dưới).
 import { getProductById } from "@/features/products/services/product.service";
-import { listMedia } from "@/features/media/services/media.service";
+import { listMedia } from "@/features/media/services/public-media.service";
 import { getModifierGroupById } from "@/features/modifier-groups/services/modifier-group.service";
 import { getOrderOptionGroupById } from "@/features/order-options/services/order-option.service";
 import { incrementPromotionUsage } from "@/features/promotions/services/promotion.service";

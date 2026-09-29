@@ -1,58 +1,37 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useAsyncData } from "@/hooks/useAsyncData";
 
 import { getCustomerById } from "../services/customer.service";
 import type { ManagedCustomerAddress } from "../types/customer-address.types";
-import {
-  deleteAddress,
-  listAddressesByCustomerId,
-  setDefaultAddress,
-} from "../services/customer-address.service";
+import { deleteAddress, listAddressesByCustomerId, setDefaultAddress } from "../services/customer-address.service";
 
 type UseCustomerAddressesExplorerParams = {
   customerId: string;
 };
 
 export function useCustomerAddressesExplorer({ customerId }: UseCustomerAddressesExplorerParams) {
-  const [addresses, setAddresses] = useState<ManagedCustomerAddress[]>([]);
-  const [customerName, setCustomerName] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-
-  const loadAddresses = useCallback(async () => {
-    setIsLoading(true);
-
-    try {
-      const [addressData, customer] = await Promise.all([
-        listAddressesByCustomerId(customerId),
-        getCustomerById(customerId),
-      ]);
-
-      setAddresses(addressData);
-      setCustomerName(customer?.fullName ?? "");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [customerId]);
-
-  useEffect(() => {
-    loadAddresses();
-  }, [loadAddresses]);
+  const { data, isLoading, error, reload } = useAsyncData(
+    () => Promise.all([listAddressesByCustomerId(customerId), getCustomerById(customerId)]),
+    [customerId],
+    { fallbackError: "Không thể tải địa chỉ khách hàng." },
+  );
 
   async function handleDelete(address: ManagedCustomerAddress) {
-    await deleteAddress(address.id);
-    await loadAddresses();
+    await deleteAddress(customerId, address.id);
+    await reload();
   }
 
   async function handleSetDefault(address: ManagedCustomerAddress) {
     await setDefaultAddress(customerId, address.id);
-    await loadAddresses();
+    await reload();
   }
 
   return {
-    rows: addresses,
-    customerName,
+    rows: data?.[0] ?? [],
+    customerName: data?.[1].fullName ?? "",
     isLoading,
+    loadError: error,
     handleDelete,
     handleSetDefault,
   };

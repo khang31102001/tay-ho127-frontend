@@ -3,15 +3,18 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import type { ManagedMedia } from "../types/media.types";
-import {
-  createMedia,
-  deleteMedia,
-  getMediaById,
-  updateMedia,
-} from "../services/media.service";
+import type { EntityStatus } from "@/components/admin/templates/StatusBadge";
+import { useAsyncData } from "@/hooks/useAsyncData";
 
-export type MediaFormValue = Omit<ManagedMedia, "id">;
+import type { MediaUpsertInput } from "../services/media-library.service";
+import {
+  createLibraryMedia,
+  deleteLibraryMedia,
+  getLibraryMediaById,
+  updateLibraryMedia,
+} from "../services/media-library.service";
+
+export type MediaFormValue = MediaUpsertInput;
 
 const EMPTY_FORM: MediaFormValue = {
   fileName: "",
@@ -19,7 +22,6 @@ const EMPTY_FORM: MediaFormValue = {
   type: "image",
   altText: "",
   size: 0,
-  status: "active",
 };
 
 type UseMediaEditorParams = {
@@ -31,31 +33,19 @@ export function useMediaEditor({ id }: UseMediaEditorParams) {
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<MediaFormValue>(EMPTY_FORM);
-  const [isLoading, setIsLoading] = useState(isEditMode);
+  const [status, setStatus] = useState<EntityStatus>("active");
+
+  const existing = useAsyncData(() => getLibraryMediaById(id ?? ""), [id], {
+    enabled: isEditMode,
+    fallbackError: "Không thể tải media.",
+  });
 
   useEffect(() => {
-    if (!isEditMode) {
-      return;
-    }
-
-    let isCancelled = false;
-
-    getMediaById(id).then((media) => {
-      if (isCancelled) {
-        return;
-      }
-
-      if (media) {
-        setForm(media);
-      }
-
-      setIsLoading(false);
-    });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [id, isEditMode]);
+    if (!existing.data) return;
+    const { fileName, url, type, altText, size, status: currentStatus } = existing.data;
+    setForm({ fileName, url, type, altText, size });
+    setStatus(currentStatus);
+  }, [existing.data]);
 
   function updateField<K extends keyof MediaFormValue>(field: K, value: MediaFormValue[K]) {
     setForm((previous) => ({ ...previous, [field]: value }));
@@ -63,15 +53,15 @@ export function useMediaEditor({ id }: UseMediaEditorParams) {
 
   async function handleSave() {
     if (isEditMode) {
-      await updateMedia(id, form);
+      await updateLibraryMedia(id, form);
     } else {
-      await createMedia(form);
+      await createLibraryMedia(form);
     }
   }
 
   async function handleDelete() {
     if (isEditMode) {
-      await deleteMedia(id);
+      await deleteLibraryMedia(id);
     }
   }
 
@@ -81,8 +71,10 @@ export function useMediaEditor({ id }: UseMediaEditorParams) {
 
   return {
     form,
+    status,
     updateField,
-    isLoading,
+    isLoading: existing.isLoading,
+    loadError: existing.error,
     isEditMode,
     handleSave,
     handleDelete,

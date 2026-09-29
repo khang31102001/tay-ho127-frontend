@@ -1,12 +1,7 @@
-import type { PermissionKey } from "@/features/roles";
+import type { AdminSessionUser } from "@/lib/auth/admin-backend-session";
 
-export type AdminUser = {
-  id: string;
-  name: string;
-  email: string;
-  /** Quyền của admin đang đăng nhập — dùng để gate các tính năng như Import/Export. */
-  permissions: PermissionKey[];
-};
+/** Admin đang đăng nhập — hồ sơ + role + mã quyền Backend (vd. "users.view"), không chứa token. */
+export type AdminUser = AdminSessionUser;
 
 export type AdminLoginCredentials = {
   email: string;
@@ -18,7 +13,6 @@ export type AdminAuthSuccessResponse = {
   message: string;
   data: {
     user: AdminUser;
-    accessToken: string;
   };
 };
 

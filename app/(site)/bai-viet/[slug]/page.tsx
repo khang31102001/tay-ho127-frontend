@@ -8,7 +8,7 @@ import { Container } from "@/components/ui/Container";
 import { sanitizeHtml } from "@/lib/sanitize-html";
 // Import thẳng service — lý do xem app/(site)/bai-viet/page.tsx.
 import { getArticleBySlug } from "@/features/articles/services/article.service";
-import { listMedia } from "@/features/media/services/media.service";
+import { listMedia } from "@/features/media/services/public-media.service";
 import { listArticleCategories } from "@/features/article-categories/services/article-category.service";
 import { listArticleTags } from "@/features/article-tags/services/article-tag.service";
 import { buildMetadata } from "@/lib/seo/build-metadata";

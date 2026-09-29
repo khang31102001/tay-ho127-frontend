@@ -9,7 +9,6 @@ export const SEED_NAVIGATION_MENUS: ManagedNavigationMenu[] = [
   { id: "nav-menu-header", code: "MAIN_HEADER", name: "Website Header", location: "header", isActive: true },
   { id: "nav-menu-mobile", code: "MOBILE_NAV", name: "Mobile Navigation", location: "mobile", isActive: true },
   { id: "nav-menu-footer", code: "FOOTER_MENU", name: "Website Footer", location: "footer", isActive: true },
-  { id: "nav-menu-admin", code: "ADMIN_SIDEBAR", name: "Admin Sidebar", location: "admin-sidebar", isActive: true },
 ];
 
 export const SEED_NAVIGATION_ITEMS: ManagedNavigationItem[] = [
@@ -235,74 +234,4 @@ export const SEED_NAVIGATION_ITEMS: ManagedNavigationItem[] = [
     isVisible: true,
     openInNewTab: false,
   },
-
-  // ===== ADMIN SIDEBAR — khớp đúng ADMIN_NAV_SECTIONS hiện có trong
-  // AdminSidebar.tsx. Item gốc có children + url=null => render như tiêu đề
-  // nhóm (không click được); item gốc không children => link trực tiếp. =====
-  {
-    id: "nav-item-admin-dashboard",
-    menuId: "nav-menu-admin",
-    parentId: null,
-    label: "Dashboard",
-    targetType: "route",
-    targetId: null,
-    url: "/admin",
-    icon: "LayoutDashboard",
-    sortOrder: 1,
-    isVisible: true,
-  },
-  {
-    id: "nav-item-admin-users",
-    menuId: "nav-menu-admin",
-    parentId: null,
-    label: "Người dùng",
-    targetType: "route",
-    targetId: null,
-    url: "/admin/users",
-    icon: "Users",
-    sortOrder: 2,
-    isVisible: true,
-  },
-  {
-    id: "nav-item-admin-roles",
-    menuId: "nav-menu-admin",
-    parentId: null,
-    label: "Vai trò",
-    targetType: "route",
-    targetId: null,
-    url: "/admin/roles",
-    icon: "ShieldCheck",
-    sortOrder: 3,
-    isVisible: true,
-  },
-
-  { id: "nav-item-admin-sales", menuId: "nav-menu-admin", parentId: null, label: "Sales", targetType: "route", targetId: null, url: null, icon: null, sortOrder: 4, isVisible: true },
-  { id: "nav-item-admin-sales-orders", menuId: "nav-menu-admin", parentId: "nav-item-admin-sales", label: "Đơn hàng", targetType: "route", targetId: null, url: "/admin/sales/orders", icon: "ClipboardList", sortOrder: 1, isVisible: true },
-  { id: "nav-item-admin-sales-customers", menuId: "nav-menu-admin", parentId: "nav-item-admin-sales", label: "Khách hàng", targetType: "route", targetId: null, url: "/admin/sales/customers", icon: "Contact", sortOrder: 2, isVisible: true },
-  { id: "nav-item-admin-sales-payments", menuId: "nav-menu-admin", parentId: "nav-item-admin-sales", label: "Thanh toán", targetType: "route", targetId: null, url: "/admin/sales/payments", icon: "CreditCard", sortOrder: 3, isVisible: true },
-
-  { id: "nav-item-admin-catalog", menuId: "nav-menu-admin", parentId: null, label: "Catalog", targetType: "route", targetId: null, url: null, icon: null, sortOrder: 5, isVisible: true },
-  { id: "nav-item-admin-catalog-categories", menuId: "nav-menu-admin", parentId: "nav-item-admin-catalog", label: "Danh mục", targetType: "route", targetId: null, url: "/admin/catalog/categories", icon: "FolderTree", sortOrder: 1, isVisible: true },
-  { id: "nav-item-admin-catalog-media", menuId: "nav-menu-admin", parentId: "nav-item-admin-catalog", label: "Media", targetType: "route", targetId: null, url: "/admin/catalog/media", icon: "Images", sortOrder: 2, isVisible: true },
-  { id: "nav-item-admin-catalog-products", menuId: "nav-menu-admin", parentId: "nav-item-admin-catalog", label: "Sản phẩm", targetType: "route", targetId: null, url: "/admin/catalog/products", icon: "Package", sortOrder: 3, isVisible: true },
-  { id: "nav-item-admin-catalog-menus", menuId: "nav-menu-admin", parentId: "nav-item-admin-catalog", label: "Thực đơn", targetType: "route", targetId: null, url: "/admin/catalog/menus", icon: "BookOpen", sortOrder: 4, isVisible: true },
-  { id: "nav-item-admin-catalog-menu-products", menuId: "nav-menu-admin", parentId: "nav-item-admin-catalog", label: "Liên kết Menu-SP", targetType: "route", targetId: null, url: "/admin/catalog/menu-products", icon: "ListChecks", sortOrder: 5, isVisible: true },
-  { id: "nav-item-admin-catalog-modifier-groups", menuId: "nav-menu-admin", parentId: "nav-item-admin-catalog", label: "Tùy chọn món (Modifier)", targetType: "route", targetId: null, url: "/admin/catalog/modifier-groups", icon: "Tags", sortOrder: 6, isVisible: true },
-  { id: "nav-item-admin-catalog-promotions", menuId: "nav-menu-admin", parentId: "nav-item-admin-catalog", label: "Mã giảm giá", targetType: "route", targetId: null, url: "/admin/catalog/promotions", icon: "TicketPercent", sortOrder: 7, isVisible: true },
-
-  { id: "nav-item-admin-content", menuId: "nav-menu-admin", parentId: null, label: "Content", targetType: "route", targetId: null, url: null, icon: null, sortOrder: 6, isVisible: true },
-  { id: "nav-item-admin-content-pages", menuId: "nav-menu-admin", parentId: "nav-item-admin-content", label: "Page", targetType: "route", targetId: null, url: "/admin/content/pages", icon: "FileText", sortOrder: 1, isVisible: true },
-  { id: "nav-item-admin-content-banners", menuId: "nav-menu-admin", parentId: "nav-item-admin-content", label: "Banner", targetType: "route", targetId: null, url: "/admin/content/banners", icon: "GalleryHorizontal", sortOrder: 2, isVisible: true },
-  { id: "nav-item-admin-content-articles", menuId: "nav-menu-admin", parentId: "nav-item-admin-content", label: "Bài viết", targetType: "route", targetId: null, url: "/admin/content/articles", icon: "Newspaper", sortOrder: 3, isVisible: true },
-  { id: "nav-item-admin-content-article-categories", menuId: "nav-menu-admin", parentId: "nav-item-admin-content", label: "Danh mục bài viết", targetType: "route", targetId: null, url: "/admin/content/article-categories", icon: "FolderTree", sortOrder: 4, isVisible: true },
-  { id: "nav-item-admin-content-article-tags", menuId: "nav-menu-admin", parentId: "nav-item-admin-content", label: "Thẻ bài viết", targetType: "route", targetId: null, url: "/admin/content/article-tags", icon: "Tags", sortOrder: 5, isVisible: true },
-
-  { id: "nav-item-admin-brand", menuId: "nav-menu-admin", parentId: null, label: "Brand", targetType: "route", targetId: null, url: null, icon: null, sortOrder: 7, isVisible: true },
-  { id: "nav-item-admin-brand-settings", menuId: "nav-menu-admin", parentId: "nav-item-admin-brand", label: "Cài đặt thương hiệu", targetType: "route", targetId: null, url: "/admin/brand/settings", icon: "Store", sortOrder: 1, isVisible: true },
-
-  { id: "nav-item-admin-config", menuId: "nav-menu-admin", parentId: null, label: "Cấu hình", targetType: "route", targetId: null, url: null, icon: null, sortOrder: 8, isVisible: true },
-  { id: "nav-item-admin-config-payment-methods", menuId: "nav-menu-admin", parentId: "nav-item-admin-config", label: "Phương thức thanh toán", targetType: "route", targetId: null, url: "/admin/settings/payment-methods", icon: "Wallet", sortOrder: 1, isVisible: true },
-  { id: "nav-item-admin-config-delivery-methods", menuId: "nav-menu-admin", parentId: "nav-item-admin-config", label: "Phương thức giao hàng", targetType: "route", targetId: null, url: "/admin/settings/delivery-methods", icon: "Truck", sortOrder: 2, isVisible: true },
-  { id: "nav-item-admin-config-navigation", menuId: "nav-menu-admin", parentId: "nav-item-admin-config", label: "Navigation", targetType: "route", targetId: null, url: "/admin/settings/navigation", icon: "Route", sortOrder: 3, isVisible: true },
-  { id: "nav-item-admin-config-order-options", menuId: "nav-menu-admin", parentId: "nav-item-admin-config", label: "Tùy chọn chung đơn hàng", targetType: "route", targetId: null, url: "/admin/settings/order-options", icon: "Utensils", sortOrder: 4, isVisible: true },
 ];

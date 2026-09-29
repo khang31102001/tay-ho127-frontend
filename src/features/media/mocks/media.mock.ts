@@ -1,8 +1,11 @@
 import type { ManagedMedia } from "../types/media.types";
 
 /**
- * `url` seed trỏ vào ảnh có sẵn trong public/images để preview hoạt động thật
- * trong lúc chưa có upload service thật.
+ * MEDIA MẪU cho nội dung Site còn chạy mock (sản phẩm, bài viết, banner...) —
+ * các seed đó tham chiếu những id "media-..." dưới đây, ảnh nằm trong
+ * public/images. Thư viện Media của Admin đã dùng Backend; danh sách hiển thị
+ * gộp seed này với media Backend (services/public-media.service.ts). Xóa file
+ * khi các domain nội dung chuyển sang Backend.
  */
 export const SEED_MEDIA: ManagedMedia[] = [
   {

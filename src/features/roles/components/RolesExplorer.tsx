@@ -1,27 +1,25 @@
 "use client";
 
 import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templates/DataExplorer/DataExplorer";
-import { StatusBadge } from "@/components/admin/templates/StatusBadge";
-import { PERMISSION_OPTIONS, type ManagedRole } from "../types/role.types";
+import { StatusBadge, statusFromIsActive } from "@/components/admin/templates/StatusBadge";
+import { useAdminAuth } from "@/features/admin-auth";
 
+import type { ManagedRole } from "../types/role.types";
 import { useRolesExplorer } from "../hooks/useRolesExplorer";
 
 const columns: DataExplorerColumn<ManagedRole>[] = [
   { key: "name", header: "Tên vai trò" },
+  { key: "code", header: "Mã", className: "font-mono text-[13px]" },
   {
-    key: "permissions",
-    header: "Quyền",
-    render: (row) => `${row.permissions.length}/${PERMISSION_OPTIONS.length} quyền`,
-  },
-  {
-    key: "status",
+    key: "isActive",
     header: "Trạng thái",
-    render: (row) => <StatusBadge status={row.status} />,
+    render: (row) => <StatusBadge status={statusFromIsActive(row.isActive)} />,
   },
 ];
 
 export function RolesExplorer() {
-  const { roles, isLoading, handleDelete } = useRolesExplorer();
+  const { roles, isLoading, loadError, handleDelete } = useRolesExplorer();
+  const { hasPermission } = useAdminAuth();
 
   return (
     <DataExplorer<ManagedRole>
@@ -30,13 +28,13 @@ export function RolesExplorer() {
       rows={roles}
       isLoading={isLoading}
       getRowId={(row) => row.id}
-      getSearchableText={(row) => `${row.name} ${row.description ?? ""}`}
+      getSearchableText={(row) => `${row.name} ${row.code}`}
       searchPlaceholder="Tìm vai trò..."
-      createHref="/admin/roles/new"
+      createHref={hasPermission("roles.create") ? "/admin/roles/new" : undefined}
       createLabel="Thêm vai trò"
       editHref={(row) => `/admin/roles/${row.id}`}
-      onDelete={handleDelete}
-      emptyState="Chưa có vai trò nào."
+      onDelete={hasPermission("roles.delete") ? handleDelete : undefined}
+      emptyState={loadError ?? "Chưa có vai trò nào."}
     />
   );
 }

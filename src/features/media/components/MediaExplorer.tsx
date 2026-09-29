@@ -5,7 +5,9 @@ import { FileText, Video } from "lucide-react";
 
 import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templates/DataExplorer/DataExplorer";
 import { StatusBadge } from "@/components/admin/templates/StatusBadge";
+import { useAdminAuth } from "@/features/admin-auth";
 import { formatFileSize } from "@/lib/format-file-size";
+import { isNextImageCompatibleUrl } from "@/lib/image-hosts";
 import { MEDIA_TYPE_OPTIONS, type ManagedMedia } from "../types/media.types";
 
 import { useMediaExplorer } from "../hooks/useMediaExplorer";
@@ -26,6 +28,9 @@ const columns: DataExplorerColumn<ManagedMedia>[] = [
           alt={row.altText ?? row.fileName}
           width={40}
           height={40}
+          // Host chưa khai báo: bỏ tối ưu để xem trước không lỗi (media này không dùng được ở Site).
+          unoptimized={!isNextImageCompatibleUrl(row.url)}
+          title={isNextImageCompatibleUrl(row.url) ? undefined : "Host ảnh chưa khai báo trong NEXT_PUBLIC_IMAGE_REMOTE_HOSTS — chưa chọn được cho nội dung Site."}
           className="size-10 rounded-md object-cover"
         />
       ) : (
@@ -53,7 +58,8 @@ const columns: DataExplorerColumn<ManagedMedia>[] = [
 ];
 
 export function MediaExplorer() {
-  const { mediaItems, isLoading, handleDelete } = useMediaExplorer();
+  const { mediaItems, isLoading, loadError, handleDelete } = useMediaExplorer();
+  const { hasPermission } = useAdminAuth();
 
   return (
     <DataExplorer<ManagedMedia>
@@ -64,11 +70,11 @@ export function MediaExplorer() {
       getRowId={(row) => row.id}
       getSearchableText={(row) => `${row.fileName} ${row.altText ?? ""}`}
       searchPlaceholder="Tìm file..."
-      createHref="/admin/catalog/media/new"
+      createHref={hasPermission("media.create") ? "/admin/catalog/media/new" : undefined}
       createLabel="Thêm media"
       editHref={(row) => `/admin/catalog/media/${row.id}`}
-      onDelete={handleDelete}
-      emptyState="Chưa có file media nào."
+      onDelete={hasPermission("media.delete") ? handleDelete : undefined}
+      emptyState={loadError ?? "Chưa có file media nào."}
     />
   );
 }

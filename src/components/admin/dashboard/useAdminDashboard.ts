@@ -1,44 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 import { listProducts } from "@/features/products";
-import { listRoles } from "@/features/roles";
-import { listUsers } from "@/features/users";
+import { countRoles } from "@/features/roles";
+import { countUsers } from "@/features/users";
+import { useAsyncData } from "@/hooks/useAsyncData";
 
 type DashboardStats = {
-  productCount: number;
-  userCount: number;
-  roleCount: number;
+  productCount: number | null;
+  userCount: number | null;
+  roleCount: number | null;
 };
 
+const valueOrNull = (result: PromiseSettledResult<number>) => (result.status === "fulfilled" ? result.value : null);
+
+/**
+ * Mỗi số liệu tải độc lập: admin không có quyền xem người dùng/vai trò (403)
+ * vẫn thấy các số liệu còn lại — số liệu lỗi hiển thị "—".
+ */
+async function loadDashboardStats(): Promise<DashboardStats> {
+  const [productCount, userCount, roleCount] = await Promise.allSettled([
+    listProducts().then((products) => products.length),
+    countUsers(),
+    countRoles(),
+  ]);
+
+  return { productCount: valueOrNull(productCount), userCount: valueOrNull(userCount), roleCount: valueOrNull(roleCount) };
+}
+
 export function useAdminDashboard() {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    let isCancelled = false;
-
-    Promise.all([listProducts(), listUsers(), listRoles()]).then(
-      ([products, users, roles]) => {
-        if (isCancelled) {
-          return;
-        }
-
-        setStats({
-          productCount: products.length,
-          userCount: users.length,
-          roleCount: roles.length,
-        });
-
-        setIsLoading(false);
-      },
-    );
-
-    return () => {
-      isCancelled = true;
-    };
-  }, []);
-
-  return { stats, isLoading };
+  const { data, isLoading } = useAsyncData(loadDashboardStats, []);
+  return { stats: data ?? null, isLoading };
 }

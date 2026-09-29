@@ -1,37 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useAsyncData } from "@/hooks/useAsyncData";
 
 import type { ManagedMedia } from "../types/media.types";
-import { deleteMedia, listMedia } from "../services/media.service";
+import { deleteLibraryMedia, listLibraryMedia } from "../services/media-library.service";
 
 export function useMediaExplorer() {
-  const [mediaItems, setMediaItems] = useState<ManagedMedia[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const loadMedia = useCallback(async () => {
-    setIsLoading(true);
-
-    try {
-      const data = await listMedia();
-      setMediaItems(data);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadMedia();
-  }, [loadMedia]);
+  const { data, isLoading, error, reload } = useAsyncData(listLibraryMedia, [], {
+    fallbackError: "Không thể tải thư viện media.",
+  });
 
   async function handleDelete(media: ManagedMedia) {
-    await deleteMedia(media.id);
-    await loadMedia();
+    await deleteLibraryMedia(media.id);
+    await reload();
   }
 
-  return {
-    mediaItems,
-    isLoading,
-    handleDelete,
-  };
+  return { mediaItems: data ?? [], isLoading, loadError: error, handleDelete };
 }

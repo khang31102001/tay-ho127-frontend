@@ -2,6 +2,7 @@
 
 import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templates/DataExplorer/DataExplorer";
 import { StatusBadge } from "@/components/admin/templates/StatusBadge";
+import { useAdminAuth } from "@/features/admin-auth";
 
 import { useCustomersExplorer, type CustomerStatusFilter } from "../hooks/useCustomersExplorer";
 import type { ManagedCustomer } from "../types/customer.types";
@@ -31,7 +32,8 @@ const columns: DataExplorerColumn<ManagedCustomer>[] = [
 ];
 
 export function CustomersExplorer() {
-  const { rows, statusFilter, setStatusFilter, isLoading, handleDelete } = useCustomersExplorer();
+  const { rows, statusFilter, setStatusFilter, isLoading, loadError } = useCustomersExplorer();
+  const { hasPermission } = useAdminAuth();
 
   return (
     <DataExplorer<ManagedCustomer>
@@ -43,11 +45,10 @@ export function CustomersExplorer() {
       getRowId={(row) => row.id}
       getSearchableText={(row) => `${row.fullName} ${row.phone} ${row.email ?? ""} ${row.customerCode}`}
       searchPlaceholder="Tìm theo tên, SĐT, email..."
-      createHref="/admin/sales/customers/new"
+      createHref={hasPermission("customers.create") ? "/admin/sales/customers/new" : undefined}
       createLabel="Thêm khách hàng"
       editHref={(row) => `/admin/sales/customers/${row.id}`}
-      onDelete={handleDelete}
-      emptyState="Chưa có khách hàng nào."
+      emptyState={loadError ?? "Chưa có khách hàng nào."}
       toolbarActions={
         <select
           value={statusFilter}

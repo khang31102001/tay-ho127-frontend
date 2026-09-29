@@ -29,9 +29,19 @@ export interface ApiEnvelope<T> {
   errors?: Record<string, string[]>;
 }
 
+/** Hình dạng phân trang của Backend ASP.NET Core (AdminPlatform.Common.Pagination.PagedResult). */
 export interface PaginatedResult<T> {
   items: T[];
   page: number;
   pageSize: number;
-  total: number;
+  totalItems: number;
+  totalPages: number;
 }
+
+/** Query phân trang/tìm kiếm chung của Backend (PagedRequest) — pageSize tối đa 200. */
+export type PagedQuery = {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  sortDirection?: "asc" | "desc";
+};
