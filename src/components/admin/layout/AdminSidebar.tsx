@@ -4,26 +4,25 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
-import { resolveNavigationIcon, type NavigationItem } from "@/features/navigation";
+import { useAdminSidebarMenu, type AdminMenuTreeNode } from "@/features/admin-menus";
+import { resolveNavigationIcon } from "@/features/navigation";
 
 type SidebarSection = {
-  /** Để trống nếu không cần hiển thị heading — khớp cách ADMIN_NAV_SECTIONS cũ hoạt động. */
+  /** Để trống nếu không cần hiển thị heading. */
   title?: string;
-  items: NavigationItem[];
+  items: AdminMenuTreeNode[];
 };
 
 /**
- * Dựng lại đúng hình dạng section/group cũ (ADMIN_NAV_SECTIONS) từ cây
- * NavigationItem phẳng ở gốc: item gốc KHÔNG có children => 1 link đứng một
- * mình, gom chung với các item gốc không-children liền kề thành 1 "section
- * không tiêu đề" (giống mục Dashboard/Người dùng/Vai trò hiện tại); item gốc
- * CÓ children => section có tiêu đề = label của chính nó, items = children.
- * Đây là quy tắc CHUNG dựa trên cấu trúc cây, không hard-code theo tên menu
- * cụ thể nào.
+ * Dựng section/group từ cây menu Backend: item gốc KHÔNG có children => 1 link
+ * đứng một mình, gom chung với các item gốc không-children liền kề thành 1
+ * "section không tiêu đề" (Dashboard/Người dùng/Vai trò); item gốc CÓ children
+ * => section có tiêu đề = tên của chính nó, items = children. Quy tắc CHUNG
+ * dựa trên cấu trúc cây, không hard-code theo tên menu cụ thể nào.
  */
-function groupSidebarSections(items: NavigationItem[]): SidebarSection[] {
+function groupSidebarSections(items: AdminMenuTreeNode[]): SidebarSection[] {
   const sections: SidebarSection[] = [];
-  let pendingUngrouped: NavigationItem[] = [];
+  let pendingUngrouped: AdminMenuTreeNode[] = [];
 
   function flushPending() {
     if (pendingUngrouped.length > 0) {
@@ -35,7 +34,7 @@ function groupSidebarSections(items: NavigationItem[]): SidebarSection[] {
   items.forEach((item) => {
     if (item.children && item.children.length > 0) {
       flushPending();
-      sections.push({ title: item.label, items: item.children });
+      sections.push({ title: item.name, items: item.children });
     } else {
       pendingUngrouped.push(item);
     }
@@ -50,17 +49,16 @@ type AdminSidebarProps = {
   /** Trạng thái mở của drawer trên mobile. Không ảnh hưởng desktop (luôn hiện). */
   isOpen?: boolean;
   onClose?: () => void;
-  /**
-   * Cây navigation vị trí "admin-sidebar" — fetch ở app/admin/(dashboard)/layout.tsx
-   * (Server Component) qua navigationApi.getByLocation("admin-sidebar"), truyền
-   * xuống qua AdminDashboardShell. KHÔNG hard-code ADMIN_NAV_SECTIONS ở đây nữa —
-   * thêm domain admin mới giờ sửa ở Admin → Cấu hình → Navigation, không sửa code.
-   */
-  navigationItems: NavigationItem[];
 };
 
-export function AdminSidebar({ isOpen = false, onClose, navigationItems }: AdminSidebarProps) {
+/**
+ * Sidebar Admin — cây menu lấy từ Backend (GET /navigation/menus), đã lọc sẵn
+ * theo quyền của admin đang đăng nhập. Thêm/sửa mục menu ở Admin → Hệ thống →
+ * Menu quản trị, không sửa code. Nằm trong AdminGuard nên chỉ tải khi đã có phiên.
+ */
+export function AdminSidebar({ isOpen = false, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
+  const { menuItems, isLoading, loadError } = useAdminSidebarMenu();
 
   // Đóng drawer mobile khi đổi route.
   useEffect(() => {
@@ -73,13 +71,16 @@ export function AdminSidebar({ isOpen = false, onClose, navigationItems }: Admin
     return href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
   }
 
-  const sections = groupSidebarSections(navigationItems);
+  const sections = groupSidebarSections(menuItems);
 
   const navList = (
     <nav
       className="flex flex-col gap-4 px-3 pb-6"
       aria-label="Điều hướng quản trị"
     >
+      {isLoading && <span className="px-3 text-[13px] text-brand-muted">Đang tải menu...</span>}
+      {loadError && <span className="px-3 text-[13px] text-red-600">{loadError}</span>}
+
       {sections.map((section, sectionIndex) => (
         <div key={section.title ?? `section-${sectionIndex}`} className="flex flex-col gap-1">
           {section.title && (
@@ -89,13 +90,13 @@ export function AdminSidebar({ isOpen = false, onClose, navigationItems }: Admin
           )}
 
           {section.items.map((item) => {
-            const isActive = isItemActive(item.url);
+            const isActive = isItemActive(item.route);
             const Icon = resolveNavigationIcon(item.icon);
 
             return (
               <Link
                 key={item.id}
-                href={item.url ?? "#"}
+                href={item.route ?? "#"}
                 className={`
                   flex items-center gap-2.5 rounded-lg px-3 py-2.5
                   text-[14px] font-bold transition-colors
@@ -107,7 +108,7 @@ export function AdminSidebar({ isOpen = false, onClose, navigationItems }: Admin
                 `}
               >
                 {Icon && <Icon className="size-[18px] shrink-0" />}
-                <span className="truncate">{item.label}</span>
+                <span className="truncate">{item.name}</span>
               </Link>
             );
           })}

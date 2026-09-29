@@ -11,6 +11,13 @@ import { isApiError } from "./api-error";
  * đăng nhập — lỗi vẫn được ném tiếp cho nơi gọi tự dọn loading state.
  */
 const ADMIN_BACKEND_BASE_PATH = "/api/admin/backend";
+
+/**
+ * Số dòng mỗi lần tải danh sách Admin — bằng giới hạn pageSize tối đa của
+ * Backend (PagedRequest.MaxPageSize). DataExplorer tìm kiếm/phân trang phía
+ * client trên tập này; danh sách vượt quá cần chuyển sang phân trang server.
+ */
+export const ADMIN_LIST_PAGE_SIZE = 200;
 const ADMIN_LOGIN_PATH = "/admin/login";
 
 const client = createHttpClient(ADMIN_BACKEND_BASE_PATH);

@@ -21,4 +21,4 @@ export type {
 } from "./types/navigation.types";
 
 export { resolveNavigationLinkProps } from "./utils/navigation-tree";
-export { resolveNavigationIcon } from "./utils/icon-registry";
+export { NAVIGATION_ICON_NAMES, resolveNavigationIcon } from "./utils/icon-registry";

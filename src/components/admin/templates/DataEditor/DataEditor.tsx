@@ -21,6 +21,8 @@ export type DataEditorProps = {
   onDeleted?: () => void;
   saveLabel?: string;
   isLoading?: boolean;
+  /** Lỗi khi tải bản ghi cần sửa (vd. 404/403) — hiện thay cho form. */
+  loadError?: string | null;
   deleteConfirmTitle?: string;
   deleteConfirmDescription?: string;
 };
@@ -38,6 +40,7 @@ export function DataEditor({
   onDeleted,
   saveLabel = "Lưu",
   isLoading = false,
+  loadError = null,
   deleteConfirmTitle = "Xác nhận xóa?",
   deleteConfirmDescription = "Hành động này không thể hoàn tác.",
 }: DataEditorProps) {
@@ -70,6 +73,10 @@ export function DataEditor({
       {isLoading ? (
         <div className="mt-4 rounded-lg border border-brand-line bg-white p-6 text-center text-brand-muted">
           Đang tải dữ liệu...
+        </div>
+      ) : loadError ? (
+        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-6 text-center text-[14px] font-medium text-red-700">
+          {loadError}
         </div>
       ) : (
         <form

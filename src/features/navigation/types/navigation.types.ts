@@ -2,7 +2,6 @@ export const NAVIGATION_LOCATION_OPTIONS = [
   { value: "header", label: "Header (Website)" },
   { value: "footer", label: "Footer (Website)" },
   { value: "mobile", label: "Mobile Navigation" },
-  { value: "admin-sidebar", label: "Admin Sidebar" },
 ] as const;
 
 export type NavigationLocation = (typeof NAVIGATION_LOCATION_OPTIONS)[number]["value"];

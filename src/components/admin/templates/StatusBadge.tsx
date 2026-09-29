@@ -1,5 +1,10 @@
 export type EntityStatus = "active" | "inactive";
 
+/** Backend trả trạng thái dạng `isActive: boolean` — quy đổi về EntityStatus để hiển thị. */
+export function statusFromIsActive(isActive: boolean): EntityStatus {
+  return isActive ? "active" : "inactive";
+}
+
 type StatusBadgeProps = {
   status: EntityStatus;
   activeLabel?: string;

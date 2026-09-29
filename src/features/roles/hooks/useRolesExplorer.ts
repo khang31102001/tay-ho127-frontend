@@ -1,37 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useAsyncData } from "@/hooks/useAsyncData";
 
 import type { ManagedRole } from "../types/role.types";
 import { deleteRole, listRoles } from "../services/role.service";
 
 export function useRolesExplorer() {
-  const [roles, setRoles] = useState<ManagedRole[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const loadRoles = useCallback(async () => {
-    setIsLoading(true);
-
-    try {
-      const data = await listRoles();
-      setRoles(data);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadRoles();
-  }, [loadRoles]);
+  const { data, isLoading, error, reload } = useAsyncData(listRoles, [], {
+    fallbackError: "Không thể tải danh sách vai trò.",
+  });
 
   async function handleDelete(role: ManagedRole) {
     await deleteRole(role.id);
-    await loadRoles();
+    await reload();
   }
 
-  return {
-    roles,
-    isLoading,
-    handleDelete,
-  };
+  return { roles: data ?? [], isLoading, loadError: error, handleDelete };
 }
