@@ -13,6 +13,9 @@ import {
  * trang để khôi phục phiên, thay cho việc lưu user trong localStorage. Quyền
  * luôn lấy mới từ Backend, nên đổi role/quyền có hiệu lực ngay lần tải sau.
  */
+// Phụ thuộc cookie của từng request — không bao giờ render tĩnh/cache.
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   try {
     const { response: backendResponse, tokens, unauthenticated } = await fetchBackendAsAdmin(request, "/me");

@@ -10,6 +10,10 @@ import { fetchBackend } from "@/lib/http/backend-fetch";
  */
 const PUBLIC_MEDIA_REVALIDATE_SECONDS = 60;
 
+// Không để Next render route này tĩnh lúc build (khi đó thường chưa có Backend
+// => đóng băng response lỗi). Dữ liệu vẫn được cache 60s ở lời gọi fetch bên dưới.
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const response = await fetchBackend("/media/public?pageSize=200", {

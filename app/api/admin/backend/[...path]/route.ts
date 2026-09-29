@@ -10,6 +10,9 @@ import { clearSessionCookies, fetchBackendAsAdmin, writeSessionCookies } from "@
  */
 type RouteContext = { params: { path: string[] } };
 
+// Phụ thuộc cookie của từng request — không bao giờ render tĩnh/cache.
+export const dynamic = "force-dynamic";
+
 async function proxy(request: NextRequest, { params }: RouteContext) {
   const path = `/${params.path.map(encodeURIComponent).join("/")}${request.nextUrl.search}`;
   const hasBody = request.method !== "GET" && request.method !== "HEAD";
