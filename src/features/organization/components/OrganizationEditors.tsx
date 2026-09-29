@@ -7,7 +7,7 @@ import {
   adminFieldLabelClassName,
 } from "@/components/admin/templates/formFieldClassName";
 
-import type { ManagedOrganization } from "../types/organization.types";
+import { OrganizationSelect } from "./OrganizationSelect";
 import { useBrandEditor, useDepartmentEditor, useOrganizationEditor } from "../hooks/useOrganizationEditors";
 
 const codeInputClassName = `${adminFieldInputClassName} font-mono disabled:bg-brand-line/30`;
@@ -38,34 +38,6 @@ function CodeNameFields({
         <input type="text" required disabled={isEditMode} value={code} onChange={(event) => onCodeChange(event.target.value)} className={codeInputClassName} />
       </label>
     </div>
-  );
-}
-
-function OrganizationSelect({
-  value,
-  organizations,
-  disabled,
-  onChange,
-}: {
-  value: string;
-  organizations: ManagedOrganization[];
-  disabled: boolean;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <label className={adminFieldLabelClassName}>
-      Tổ chức
-      <select required disabled={disabled} value={value} onChange={(event) => onChange(event.target.value)} className={`${adminFieldInputClassName} disabled:bg-brand-line/30`}>
-        <option value="" disabled>
-          Chọn tổ chức
-        </option>
-        {organizations.map((organization) => (
-          <option key={organization.id} value={organization.id}>
-            {organization.name}
-          </option>
-        ))}
-      </select>
-    </label>
   );
 }
 

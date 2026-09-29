@@ -1,6 +1,8 @@
 export { OrganizationsExplorer, DepartmentsExplorer, BrandsExplorer } from "./components/OrganizationExplorers";
 export { OrganizationEditor, DepartmentEditor, BrandEditor } from "./components/OrganizationEditors";
+export { OrganizationSelect } from "./components/OrganizationSelect";
 export {
+  listOrganizations,
   listDepartments,
   listBrands,
   listUserDepartments,
