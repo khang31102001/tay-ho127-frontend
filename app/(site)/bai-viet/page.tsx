@@ -7,7 +7,7 @@ import { Container } from "@/components/ui/Container";
 // UI Explorer/Editor — import qua barrel sẽ kéo UI admin vào bundle Site,
 // xem menu.service.ts để biết lý do).
 import { listPublishedArticles } from "@/features/articles/services/article.service";
-import { listMedia } from "@/features/media/services/media.service";
+import { listMedia } from "@/features/media/services/public-media.service";
 import { listArticleCategories } from "@/features/article-categories/services/article-category.service";
 import { buildMetadata } from "@/lib/seo/build-metadata";
 

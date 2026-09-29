@@ -15,7 +15,7 @@ import { listProducts } from "@/features/products/services/product.service";
 import type { ManagedProduct } from "@/features/products/types/product.types";
 import { listCategories } from "@/features/categories/services/category.service";
 import type { ManagedCategory } from "@/features/categories/types/category.types";
-import { listMedia } from "@/features/media/services/media.service";
+import { listMedia } from "@/features/media/services/public-media.service";
 import type { ManagedMedia } from "@/features/media/types/media.types";
 import { listModifierGroupsByIds } from "@/features/modifier-groups/services/modifier-group.service";
 import { normalizeText } from "@/lib/normalize-text";

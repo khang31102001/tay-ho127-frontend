@@ -5,7 +5,8 @@ import {
   adminFieldInputClassName,
   adminFieldLabelClassName,
 } from "@/components/admin/templates/formFieldClassName";
-import type { EntityStatus } from "@/components/admin/templates/StatusBadge";
+import { StatusBadge } from "@/components/admin/templates/StatusBadge";
+import { useAdminAuth } from "@/features/admin-auth";
 import { formatFileSize } from "@/lib/format-file-size";
 import { MEDIA_TYPE_OPTIONS, type MediaType } from "../types/media.types";
 
@@ -16,26 +17,29 @@ type MediaEditorProps = {
 };
 
 export function MediaEditor({ id }: MediaEditorProps) {
-  const {
-    form,
-    updateField,
-    isLoading,
-    isEditMode,
-    handleSave,
-    handleDelete,
-    goToExplore,
-  } = useMediaEditor({ id });
+  const { form, status, updateField, isLoading, loadError, isEditMode, handleSave, handleDelete, goToExplore } =
+    useMediaEditor({ id });
+  const { hasPermission } = useAdminAuth();
 
   return (
     <DataEditor
       title={isEditMode ? "Sửa media" : "Thêm media"}
       backHref="/admin/catalog/media"
       isLoading={isLoading}
+      loadError={loadError}
       onSave={handleSave}
       onSaved={goToExplore}
-      onDelete={isEditMode ? handleDelete : undefined}
+      onDelete={isEditMode && status === "active" && hasPermission("media.delete") ? handleDelete : undefined}
       onDeleted={goToExplore}
+      deleteConfirmTitle="Ngừng sử dụng media này?"
+      deleteConfirmDescription="Media sẽ chuyển sang Ngừng hoạt động và không còn hiển thị trên Site."
     >
+      {isEditMode && (
+        <p className="flex items-center gap-2 text-[13px] text-brand-muted">
+          Trạng thái: <StatusBadge status={status} />
+        </p>
+      )}
+
       <label className={adminFieldLabelClassName}>
         Tên file
         <input
@@ -52,7 +56,7 @@ export function MediaEditor({ id }: MediaEditorProps) {
         <input
           type="text"
           required
-          placeholder="/images/ten-file.jpg"
+          placeholder="https://... hoặc /images/ten-file.jpg"
           value={form.url}
           onChange={(event) => updateField("url", event.target.value)}
           className={adminFieldInputClassName}
@@ -80,9 +84,11 @@ export function MediaEditor({ id }: MediaEditorProps) {
           <input
             type="number"
             min={0}
+            disabled={isEditMode}
+            title={isEditMode ? "Không sửa được dung lượng sau khi tạo." : undefined}
             value={form.size}
             onChange={(event) => updateField("size", Number(event.target.value))}
-            className={adminFieldInputClassName}
+            className={`${adminFieldInputClassName} disabled:bg-brand-line/30`}
           />
         </label>
       </div>
@@ -95,18 +101,6 @@ export function MediaEditor({ id }: MediaEditorProps) {
           onChange={(event) => updateField("altText", event.target.value)}
           className={adminFieldInputClassName}
         />
-      </label>
-
-      <label className={adminFieldLabelClassName}>
-        Trạng thái
-        <select
-          value={form.status}
-          onChange={(event) => updateField("status", event.target.value as EntityStatus)}
-          className={adminFieldInputClassName}
-        >
-          <option value="active">Hoạt động</option>
-          <option value="inactive">Ngừng hoạt động</option>
-        </select>
       </label>
     </DataEditor>
   );

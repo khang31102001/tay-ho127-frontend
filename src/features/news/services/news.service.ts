@@ -3,7 +3,7 @@
 // cả Explorer/Editor UI, import qua barrel sẽ kéo UI admin vào bundle Site.
 import { listPublishedArticles, getArticleBySlug } from "@/features/articles/services/article.service";
 import type { ManagedArticle } from "@/features/articles/types/article.types";
-import { listMedia } from "@/features/media/services/media.service";
+import { listMedia } from "@/features/media/services/public-media.service";
 import type { ManagedMedia } from "@/features/media/types/media.types";
 import { listArticleCategories } from "@/features/article-categories/services/article-category.service";
 import type { ManagedArticleCategory } from "@/features/article-categories/types/article-category.types";

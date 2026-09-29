@@ -2,11 +2,11 @@ import { NextResponse } from "next/server";
 
 import {
   type BackendMeResponse,
-  fetchBackend,
   loginWithPassword,
   toAdminSessionUser,
   writeSessionCookies,
 } from "@/lib/auth/admin-backend-session";
+import { fetchBackend } from "@/lib/http/backend-fetch";
 
 /**
  * BFF login: xác thực với Backend (POST /api/v1/auth/login), lấy hồ sơ + quyền

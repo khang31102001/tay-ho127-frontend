@@ -1,5 +1,7 @@
 import type { NextRequest, NextResponse } from "next/server";
 
+import { fetchBackend } from "@/lib/http/backend-fetch";
+
 import {
   ADMIN_ACCESS_TOKEN_COOKIE,
   ADMIN_REFRESH_TOKEN_COOKIE,
@@ -13,10 +15,8 @@ import {
  * BFF (Backend-for-Frontend) cho Admin Portal: trình duyệt chỉ nói chuyện với
  * Next.js; Next.js giữ JWT của Backend ASP.NET Core trong cookie HttpOnly và tự
  * gắn `Authorization: Bearer` khi gọi Backend. Nhờ vậy token không lọt vào JS
- * phía client và Backend không cần bật CORS.
- *
- * BACKEND_API_URL: origin của Backend (vd. http://localhost:5140) — biến
- * server-only, KHÔNG dùng NEXT_PUBLIC_*.
+ * phía client và Backend không cần bật CORS. Gọi Backend qua
+ * src/lib/http/backend-fetch.ts.
  */
 
 /** TokenResponse của POST /api/v1/auth/login|refresh. */
@@ -58,29 +58,6 @@ export type AdminSessionTokens = {
   refreshToken: string;
   refreshTokenExpiresAt: Date;
 };
-
-export function getBackendApiUrl(): string {
-  const url = process.env.BACKEND_API_URL;
-  if (!url) {
-    throw new Error("BACKEND_API_URL chưa được cấu hình (xem .env.example).");
-  }
-  return url.replace(/\/+$/, "");
-}
-
-/** Gọi Backend ASP.NET Core ở path /api/v1/<path>. Trả nguyên Response để nơi gọi quyết định. */
-export function fetchBackend(path: string, init: RequestInit & { accessToken?: string } = {}): Promise<Response> {
-  const { accessToken, headers, ...rest } = init;
-  return fetch(`${getBackendApiUrl()}/api/v1${path}`, {
-    ...rest,
-    headers: {
-      Accept: "application/json",
-      ...(rest.body !== undefined ? { "Content-Type": "application/json" } : {}),
-      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-      ...headers,
-    },
-    cache: "no-store",
-  });
-}
 
 function toTokens(response: BackendTokenResponse): AdminSessionTokens {
   return {
