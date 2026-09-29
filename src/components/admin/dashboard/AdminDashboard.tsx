@@ -58,7 +58,7 @@ export function AdminDashboard() {
 
               <span>
                 <span className="block text-[24px] font-black text-brand-greenDark">
-                  {isLoading || !stats ? "—" : stats[card.key]}
+                  {isLoading || !stats ? "—" : stats[card.key] ?? "—"}
                 </span>
 
                 <span className="block text-[13px] font-medium text-brand-muted">

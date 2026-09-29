@@ -9,6 +9,11 @@ export async function listRoles(): Promise<ManagedRole[]> {
   return page.items;
 }
 
+/** Tổng số vai trò (chỉ đọc totalItems, không tải danh sách). */
+export async function countRoles(): Promise<number> {
+  return (await adminApi.get<PaginatedResult<ManagedRole>>("/roles", { params: { pageSize: 1 } })).totalItems;
+}
+
 export function getRoleById(id: string): Promise<ManagedRole> {
   return adminApi.get<ManagedRole>(`/roles/${id}`);
 }

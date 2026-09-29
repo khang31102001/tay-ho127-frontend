@@ -1,5 +1,6 @@
 "use client";
 
+import { ActiveStatusField } from "@/components/admin/templates/ActiveStatusField";
 import { DataEditor } from "@/components/admin/templates/DataEditor/DataEditor";
 import {
   adminFieldInputClassName,
@@ -150,17 +151,11 @@ export function AdminMenuEditor({ id }: { id?: string }) {
       </div>
 
       {isEditMode && (
-        <label className={adminFieldLabelClassName}>
-          Trạng thái
-          <select
-            value={form.isActive ? "active" : "inactive"}
-            onChange={(event) => updateField("isActive", event.target.value === "active")}
-            className={adminFieldInputClassName}
-          >
-            <option value="active">Hoạt động</option>
-            <option value="inactive">Ẩn khỏi sidebar</option>
-          </select>
-        </label>
+        <ActiveStatusField
+          isActive={form.isActive}
+          onChange={(value) => updateField("isActive", value)}
+          inactiveLabel="Ẩn khỏi sidebar"
+        />
       )}
     </DataEditor>
   );
