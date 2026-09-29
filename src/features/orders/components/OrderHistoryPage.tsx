@@ -18,7 +18,7 @@ import type { ManagedOrder } from "../types/order.types";
 /**
  * #19 ORDER HISTORY (/tai-khoan/don-hang) — chỉ hiển thị khi đã đăng nhập,
  * lọc theo AuthUser.customerId (bridge Auth↔Customer, xem
- * features/customers/services/customer.service.ts#findOrCreateCustomerByContact).
+ * features/customers/services/site-customer-bridge.service.ts#findOrCreateCustomerByContact).
  */
 export function OrderHistoryPage() {
   const { user, isAuthLoaded, logout } = useAuth();

@@ -12,7 +12,7 @@ import type { AuthUser } from "../types/auth.types";
 // re-export cả Explorer/Editor admin (UI "use client"), import qua barrel ở
 // đây (Site) sẽ kéo UI admin vào bundle Site. Lý do đầy đủ xem
 // features/menu/services/menu.service.ts.
-import { findOrCreateCustomerByContact } from "@/features/customers/services/customer.service";
+import { findOrCreateCustomerByContact } from "@/features/customers/services/site-customer-bridge.service";
 
 /** Bridge Auth↔Customer (Phase 6) — mọi AuthUser trước khi vào onAuthenticated đều có customerId, dùng để đặt hàng/Order History. */
 async function resolveAuthUserWithCustomerId(user: AuthUser): Promise<AuthUser> {

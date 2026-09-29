@@ -25,9 +25,9 @@ export function CustomerEditor({ id }: CustomerEditorProps) {
     customerCode,
     mediaOptions,
     isLoading,
+    loadError,
     isEditMode,
     handleSave,
-    handleDelete,
     goToExplore,
   } = useCustomerEditor({ id });
 
@@ -36,10 +36,9 @@ export function CustomerEditor({ id }: CustomerEditorProps) {
       title={isEditMode ? "Sửa khách hàng" : "Thêm khách hàng"}
       backHref="/admin/sales/customers"
       isLoading={isLoading}
+      loadError={loadError}
       onSave={handleSave}
       onSaved={goToExplore}
-      onDelete={isEditMode ? handleDelete : undefined}
-      onDeleted={goToExplore}
     >
       {customerCode && (
         <p className="text-[13px] text-brand-muted">

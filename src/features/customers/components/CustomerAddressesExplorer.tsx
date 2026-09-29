@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Star } from "lucide-react";
 
 import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templates/DataExplorer/DataExplorer";
+import { useAdminAuth } from "@/features/admin-auth";
 
 import { useCustomerAddressesExplorer } from "../hooks/useCustomerAddressesExplorer";
 import type { ManagedCustomerAddress } from "../types/customer-address.types";
@@ -19,8 +20,10 @@ type CustomerAddressesExplorerProps = {
 };
 
 export function CustomerAddressesExplorer({ customerId }: CustomerAddressesExplorerProps) {
-  const { rows, customerName, isLoading, handleDelete, handleSetDefault } =
+  const { rows, customerName, isLoading, loadError, handleDelete, handleSetDefault } =
     useCustomerAddressesExplorer({ customerId });
+  const { hasPermission } = useAdminAuth();
+  const canManageAddresses = hasPermission("customers.addresses.manage");
 
   const columns: DataExplorerColumn<ManagedCustomerAddress>[] = [
     { key: "receiverName", header: "Người nhận" },
@@ -39,6 +42,8 @@ export function CustomerAddressesExplorer({ customerId }: CustomerAddressesExplo
             <Star className="size-3" fill="currentColor" strokeWidth={0} />
             Mặc định
           </span>
+        ) : !canManageAddresses ? (
+          "—"
         ) : (
           <button
             type="button"
@@ -69,11 +74,11 @@ export function CustomerAddressesExplorer({ customerId }: CustomerAddressesExplo
           getRowId={(row) => row.id}
           getSearchableText={(row) => `${row.receiverName} ${row.phone} ${formatAddress(row)}`}
           searchPlaceholder="Tìm địa chỉ..."
-          createHref={`/admin/sales/customers/${customerId}/addresses/new`}
+          createHref={canManageAddresses ? `/admin/sales/customers/${customerId}/addresses/new` : undefined}
           createLabel="Thêm địa chỉ"
           editHref={(row) => `/admin/sales/customers/${customerId}/addresses/${row.id}`}
-          onDelete={handleDelete}
-          emptyState="Khách hàng này chưa có địa chỉ nào."
+          onDelete={canManageAddresses ? handleDelete : undefined}
+          emptyState={loadError ?? "Khách hàng này chưa có địa chỉ nào."}
         />
       </div>
     </div>

@@ -3,13 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { useAsyncData } from "@/hooks/useAsyncData";
+
 import type { CustomerAddressUpsertInput } from "../services/customer-address.service";
-import {
-  createAddress,
-  deleteAddress,
-  getAddressById,
-  updateAddress,
-} from "../services/customer-address.service";
+import { createAddress, deleteAddress, getAddressById, updateAddress } from "../services/customer-address.service";
 
 export type CustomerAddressFormValue = CustomerAddressUpsertInput;
 
@@ -37,37 +34,18 @@ export function useCustomerAddressEditor({ customerId, id }: UseCustomerAddressE
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<CustomerAddressFormValue>(buildEmptyForm(customerId));
-  const [isLoading, setIsLoading] = useState(isEditMode);
+  const existing = useAsyncData(() => getAddressById(customerId, id ?? ""), [customerId, id], {
+    enabled: isEditMode,
+    fallbackError: "Không thể tải địa chỉ.",
+  });
 
   useEffect(() => {
-    if (!isEditMode) {
-      return;
-    }
+    if (!existing.data) return;
+    const { id: _addressId, ...rest } = existing.data;
+    setForm(rest);
+  }, [existing.data]);
 
-    let isCancelled = false;
-
-    getAddressById(id).then((address) => {
-      if (isCancelled) {
-        return;
-      }
-
-      if (address) {
-        const { id: _addressId, ...rest } = address;
-        setForm(rest);
-      }
-
-      setIsLoading(false);
-    });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [id, isEditMode]);
-
-  function updateField<K extends keyof CustomerAddressFormValue>(
-    field: K,
-    value: CustomerAddressFormValue[K],
-  ) {
+  function updateField<K extends keyof CustomerAddressFormValue>(field: K, value: CustomerAddressFormValue[K]) {
     setForm((previous) => ({ ...previous, [field]: value }));
   }
 
@@ -85,7 +63,7 @@ export function useCustomerAddressEditor({ customerId, id }: UseCustomerAddressE
 
   async function handleDelete() {
     if (isEditMode) {
-      await deleteAddress(id);
+      await deleteAddress(customerId, id);
     }
   }
 
@@ -96,7 +74,8 @@ export function useCustomerAddressEditor({ customerId, id }: UseCustomerAddressE
   return {
     form,
     updateField,
-    isLoading,
+    isLoading: existing.isLoading,
+    loadError: existing.error,
     isEditMode,
     handleSave,
     handleDelete,

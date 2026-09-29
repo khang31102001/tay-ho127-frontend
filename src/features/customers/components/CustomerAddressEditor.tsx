@@ -1,6 +1,7 @@
 "use client";
 
 import { DataEditor } from "@/components/admin/templates/DataEditor/DataEditor";
+import { useAdminAuth } from "@/features/admin-auth";
 import {
   adminFieldInputClassName,
   adminFieldLabelClassName,
@@ -14,17 +15,19 @@ type CustomerAddressEditorProps = {
 };
 
 export function CustomerAddressEditor({ customerId, id }: CustomerAddressEditorProps) {
-  const { form, updateField, isLoading, isEditMode, handleSave, handleDelete, goToExplore } =
+  const { form, updateField, isLoading, loadError, isEditMode, handleSave, handleDelete, goToExplore } =
     useCustomerAddressEditor({ customerId, id });
+  const { hasPermission } = useAdminAuth();
 
   return (
     <DataEditor
       title={isEditMode ? "Sửa địa chỉ" : "Thêm địa chỉ"}
       backHref={`/admin/sales/customers/${customerId}/addresses`}
       isLoading={isLoading}
+      loadError={loadError}
       onSave={handleSave}
       onSaved={goToExplore}
-      onDelete={isEditMode ? handleDelete : undefined}
+      onDelete={isEditMode && hasPermission("customers.addresses.manage") ? handleDelete : undefined}
       onDeleted={goToExplore}
     >
       <div className="grid gap-4 sm:grid-cols-2">
