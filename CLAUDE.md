@@ -43,12 +43,16 @@ Current features:
 | `features/auth` | Customer login modal | `AuthModal`; calls `app/api/auth/*` |
 | `features/checkout` | Checkout page | — |
 | `features/cart` | Cart + fly-to-cart animation | Owns `context/cart-context.tsx`, `context/fly-to-cart-context.tsx` |
-| `features/admin-auth` | Admin login | Separate mock stack from `features/auth` **by design** — never merge them. Calls `app/api/admin/auth/login`. Demo creds: `admin@tayho127.vn` / `admin123` |
+| `features/admin-auth` | Admin login/session (real Backend via BFF) | Separate from `features/auth` (Site customers) **by design** — never merge them. Calls `app/api/admin/auth/{login,logout,session}`; `useAdminAuth().hasPermission(code)` gates UI by Backend permission codes (`users.view`...). No demo creds — accounts live in the Backend (Migrator `seed`/`seed-demo`) |
+| `features/permissions` | Admin: permission CRUD (Backend AccessControl) | — |
+| `features/admin-menus` | Admin sidebar + "Menu quản trị" CRUD (Backend Navigation) | NOT `features/navigation` (that one is the Site header/footer menus, still mock) |
+| `features/organization` | Admin: organizations / departments (tree) / brands (Backend Organization) | Exports `OrganizationSelect`, user-scope services used by `features/users` |
+| `features/platform` | Admin: fiscal years, system settings, audit logs (Backend Platform) | — |
 | `features/menu-items` | Admin: simple menu-item CRUD (legacy/first Admin CRUD) | Reuses `MenuItem` type + seed array from global `src/data/menu-items.ts` (shared with `features/menu`) — no local `mocks/` |
-| `features/users` | Admin: user accounts CRUD | Depends on `features/roles` (role picker) |
-| `features/roles` | Admin: role/permission CRUD | — |
+| `features/users` | Admin: user accounts (Backend Identity) | Assigns roles (`features/roles`) and department/brand scopes (`features/organization`) |
+| `features/roles` | Admin: roles + their permissions (Backend AccessControl) | Permission checklist from `features/permissions` |
 | `features/categories` | Admin Catalog: category CRUD | Parent-category self-reference |
-| `features/media` | Admin Catalog: media library CRUD | — |
+| `features/media` | Admin media library (Backend Media) + `listMedia()` for Site/MediaPicker | `listMedia()` = mock seed (ids referenced by still-mock content) + active Backend media (`GET /media/public`); images from hosts not in `NEXT_PUBLIC_IMAGE_REMOTE_HOSTS` are excluded |
 | `features/products` | Admin Catalog: product CRUD | Depends on `features/categories` + `features/media` |
 | `features/menus` | Admin Catalog: menu CRUD | Not to be confused with `features/menu-items` (different, older domain) |
 | `features/catalog-menu-items` | Admin Catalog: Menu↔Product junction (`priceOverride`, `sortOrder`, `isAvailable`) | Depends on `features/menus` + `features/products` |
@@ -58,7 +62,9 @@ Current features:
 - `src/components/shared/` — cross-feature components (`StatusPopup`, `Reveal`, `LanguageSwitcher`) — renamed from `components/common`.
 - `src/components/layout/` — User Site chrome (`Header`, `Footer`, `FloatingActions`, `MobileHeaderMenu`); composes multiple features (cart, auth) but isn't one itself.
 - `src/components/admin/{layout,dashboard,templates}/` — Admin Portal chrome + the shared `DataExplorer`/`DataEditor` CRUD template shell (see below).
-- `src/services/api-client.ts` — `readApiResponse()`, shared by `features/auth` and `features/admin-auth`.
+- `src/services/api-client.ts` — `readApiResponse()`, used by `features/auth` (Site) for `app/api/auth/*`.
+- `src/lib/http/` — `api-client.ts` (`createHttpClient`, ProblemDetails-aware errors), `admin-api.ts` (`adminApi`: Backend calls from the Admin Portal through the BFF), `backend-fetch.ts` (server-only Backend fetch). `src/lib/auth/` — BFF session (HttpOnly cookies, refresh).
+- `src/hooks/useAsyncData.ts` — shared loading/error/reload state for Admin Explorer/Editor hooks.
 - `src/hooks/useScrollThreshold.ts` — shared by `Header` and `FloatingActions` (both layout, not features).
 - `src/lib/*` — generic utils (`cn`, `normalize-text`, `format-file-size`, `format-currency`).
 - `src/data/site.ts`, `src/data/menu-items.ts` — content/data genuinely shared across ≥2 features (site.ts by layout + several features; menu-items.ts by `features/menu` **and** `features/menu-items`).
@@ -68,8 +74,10 @@ Current features:
 
 - Cart state lives in `features/cart` (`CartProvider`/`useCart`, `localStorage` key `tayho-cart`), wired in at [src/provider/app-providers.tsx](src/provider/app-providers.tsx), which wraps only the User Site in [app/(site)/layout.tsx](app/(site)/layout.tsx) — not `/admin`.
 - Menu data: `features/menu`'s `services/menu.service.ts` exports `fetchMenu()`, returning `mocks/menu-api-response.mock.json` after a simulated delay. Mock today, but the "mock-ness" is internal to the service — swapping in a real backend means changing this file only.
-- Customer auth (`features/auth`) and admin auth (`features/admin-auth`) each call their own Next.js Route Handlers under `app/api/auth/*` / `app/api/admin/auth/*`, which validate against hard-coded demo data — no real backend or session persistence yet.
-- Every admin CRUD feature follows the same mock pattern: `mocks/<name>.mock.ts` exports a `SEED_*` array; `services/<name>.service.ts` imports it, reads/writes a `localStorage` key, and exposes `list/get/create/update/delete` functions. Swapping in a real backend means rewriting only that service file.
+- Customer auth (`features/auth`) calls mock Route Handlers under `app/api/auth/*` (hard-coded demo data); `findOrCreateCustomerByContact` in `features/customers/services/site-customer-bridge.service.ts` keeps Site customers/orders in a mock localStorage store.
+- Admin auth is real: BFF Route Handlers `app/api/admin/auth/*` log in against the ASP.NET Core Backend (`BACKEND_API_URL`, server-only) and keep its JWTs in HttpOnly cookies; `app/api/admin/backend/[...path]` proxies every Admin call to Backend `/api/v1/*` (adds Bearer, refreshes on 401). The browser never sees a token and the Backend needs no CORS.
+- Admin features backed by the Backend (users, roles, permissions, admin-menus, organization, platform, customers, media library): `services/<name>.service.ts` calls `adminApi` and maps Backend DTOs to the feature's types. Lists load up to 200 rows (Backend max page size) and `DataExplorer` searches/pages them client-side.
+- Admin features NOT yet in the Backend (catalog, content, orders, SEO, settings…) keep the mock pattern: `mocks/<name>.mock.ts` exports a `SEED_*` array; `services/<name>.service.ts` reads/writes a `localStorage` key. Moving one to the Backend means rewriting only that service file.
 - Any new data-fetching/API-calling logic (mock or real) should follow this same pattern: a `services/<name>.service.ts` file inside the owning feature, never a raw `fetch()` inside a component.
 
 ### App Router structure
@@ -82,7 +90,7 @@ Current features:
 
 ### Admin Portal
 
-- Routes live under `app/admin/*`, deliberately separate from `app/(site)/*` so the User Site's Header/Footer/CartProvider never leak into admin pages (and vice versa). [app/admin/layout.tsx](app/admin/layout.tsx) only provides `AdminAuthProvider` (from `features/admin-auth`); [app/admin/(auth)/login/page.tsx](app/admin/(auth)/login/page.tsx) renders unstyled by any dashboard chrome, while [app/admin/(dashboard)/layout.tsx](app/admin/(dashboard)/layout.tsx) adds the guarded shell (`AdminGuard` + `AdminSidebar` + `AdminHeader`, in `src/components/admin/layout/`) for every actual admin screen. `AdminSidebar` groups nav links into sections — a "Catalog" section holds the 5 Catalog CRUD features.
+- Routes live under `app/admin/*`, deliberately separate from `app/(site)/*` so the User Site's Header/Footer/CartProvider never leak into admin pages (and vice versa). [app/admin/layout.tsx](app/admin/layout.tsx) only provides `AdminAuthProvider` (from `features/admin-auth`); [app/admin/(auth)/login/page.tsx](app/admin/(auth)/login/page.tsx) renders unstyled by any dashboard chrome, while [app/admin/(dashboard)/layout.tsx](app/admin/(dashboard)/layout.tsx) adds the guarded shell (`AdminGuard` + `AdminSidebar` + `AdminHeader`, in `src/components/admin/layout/`) for every actual admin screen. `AdminSidebar` renders the caller's permission-filtered menu tree from the Backend (`GET /navigation/menus`, seeded by the Backend `NavigationSeeder`); a new admin page needs a menu entry there (seed or Admin → Hệ thống → Menu quản trị), not a code change in the sidebar. `middleware.ts` blocks `/admin/*` without the session cookie.
 - Two reusable screen templates live in [src/components/admin/templates/](src/components/admin/templates/) and are shared across **every** admin CRUD feature (8 of them, listed above):
   - **DataExplorer** (`DataExplorer/DataExplorer.tsx` + `useDataExplorer.ts`) — list screen: search, table, delete-with-confirm. Config-driven via props (`columns`, `getSearchableText`, `editHref`, `onDelete`, ...).
   - **DataEditor** (`DataEditor/DataEditor.tsx` + `useDataEditor.ts`) — create/update/delete screen chrome (Save/Delete buttons, confirm-delete + error popups via `StatusPopup`). Form fields are **not** generic — each feature supplies its own field JSX as `children`.
