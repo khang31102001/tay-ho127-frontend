@@ -59,7 +59,9 @@ export function useAsyncData<T>(
     run();
 
     return () => {
-      // Hủy kết quả của lần gọi đang chạy khi deps đổi hoặc unmount.
+      // Hủy kết quả của lần gọi đang chạy khi deps đổi hoặc unmount. requestIdRef là
+      // bộ đếm (không phải DOM node) — tăng nó trong cleanup chính là mục đích.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       requestIdRef.current++;
     };
   }, [enabled, run]);
