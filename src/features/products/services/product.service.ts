@@ -1,145 +1,94 @@
+import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/lib/http/admin-api";
+import type { PaginatedResult } from "@/lib/http/api-types";
+
 import type { ManagedProduct } from "../types/product.types";
-import { SEED_PRODUCTS } from "../mocks/product.mock";
 
 /**
- * MOCK CONTRACT: chưa có backend quản lý sản phẩm thật. Dữ liệu seed (xem
- * ../mocks/product.mock.ts) + đồng bộ 2 chiều với localStorage.
+ * Admin → Catalog → Sản phẩm, gọi Backend /api/v1/catalog/products (quyền
+ * products.*). Site đọc sản phẩm đang bán qua features/catalog-public.
+ *
+ * - `slug` để trống khi tạo → Backend tự sinh từ tên; để trống khi sửa → giữ slug cũ.
+ * - `mediaIds`/`modifierGroupIds` là danh sách CÓ THỨ TỰ, gửi lên thay thế toàn bộ.
+ * - Xóa sản phẩm cũng gỡ nó khỏi mọi thực đơn (đơn hàng cũ giữ bản chụp riêng).
  */
-const STORAGE_KEY = "tayho-admin-products";
-const MOCK_DELAY_MS = 300;
 
-function delay(ms: number = MOCK_DELAY_MS): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+/** ProductResponse của Backend. */
+type ProductDto = {
+  id: string;
+  name: string;
+  slug: string;
+  categoryId: string;
+  price: number;
+  oldPrice: number | null;
+  description: string | null;
+  isActive: boolean;
+  badge: string | null;
+  rating: number | null;
+  ratingCount: number | null;
+  mediaIds: string[];
+  modifierGroupIds: string[];
+};
+
+function toManagedProduct(dto: ProductDto): ManagedProduct {
+  return {
+    id: dto.id,
+    name: dto.name,
+    slug: dto.slug,
+    categoryId: dto.categoryId,
+    price: dto.price,
+    oldPrice: dto.oldPrice ?? undefined,
+    description: dto.description ?? undefined,
+    status: dto.isActive ? "active" : "inactive",
+    badge: dto.badge ?? undefined,
+    rating: dto.rating ?? undefined,
+    ratingCount: dto.ratingCount ?? undefined,
+    mediaIds: dto.mediaIds,
+    modifierGroupIds: dto.modifierGroupIds,
+  };
 }
 
-function readStore(): ManagedProduct[] {
-  if (typeof window === "undefined") {
-    return SEED_PRODUCTS;
-  }
+export type ProductUpsertInput = Omit<ManagedProduct, "id">;
 
-  try {
-    const saved = window.localStorage.getItem(STORAGE_KEY);
-
-    if (saved) {
-      const parsed: unknown = JSON.parse(saved);
-
-      if (Array.isArray(parsed)) {
-        return parsed as ManagedProduct[];
-      }
-    }
-  } catch (error) {
-    console.error("Không thể đọc dữ liệu sản phẩm admin:", error);
-  }
-
-  return SEED_PRODUCTS;
-}
-
-function writeStore(products: ManagedProduct[]): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-  } catch (error) {
-    console.error("Không thể lưu dữ liệu sản phẩm admin:", error);
-  }
+function toRequest(payload: ProductUpsertInput) {
+  return {
+    name: payload.name,
+    slug: payload.slug.trim() || null,
+    categoryId: payload.categoryId,
+    price: payload.price,
+    oldPrice: payload.oldPrice ?? null,
+    description: payload.description?.trim() || null,
+    isActive: payload.status === "active",
+    badge: payload.badge?.trim() || null,
+    rating: payload.rating ?? null,
+    ratingCount: payload.ratingCount ?? null,
+    mediaIds: payload.mediaIds,
+    modifierGroupIds: payload.modifierGroupIds,
+  };
 }
 
 export async function listProducts(): Promise<ManagedProduct[]> {
-  await delay();
-  return readStore();
-}
-
-export async function getProductById(id: string): Promise<ManagedProduct | null> {
-  await delay();
-  return readStore().find((product) => product.id === id) ?? null;
-}
-
-export async function createProduct(
-  payload: Omit<ManagedProduct, "id">,
-): Promise<ManagedProduct> {
-  await delay();
-
-  const newProduct: ManagedProduct = { ...payload, id: `prod-${Date.now()}` };
-
-  writeStore([...readStore(), newProduct]);
-
-  return newProduct;
-}
-
-export async function updateProduct(
-  id: string,
-  payload: Omit<ManagedProduct, "id">,
-): Promise<ManagedProduct> {
-  await delay();
-
-  const updatedProduct: ManagedProduct = { ...payload, id };
-
-  writeStore(readStore().map((product) => (product.id === id ? updatedProduct : product)));
-
-  return updatedProduct;
-}
-
-export async function deleteProduct(id: string): Promise<void> {
-  await delay();
-
-  writeStore(readStore().filter((product) => product.id !== id));
-}
-
-export type ProductUpsertInput = {
-  /** Có id khớp sản phẩm hiện có → cập nhật; không có/không khớp → tạo mới. */
-  id?: string;
-  name: string;
-  categoryId: string;
-  price: number;
-  description?: string;
-  status: ManagedProduct["status"];
-};
-
-/**
- * Tạo/cập nhật nhiều sản phẩm trong 1 lần đọc-ghi store — dùng cho Import
- * hàng loạt (xem features/products/import-export/product-import.service.ts).
- * Chỉ ghi đè các field trong ProductUpsertInput; các field site-display
- * (mediaIds, rating, ratingCount, oldPrice, badge) giữ nguyên khi cập nhật.
- */
-export async function bulkUpsertProducts(
-  items: ProductUpsertInput[],
-): Promise<ManagedProduct[]> {
-  await delay();
-
-  const currentById = new Map(readStore().map((product) => [product.id, product]));
-
-  items.forEach((item, index) => {
-    const existing = item.id ? currentById.get(item.id) : undefined;
-
-    if (existing) {
-      currentById.set(existing.id, {
-        ...existing,
-        name: item.name,
-        categoryId: item.categoryId,
-        price: item.price,
-        description: item.description,
-        status: item.status,
-      });
-    } else {
-      const newId = `prod-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 7)}`;
-
-      currentById.set(newId, {
-        id: newId,
-        name: item.name,
-        categoryId: item.categoryId,
-        price: item.price,
-        description: item.description,
-        status: item.status,
-        mediaIds: [],
-        modifierGroupIds: [],
-      });
-    }
+  const page = await adminApi.get<PaginatedResult<ProductDto>>("/catalog/products", {
+    params: { pageSize: ADMIN_LIST_PAGE_SIZE },
   });
+  return page.items.map(toManagedProduct);
+}
 
-  const merged = Array.from(currentById.values());
-  writeStore(merged);
+export async function countProducts(): Promise<number> {
+  return (await adminApi.get<PaginatedResult<ProductDto>>("/catalog/products", { params: { pageSize: 1 } })).totalItems;
+}
 
-  return merged;
+export async function getProductById(id: string): Promise<ManagedProduct> {
+  return toManagedProduct(await adminApi.get<ProductDto>(`/catalog/products/${id}`));
+}
+
+export async function createProduct(payload: ProductUpsertInput): Promise<ManagedProduct> {
+  return toManagedProduct(await adminApi.post<ProductDto>("/catalog/products", toRequest(payload)));
+}
+
+export async function updateProduct(id: string, payload: ProductUpsertInput): Promise<ManagedProduct> {
+  return toManagedProduct(await adminApi.put<ProductDto>(`/catalog/products/${id}`, toRequest(payload)));
+}
+
+export function deleteProduct(id: string): Promise<void> {
+  return adminApi.delete<void>(`/catalog/products/${id}`);
 }

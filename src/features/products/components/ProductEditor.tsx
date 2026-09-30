@@ -8,6 +8,7 @@ import {
   adminFieldLabelClassName,
 } from "@/components/admin/templates/formFieldClassName";
 import type { EntityStatus } from "@/components/admin/templates/StatusBadge";
+import { useAdminAuth } from "@/features/admin-auth";
 
 import { useProductEditor } from "../hooks/useProductEditor";
 
@@ -25,20 +26,24 @@ export function ProductEditor({ id }: ProductEditorProps) {
     mediaOptions,
     modifierGroupOptions,
     isLoading,
+    loadError,
     isEditMode,
     handleSave,
     handleDelete,
     goToExplore,
   } = useProductEditor({ id });
+  const { hasPermission } = useAdminAuth();
 
   return (
     <DataEditor
       title={isEditMode ? "Sửa sản phẩm" : "Thêm sản phẩm"}
       backHref="/admin/catalog/products"
       isLoading={isLoading}
+      loadError={loadError}
       onSave={handleSave}
       onSaved={goToExplore}
-      onDelete={isEditMode ? handleDelete : undefined}
+      onDelete={isEditMode && hasPermission("products.delete") ? handleDelete : undefined}
+      deleteConfirmDescription="Sản phẩm cũng bị gỡ khỏi mọi thực đơn. Đơn hàng cũ không bị ảnh hưởng. Hành động này không thể hoàn tác."
       onDeleted={goToExplore}
     >
       <label className={adminFieldLabelClassName}>
@@ -48,6 +53,19 @@ export function ProductEditor({ id }: ProductEditorProps) {
           required
           value={form.name}
           onChange={(event) => updateField("name", event.target.value)}
+          className={adminFieldInputClassName}
+        />
+      </label>
+
+      <label className={adminFieldLabelClassName}>
+        Slug (đường dẫn /thuc-don/…)
+        <input
+          type="text"
+          value={form.slug}
+          onChange={(event) => updateField("slug", event.target.value.trim().toLowerCase())}
+          placeholder={isEditMode ? "Để trống = giữ slug hiện tại" : "Để trống = tự tạo từ tên sản phẩm"}
+          pattern="[a-z0-9]+(-[a-z0-9]+)*"
+          title="Chữ thường không dấu, số và dấu gạch ngang, vd. banh-cuon-nhan-thit"
           className={adminFieldInputClassName}
         />
       </label>

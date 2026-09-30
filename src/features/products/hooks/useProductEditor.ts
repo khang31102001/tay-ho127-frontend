@@ -3,13 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import type { ManagedCategory } from "@/features/categories";
-import type { ManagedMedia } from "@/features/media";
-import type { ManagedModifierGroup } from "@/features/modifier-groups";
-import type { ManagedProduct } from "../types/product.types";
 import { listCategories } from "@/features/categories";
 import { listMedia } from "@/features/media";
 import { listModifierGroups } from "@/features/modifier-groups";
+import { useAsyncData } from "@/hooks/useAsyncData";
+
+import type { ManagedProduct } from "../types/product.types";
 import {
   createProduct,
   deleteProduct,
@@ -21,6 +20,7 @@ export type ProductFormValue = Omit<ManagedProduct, "id">;
 
 const EMPTY_FORM: ProductFormValue = {
   name: "",
+  slug: "",
   categoryId: "",
   price: 0,
   description: "",
@@ -38,40 +38,24 @@ export function useProductEditor({ id }: UseProductEditorParams) {
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<ProductFormValue>(EMPTY_FORM);
-  const [categoryOptions, setCategoryOptions] = useState<ManagedCategory[]>([]);
-  const [mediaOptions, setMediaOptions] = useState<ManagedMedia[]>([]);
-  const [modifierGroupOptions, setModifierGroupOptions] = useState<ManagedModifierGroup[]>([]);
-  const [isLoading, setIsLoading] = useState(isEditMode);
+
+  const options = useAsyncData(
+    () => Promise.all([listCategories(), listMedia(), listModifierGroups()]),
+    [],
+    { fallbackError: "Không thể tải danh mục / media / nhóm tùy chọn." },
+  );
+  const existing = useAsyncData(() => getProductById(id ?? ""), [id], {
+    enabled: isEditMode,
+    fallbackError: "Không thể tải sản phẩm.",
+  });
+
+  const [categoryOptions, mediaOptions, modifierGroupOptions] = options.data ?? [[], [], []];
 
   useEffect(() => {
-    listCategories().then(setCategoryOptions);
-    listMedia().then(setMediaOptions);
-    listModifierGroups().then(setModifierGroupOptions);
-  }, []);
-
-  useEffect(() => {
-    if (!isEditMode) {
-      return;
-    }
-
-    let isCancelled = false;
-
-    getProductById(id).then((product) => {
-      if (isCancelled) {
-        return;
-      }
-
-      if (product) {
-        setForm(product);
-      }
-
-      setIsLoading(false);
-    });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [id, isEditMode]);
+    if (!existing.data) return;
+    // Giữ nguyên cả các field chỉ hiển thị trên Site (giá gốc, nhãn, đánh giá) để lưu lại không làm mất.
+    setForm(existing.data);
+  }, [existing.data]);
 
   function updateField<K extends keyof ProductFormValue>(
     field: K,
@@ -132,7 +116,8 @@ export function useProductEditor({ id }: UseProductEditorParams) {
     categoryOptions,
     mediaOptions,
     modifierGroupOptions,
-    isLoading,
+    isLoading: existing.isLoading,
+    loadError: existing.error ?? options.error,
     isEditMode,
     handleSave,
     handleDelete,

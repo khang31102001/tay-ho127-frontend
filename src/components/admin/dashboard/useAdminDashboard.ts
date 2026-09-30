@@ -1,6 +1,6 @@
 "use client";
 
-import { listProducts } from "@/features/products";
+import { countProducts } from "@/features/products";
 import { countRoles } from "@/features/roles";
 import { countUsers } from "@/features/users";
 import { useAsyncData } from "@/hooks/useAsyncData";
@@ -19,7 +19,7 @@ const valueOrNull = (result: PromiseSettledResult<number>) => (result.status ===
  */
 async function loadDashboardStats(): Promise<DashboardStats> {
   const [productCount, userCount, roleCount] = await Promise.allSettled([
-    listProducts().then((products) => products.length),
+    countProducts(),
     countUsers(),
     countRoles(),
   ]);

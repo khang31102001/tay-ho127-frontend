@@ -3,10 +3,13 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { useAsyncData } from "@/hooks/useAsyncData";
+
 import {
   createModifierGroup,
   deleteModifierGroup,
   getModifierGroupById,
+  NEW_OPTION_ID_PREFIX,
   updateModifierGroup,
 } from "../services/modifier-group.service";
 import type { ModifierOption, ModifierSelectionType } from "../types/modifier-group.types";
@@ -27,7 +30,8 @@ const EMPTY_FORM: ModifierGroupFormValue = {
 
 function createEmptyOption(): ModifierOption {
   return {
-    id: `modopt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    // Id tạm chỉ để làm React key — service gửi id = null cho Backend cấp id thật.
+    id: `${NEW_OPTION_ID_PREFIX}${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     label: "",
     priceAdjustment: 0,
     isDefault: false,
@@ -43,29 +47,17 @@ export function useModifierGroupEditor({ id }: UseModifierGroupEditorParams) {
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<ModifierGroupFormValue>(EMPTY_FORM);
-  const [isLoading, setIsLoading] = useState(isEditMode);
+
+  const existing = useAsyncData(() => getModifierGroupById(id ?? ""), [id], {
+    enabled: isEditMode,
+    fallbackError: "Không thể tải nhóm tùy chọn món.",
+  });
 
   useEffect(() => {
-    if (!isEditMode) return;
-
-    let isCancelled = false;
-
-    getModifierGroupById(id).then((group) => {
-      if (isCancelled || !group) return;
-
-      setForm({
-        name: group.name,
-        selectionType: group.selectionType,
-        isRequired: group.isRequired,
-        options: group.options,
-      });
-      setIsLoading(false);
-    });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [id, isEditMode]);
+    if (!existing.data) return;
+    const { name, selectionType, isRequired, options } = existing.data;
+    setForm({ name, selectionType, isRequired, options });
+  }, [existing.data]);
 
   function updateField<K extends keyof ModifierGroupFormValue>(field: K, value: ModifierGroupFormValue[K]) {
     setForm((previous) => ({ ...previous, [field]: value }));
@@ -135,7 +127,8 @@ export function useModifierGroupEditor({ id }: UseModifierGroupEditorParams) {
     addOption,
     updateOption,
     removeOption,
-    isLoading,
+    isLoading: existing.isLoading,
+    loadError: existing.error,
     isEditMode,
     handleSave,
     handleDelete,

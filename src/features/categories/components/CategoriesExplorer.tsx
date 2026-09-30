@@ -2,6 +2,7 @@
 
 import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templates/DataExplorer/DataExplorer";
 import { StatusBadge } from "@/components/admin/templates/StatusBadge";
+import { useAdminAuth } from "@/features/admin-auth";
 
 import { useCategoriesExplorer, type CategoryRow } from "../hooks/useCategoriesExplorer";
 
@@ -17,7 +18,8 @@ const columns: DataExplorerColumn<CategoryRow>[] = [
 ];
 
 export function CategoriesExplorer() {
-  const { rows, isLoading, handleDelete } = useCategoriesExplorer();
+  const { rows, isLoading, loadError, handleDelete } = useCategoriesExplorer();
+  const { hasPermission } = useAdminAuth();
 
   return (
     <DataExplorer<CategoryRow>
@@ -28,11 +30,11 @@ export function CategoriesExplorer() {
       getRowId={(row) => row.id}
       getSearchableText={(row) => `${row.name} ${row.parentName}`}
       searchPlaceholder="Tìm danh mục..."
-      createHref="/admin/catalog/categories/new"
+      createHref={hasPermission("categories.create") ? "/admin/catalog/categories/new" : undefined}
       createLabel="Thêm danh mục"
       editHref={(row) => `/admin/catalog/categories/${row.id}`}
-      onDelete={handleDelete}
-      emptyState="Chưa có danh mục nào."
+      onDelete={hasPermission("categories.delete") ? handleDelete : undefined}
+      emptyState={loadError ?? "Chưa có danh mục nào."}
     />
   );
 }

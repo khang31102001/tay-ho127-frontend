@@ -1,90 +1,62 @@
+import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/lib/http/admin-api";
+import type { PaginatedResult } from "@/lib/http/api-types";
+
 import type { ManagedCategory } from "../types/category.types";
-import { SEED_CATEGORIES } from "../mocks/category.mock";
 
 /**
- * MOCK CONTRACT: chưa có backend quản lý danh mục thật.
- * Dữ liệu seed (xem ../mocks/category.mock.ts) + đồng bộ 2 chiều với
- * localStorage để không mất khi reload trang. Khi có backend thật, chỉ cần
- * thay nội dung các hàm dưới đây.
+ * Admin → Catalog → Danh mục, gọi Backend /api/v1/catalog/categories (quyền
+ * categories.*). Cây tối đa 3 cấp (nhóm → danh mục → danh mục con) — Backend
+ * trả 400 nếu vượt, 409 khi xóa danh mục còn danh mục con/sản phẩm.
+ * Site đọc danh mục đang bán qua features/catalog-public, không qua file này.
  */
-const STORAGE_KEY = "tayho-admin-categories";
-const MOCK_DELAY_MS = 300;
 
-function delay(ms: number = MOCK_DELAY_MS): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+/** CategoryResponse của Backend. */
+type CategoryDto = {
+  id: string;
+  name: string;
+  parentId: string | null;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+function toManagedCategory(dto: CategoryDto): ManagedCategory {
+  return {
+    id: dto.id,
+    name: dto.name,
+    parentId: dto.parentId,
+    sortOrder: dto.sortOrder,
+    status: dto.isActive ? "active" : "inactive",
+  };
 }
 
-function readStore(): ManagedCategory[] {
-  if (typeof window === "undefined") {
-    return SEED_CATEGORIES;
-  }
-
-  try {
-    const saved = window.localStorage.getItem(STORAGE_KEY);
-
-    if (saved) {
-      const parsed: unknown = JSON.parse(saved);
-
-      if (Array.isArray(parsed)) {
-        return parsed as ManagedCategory[];
-      }
-    }
-  } catch (error) {
-    console.error("Không thể đọc dữ liệu danh mục admin:", error);
-  }
-
-  return SEED_CATEGORIES;
-}
-
-function writeStore(categories: ManagedCategory[]): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(categories));
-  } catch (error) {
-    console.error("Không thể lưu dữ liệu danh mục admin:", error);
-  }
+function toRequest(payload: Omit<ManagedCategory, "id">) {
+  return {
+    name: payload.name,
+    parentId: payload.parentId,
+    sortOrder: payload.sortOrder,
+    isActive: payload.status === "active",
+  };
 }
 
 export async function listCategories(): Promise<ManagedCategory[]> {
-  await delay();
-  return readStore();
+  const page = await adminApi.get<PaginatedResult<CategoryDto>>("/catalog/categories", {
+    params: { pageSize: ADMIN_LIST_PAGE_SIZE },
+  });
+  return page.items.map(toManagedCategory);
 }
 
-export async function getCategoryById(id: string): Promise<ManagedCategory | null> {
-  await delay();
-  return readStore().find((category) => category.id === id) ?? null;
+export async function getCategoryById(id: string): Promise<ManagedCategory> {
+  return toManagedCategory(await adminApi.get<CategoryDto>(`/catalog/categories/${id}`));
 }
 
-export async function createCategory(
-  payload: Omit<ManagedCategory, "id">,
-): Promise<ManagedCategory> {
-  await delay();
-
-  const newCategory: ManagedCategory = { ...payload, id: `cat-${Date.now()}` };
-
-  writeStore([...readStore(), newCategory]);
-
-  return newCategory;
+export async function createCategory(payload: Omit<ManagedCategory, "id">): Promise<ManagedCategory> {
+  return toManagedCategory(await adminApi.post<CategoryDto>("/catalog/categories", toRequest(payload)));
 }
 
-export async function updateCategory(
-  id: string,
-  payload: Omit<ManagedCategory, "id">,
-): Promise<ManagedCategory> {
-  await delay();
-
-  const updatedCategory: ManagedCategory = { ...payload, id };
-
-  writeStore(readStore().map((category) => (category.id === id ? updatedCategory : category)));
-
-  return updatedCategory;
+export async function updateCategory(id: string, payload: Omit<ManagedCategory, "id">): Promise<ManagedCategory> {
+  return toManagedCategory(await adminApi.put<CategoryDto>(`/catalog/categories/${id}`, toRequest(payload)));
 }
 
-export async function deleteCategory(id: string): Promise<void> {
-  await delay();
-
-  writeStore(readStore().filter((category) => category.id !== id));
+export function deleteCategory(id: string): Promise<void> {
+  return adminApi.delete<void>(`/catalog/categories/${id}`);
 }

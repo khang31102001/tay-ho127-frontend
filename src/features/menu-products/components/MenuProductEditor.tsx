@@ -5,6 +5,7 @@ import {
   adminFieldInputClassName,
   adminFieldLabelClassName,
 } from "@/components/admin/templates/formFieldClassName";
+import { useAdminAuth } from "@/features/admin-auth";
 import { formatCurrency } from "@/lib/format-currency";
 
 import { useMenuProductEditor } from "../hooks/useMenuProductEditor";
@@ -21,20 +22,23 @@ export function MenuProductEditor({ id }: MenuProductEditorProps) {
     productOptions,
     selectedProduct,
     isLoading,
+    loadError,
     isEditMode,
     handleSave,
     handleDelete,
     goToExplore,
   } = useMenuProductEditor({ id });
+  const { hasPermission } = useAdminAuth();
 
   return (
     <DataEditor
       title={isEditMode ? "Sửa liên kết Thực đơn ↔ Sản phẩm" : "Thêm liên kết"}
       backHref="/admin/catalog/menu-products"
       isLoading={isLoading}
+      loadError={loadError}
       onSave={handleSave}
       onSaved={goToExplore}
-      onDelete={isEditMode ? handleDelete : undefined}
+      onDelete={isEditMode && hasPermission("sales-menus.delete") ? handleDelete : undefined}
       onDeleted={goToExplore}
     >
       <div className="grid gap-4 sm:grid-cols-2">

@@ -1,32 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useAsyncData } from "@/hooks/useAsyncData";
 
 import { deleteModifierGroup, listModifierGroups } from "../services/modifier-group.service";
 import type { ManagedModifierGroup } from "../types/modifier-group.types";
 
 export function useModifierGroupsExplorer() {
-  const [groups, setGroups] = useState<ManagedModifierGroup[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const loadGroups = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const data = await listModifierGroups();
-      setGroups(data);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadGroups();
-  }, [loadGroups]);
+  const { data, isLoading, error, reload } = useAsyncData(listModifierGroups, [], {
+    fallbackError: "Không thể tải nhóm tùy chọn món.",
+  });
 
   async function handleDelete(group: ManagedModifierGroup) {
     await deleteModifierGroup(group.id);
-    await loadGroups();
+    await reload();
   }
 
-  return { rows: groups, isLoading, handleDelete };
+  return { rows: data ?? [], isLoading, loadError: error, handleDelete };
 }

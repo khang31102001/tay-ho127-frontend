@@ -3,17 +3,17 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import type { ManagedMenu } from "@/features/menus";
-import type { ManagedMenuProduct } from "../types/menu-product.types";
-import type { ManagedProduct } from "@/features/products";
 import { listMenus } from "@/features/menus";
+import { listProducts } from "@/features/products";
+import { useAsyncData } from "@/hooks/useAsyncData";
+
+import type { ManagedMenuProduct } from "../types/menu-product.types";
 import {
   createMenuProduct,
   deleteMenuProduct,
   getMenuProductById,
   updateMenuProduct,
 } from "../services/menu-product.service";
-import { listProducts } from "@/features/products";
 
 export type MenuProductFormValue = Omit<ManagedMenuProduct, "id">;
 
@@ -34,38 +34,22 @@ export function useMenuProductEditor({ id }: UseMenuProductEditorParams) {
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<MenuProductFormValue>(EMPTY_FORM);
-  const [menuOptions, setMenuOptions] = useState<ManagedMenu[]>([]);
-  const [productOptions, setProductOptions] = useState<ManagedProduct[]>([]);
-  const [isLoading, setIsLoading] = useState(isEditMode);
+
+  const options = useAsyncData(() => Promise.all([listMenus(), listProducts()]), [], {
+    fallbackError: "Không thể tải thực đơn / sản phẩm.",
+  });
+  const existing = useAsyncData(() => getMenuProductById(id ?? ""), [id], {
+    enabled: isEditMode,
+    fallbackError: "Không thể tải liên kết.",
+  });
+
+  const [menuOptions, productOptions] = options.data ?? [[], []];
 
   useEffect(() => {
-    listMenus().then(setMenuOptions);
-    listProducts().then(setProductOptions);
-  }, []);
-
-  useEffect(() => {
-    if (!isEditMode) {
-      return;
-    }
-
-    let isCancelled = false;
-
-    getMenuProductById(id).then((item) => {
-      if (isCancelled) {
-        return;
-      }
-
-      if (item) {
-        setForm(item);
-      }
-
-      setIsLoading(false);
-    });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [id, isEditMode]);
+    if (!existing.data) return;
+    const { menuId, productId, priceOverride, sortOrder, isAvailable } = existing.data;
+    setForm({ menuId, productId, priceOverride, sortOrder, isAvailable });
+  }, [existing.data]);
 
   function updateField<K extends keyof MenuProductFormValue>(
     field: K,
@@ -100,7 +84,8 @@ export function useMenuProductEditor({ id }: UseMenuProductEditorParams) {
     menuOptions,
     productOptions,
     selectedProduct,
-    isLoading,
+    isLoading: existing.isLoading,
+    loadError: existing.error ?? options.error,
     isEditMode,
     handleSave,
     handleDelete,

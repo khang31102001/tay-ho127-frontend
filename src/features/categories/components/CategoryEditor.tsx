@@ -6,6 +6,7 @@ import {
   adminFieldLabelClassName,
 } from "@/components/admin/templates/formFieldClassName";
 import type { EntityStatus } from "@/components/admin/templates/StatusBadge";
+import { useAdminAuth } from "@/features/admin-auth";
 
 import { useCategoryEditor } from "../hooks/useCategoryEditor";
 
@@ -19,20 +20,24 @@ export function CategoryEditor({ id }: CategoryEditorProps) {
     updateField,
     parentOptions,
     isLoading,
+    loadError,
     isEditMode,
     handleSave,
     handleDelete,
     goToExplore,
   } = useCategoryEditor({ id });
+  const { hasPermission } = useAdminAuth();
 
   return (
     <DataEditor
       title={isEditMode ? "Sửa danh mục" : "Thêm danh mục"}
       backHref="/admin/catalog/categories"
       isLoading={isLoading}
+      loadError={loadError}
       onSave={handleSave}
       onSaved={goToExplore}
-      onDelete={isEditMode ? handleDelete : undefined}
+      onDelete={isEditMode && hasPermission("categories.delete") ? handleDelete : undefined}
+      deleteConfirmDescription="Chỉ xóa được danh mục không còn danh mục con và sản phẩm. Hành động này không thể hoàn tác."
       onDeleted={goToExplore}
     >
       <label className={adminFieldLabelClassName}>
