@@ -1,11 +1,9 @@
 import { getDeliveryMethodByCode, resolveDeliveryFee } from "@/features/delivery-methods";
 import { getPaymentMethodByCode, isPaymentMethodEligible } from "@/features/payment-methods";
-// Đi thẳng vào service của Catalog (không qua barrel Admin) — lý do xem
-// features/menu/services/menu.service.ts. Đây là nguồn giá SẢN PHẨM duy nhất
-// được tin cậy khi tạo Order (xem CreateOrderInput bên dưới).
-import { getProductById } from "@/features/products/services/product.service";
+// Catalog đang bán (Backend, không cần đăng nhập) — nguồn giá SẢN PHẨM duy
+// nhất được tin cậy khi tạo Order (xem CreateOrderInput bên dưới).
+import { getPublicModifierGroupById, getPublicProductById } from "@/features/catalog-public";
 import { listMedia } from "@/features/media/services/public-media.service";
-import { getModifierGroupById } from "@/features/modifier-groups/services/modifier-group.service";
 import { getOrderOptionGroupById } from "@/features/order-options/services/order-option.service";
 import { incrementPromotionUsage } from "@/features/promotions/services/promotion.service";
 
@@ -128,7 +126,7 @@ async function resolveOrderItemModifiers(
 
   const snapshots = await Promise.all(
     modifierInputs.map(async (input) => {
-      const group = await getModifierGroupById(input.groupId);
+      const group = await getPublicModifierGroupById(input.groupId);
       const option = group?.options.find((candidate) => candidate.id === input.optionId);
       if (!group || !option) {
         return null;
@@ -201,7 +199,7 @@ async function resolveOrderItems(itemInputs: CreateOrderItemInput[]): Promise<Or
         throw new Error("Số lượng sản phẩm không hợp lệ.");
       }
 
-      const product = await getProductById(input.productId);
+      const product = await getPublicProductById(input.productId);
       if (!product || product.status !== "active") {
         throw new Error(`Sản phẩm không khả dụng: ${input.productId}`);
       }

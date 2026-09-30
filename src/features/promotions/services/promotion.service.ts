@@ -1,9 +1,7 @@
-// Đi thẳng vào service của Catalog (không qua barrel Admin — barrel còn
-// re-export "use client" Explorer/Editor) — promotion.service.ts được
-// discount-code.service.ts (Checkout, site công khai) import trực tiếp, giống
-// lý do order.service.ts đi thẳng vào product.service.ts/category.service.ts.
-import { getProductById } from "@/features/products/services/product.service";
-import { listCategories } from "@/features/categories/services/category.service";
+// Catalog đang bán (Backend, không cần đăng nhập) — promotion.service.ts được
+// discount-code.service.ts (Checkout, site công khai) gọi từ trình duyệt của
+// khách nên không dùng service Admin của features/products|categories.
+import { getPublicProductById, listPublicCategories } from "@/features/catalog-public";
 import type { ManagedCategory } from "@/features/categories/types/category.types";
 import { formatCurrency } from "@/lib/format-currency";
 
@@ -163,8 +161,8 @@ function normalizeCode(rawCode: string): string {
 }
 
 /**
- * Category là cây 3 tầng group → category → subCategory qua `parentId` (xem
- * SEED_CATEGORIES, features/categories) — Product chỉ gắn `categoryId` vào
+ * Category là cây 3 tầng group → category → subCategory qua `parentId` (Catalog
+ * Backend, features/categories) — Product chỉ gắn `categoryId` vào
  * tầng lá (subCategory), nên "áp dụng cho danh mục Bánh cuốn" (tầng giữa)
  * phải tính luôn các subCategory con, không chỉ so khớp categoryId trực tiếp.
  * Trả về chính categoryId + toàn bộ id tổ tiên của nó.
@@ -195,7 +193,7 @@ async function calculateEligibleSubtotal(
 
   const categoriesById =
     categoryIds.length > 0
-      ? new Map((await listCategories()).map((category) => [category.id, category]))
+      ? new Map((await listPublicCategories()).map((category) => [category.id, category]))
       : new Map<string, ManagedCategory>();
 
   const eligibleFlags = await Promise.all(
@@ -208,7 +206,7 @@ async function calculateEligibleSubtotal(
         return false;
       }
 
-      const product = await getProductById(item.productId);
+      const product = await getPublicProductById(item.productId);
       if (!product) {
         return false;
       }

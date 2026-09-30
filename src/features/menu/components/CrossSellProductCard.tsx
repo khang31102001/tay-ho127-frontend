@@ -23,7 +23,7 @@ type CrossSellProductCardProps = {
  *
  * Chỉ 1 nút "+" (không có "Đặt ngay", không hiện rating) để vừa không gian
  * hẹp — khớp đúng ví dụ nghiệp vụ gốc "[+ Thêm] → thêm trực tiếp vào Cart".
- * Hành vi thêm-vào-giỏ giữ nguyên như ProductCard (productId = item.slug).
+ * Hành vi thêm-vào-giỏ giữ nguyên như ProductCard (productId = item.productId).
  */
 export function CrossSellProductCard({ item }: CrossSellProductCardProps) {
   const { addToCart } = useCart();
@@ -31,7 +31,7 @@ export function CrossSellProductCard({ item }: CrossSellProductCardProps) {
   const imageRef = useRef<HTMLImageElement>(null);
 
   const cartProduct = {
-    productId: item.slug,
+    productId: item.productId,
     name: item.name,
     basePrice: item.price,
     image: item.image,

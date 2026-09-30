@@ -1,23 +1,19 @@
 /**
- * Import thẳng vào services/types của từng feature Catalog thay vì qua
- * index.ts (barrel) — index.ts của các feature Admin còn re-export cả
- * component "use client" (Explorer/Editor). Vì đây là code chạy trong
- * Server Component của Site (trang chủ, /thuc-don), import qua barrel sẽ
- * kéo theo toàn bộ UI Admin (DataExplorer/DataEditor + các Editor/Explorer)
- * vào bundle JS công khai — đã đo được ~18kB gzip dư ra trên cả 2 trang.
- * Đi thẳng vào service/type tránh hoàn toàn việc này mà không đổi API.
+ * Import thẳng type của từng feature Catalog thay vì qua index.ts (barrel) —
+ * index.ts của các feature Admin còn re-export cả component "use client"
+ * (Explorer/Editor). Vì đây là code chạy trong Server Component của Site
+ * (trang chủ, /thuc-don), import qua barrel sẽ kéo theo toàn bộ UI Admin
+ * (DataExplorer/DataEditor + các Editor/Explorer) vào bundle JS công khai —
+ * đã đo được ~18kB gzip dư ra trên cả 2 trang.
  */
-import { listMenus } from "@/features/menus/services/menu.service";
+import { loadPublicCatalog } from "@/features/catalog-public";
 import type { ManagedMenu } from "@/features/menus/types/menu.types";
-import { listMenuProducts } from "@/features/menu-products/services/menu-product.service";
 import type { ManagedMenuProduct } from "@/features/menu-products/types/menu-product.types";
-import { listProducts } from "@/features/products/services/product.service";
 import type { ManagedProduct } from "@/features/products/types/product.types";
-import { listCategories } from "@/features/categories/services/category.service";
 import type { ManagedCategory } from "@/features/categories/types/category.types";
 import { listMedia } from "@/features/media/services/public-media.service";
 import type { ManagedMedia } from "@/features/media/types/media.types";
-import { listModifierGroupsByIds } from "@/features/modifier-groups/services/modifier-group.service";
+import type { ManagedModifierGroup } from "@/features/modifier-groups/types/modifier-group.types";
 import { normalizeText } from "@/lib/normalize-text";
 
 import type {
@@ -32,14 +28,15 @@ import type {
 } from "../types/menu.types";
 
 /**
- * MOCK CONTRACT: 2 Menu thật chi phối Customer Site, xem seed tại
- * features/menus/mocks/menu.mock.ts. Khi có backend thật, chỉ cần thay nội
- * dung các hàm dưới đây bằng lời gọi API thật — component/page gọi
- * fetchMenu()/fetchFeaturedMenu() không cần đổi.
+ * 3 thực đơn bán (SalesMenu, Backend Catalog) chi phối Customer Site, tra theo
+ * `code` (Admin → Catalog → Thực đơn; code không đổi được sau khi tạo):
+ * /thuc-don, carousel "Món yêu thích" ở trang chủ, "Gợi ý thêm món" ở giỏ hàng.
+ * Dữ liệu là snapshot catalog đang bán (features/catalog-public) — thực đơn
+ * ngừng hoạt động hoặc món ngừng bán/hết hàng không có trong snapshot.
  */
-const SITE_MAIN_MENU_ID = "menu-thuc-don-chinh";
-const SITE_FAVORITES_MENU_ID = "menu-mon-yeu-thich";
-const SITE_CROSS_SELL_MENU_ID = "menu-goi-y-them";
+const SITE_MAIN_MENU_CODE = "thuc-don-chinh";
+const SITE_FAVORITES_MENU_CODE = "mon-yeu-thich";
+const SITE_CROSS_SELL_MENU_CODE = "goi-y-them";
 const DEFAULT_PRODUCT_IMAGE = "/images/banh-cuon-dish.jpg";
 const RELATED_PRODUCTS_LIMIT = 4;
 
@@ -49,24 +46,31 @@ interface CatalogSnapshot {
   productById: Map<string, ManagedProduct>;
   categoryById: Map<string, ManagedCategory>;
   mediaById: Map<string, ManagedMedia>;
+  modifierGroups: ManagedModifierGroup[];
 }
 
 async function loadCatalogSnapshot(): Promise<CatalogSnapshot> {
-  const [menus, menuProducts, products, categories, media] = await Promise.all([
-    listMenus(),
-    listMenuProducts(),
-    listProducts(),
-    listCategories(),
-    listMedia(),
-  ]);
+  const [catalog, media] = await Promise.all([loadPublicCatalog(), listMedia()]);
 
   return {
-    menus,
-    menuProducts,
-    productById: new Map(products.map((product) => [product.id, product])),
-    categoryById: new Map(categories.map((category) => [category.id, category])),
+    menus: catalog.menus,
+    menuProducts: catalog.menuProducts,
+    productById: new Map(catalog.products.map((product) => [product.id, product])),
+    categoryById: new Map(catalog.categories.map((category) => [category.id, category])),
     mediaById: new Map(media.map((item) => [item.id, item])),
+    modifierGroups: catalog.modifierGroups,
   };
+}
+
+/** Các dòng Menu-SP còn hàng của thực đơn có `code`, đúng thứ tự hiển thị. */
+function listMenuRows(menu: ManagedMenu | undefined, menuProducts: ManagedMenuProduct[]): ManagedMenuProduct[] {
+  if (!menu) {
+    return [];
+  }
+
+  return menuProducts
+    .filter((row) => row.menuId === menu.id && row.isAvailable)
+    .sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
 function resolveProductImage(
@@ -120,11 +124,8 @@ type MutableGroup = Omit<MenuGroup, "categories"> & { categories: MutableCategor
 export async function fetchMenu(): Promise<MenuResponse> {
   const { menus, menuProducts, productById, categoryById, mediaById } = await loadCatalogSnapshot();
 
-  const siteMenu = menus.find((menu) => menu.id === SITE_MAIN_MENU_ID);
-
-  const linkedRows = menuProducts
-    .filter((row) => row.menuId === SITE_MAIN_MENU_ID && row.isAvailable)
-    .sort((a, b) => a.sortOrder - b.sortOrder);
+  const siteMenu = menus.find((menu) => menu.code === SITE_MAIN_MENU_CODE);
+  const linkedRows = listMenuRows(siteMenu, menuProducts);
 
   const groupNodes = new Map<string, MutableGroup>();
 
@@ -171,7 +172,7 @@ export async function fetchMenu(): Promise<MenuResponse> {
 
     subCategoryNode.products.push({
       id: managedProduct.id,
-      slug: managedProduct.id,
+      slug: managedProduct.slug,
       name: { vi: managedProduct.name },
       productType: managedProduct.badge,
       price: { amount: row.priceOverride ?? managedProduct.price },
@@ -181,7 +182,8 @@ export async function fetchMenu(): Promise<MenuResponse> {
   });
 
   const menu: Menu = {
-    id: siteMenu?.id ?? SITE_MAIN_MENU_ID,
+    id: siteMenu?.id ?? SITE_MAIN_MENU_CODE,
+    code: siteMenu?.code,
     name: siteMenu?.name ?? "Thực đơn",
     groups: Array.from(groupNodes.values()),
     isActive: siteMenu?.status === "active",
@@ -199,11 +201,8 @@ export async function fetchMenu(): Promise<MenuResponse> {
 export async function fetchFeaturedMenu(): Promise<UiProduct[]> {
   const { menus, menuProducts, productById, categoryById, mediaById } = await loadCatalogSnapshot();
 
-  const favoritesMenu = menus.find((menu) => menu.id === SITE_FAVORITES_MENU_ID);
-
-  const linkedRows = menuProducts
-    .filter((row) => row.menuId === (favoritesMenu?.id ?? SITE_FAVORITES_MENU_ID) && row.isAvailable)
-    .sort((a, b) => a.sortOrder - b.sortOrder);
+  const favoritesMenu = menus.find((menu) => menu.code === SITE_FAVORITES_MENU_CODE);
+  const linkedRows = listMenuRows(favoritesMenu, menuProducts);
 
   const items: UiProduct[] = [];
 
@@ -217,7 +216,8 @@ export async function fetchFeaturedMenu(): Promise<UiProduct[]> {
 
     items.push({
       id: items.length + 1,
-      slug: managedProduct.id,
+      productId: managedProduct.id,
+      slug: managedProduct.slug,
       name: managedProduct.name,
       category: resolveMenuCategoryBucket(category?.name ?? ""),
       price: row.priceOverride ?? managedProduct.price,
@@ -234,18 +234,15 @@ export async function fetchFeaturedMenu(): Promise<UiProduct[]> {
 
 /**
  * Danh sách gợi ý "Có thể bạn muốn dùng thêm" cho Cart Page — đọc từ Menu
- * menu-goi-y-them (Admin quản lý qua Catalog → Thực đơn / Liên kết Menu-SP,
- * y hệt cách menu-mon-yeu-thich chi phối carousel trang chủ). KHÔNG hard-code
+ * có code "goi-y-them" (Admin quản lý qua Catalog → Thực đơn / Liên kết
+ * Menu-SP, y hệt cách "mon-yeu-thich" chi phối carousel trang chủ). KHÔNG hard-code
  * danh sách sản phẩm trong UI.
  */
 export async function fetchCrossSellProducts(): Promise<UiProduct[]> {
   const { menus, menuProducts, productById, categoryById, mediaById } = await loadCatalogSnapshot();
 
-  const crossSellMenu = menus.find((menu) => menu.id === SITE_CROSS_SELL_MENU_ID);
-
-  const linkedRows = menuProducts
-    .filter((row) => row.menuId === (crossSellMenu?.id ?? SITE_CROSS_SELL_MENU_ID) && row.isAvailable)
-    .sort((a, b) => a.sortOrder - b.sortOrder);
+  const crossSellMenu = menus.find((menu) => menu.code === SITE_CROSS_SELL_MENU_CODE);
+  const linkedRows = listMenuRows(crossSellMenu, menuProducts);
 
   const items: UiProduct[] = [];
 
@@ -259,7 +256,8 @@ export async function fetchCrossSellProducts(): Promise<UiProduct[]> {
 
     items.push({
       id: items.length + 1,
-      slug: managedProduct.id,
+      productId: managedProduct.id,
+      slug: managedProduct.slug,
       name: managedProduct.name,
       category: resolveMenuCategoryBucket(category?.name ?? ""),
       price: row.priceOverride ?? managedProduct.price,
@@ -281,22 +279,25 @@ export interface ProductDetailData {
 
 /**
  * Chi tiết 1 sản phẩm cho trang `/thuc-don/[slug]` + danh sách sản phẩm liên
- * quan (cùng danh mục cha, cùng nằm trong menu chính của site). `slug` hiện
- * là `ManagedProduct.id` (xem `Product.slug` trong `fetchMenu`) — trả về
- * null nếu sản phẩm không tồn tại, ngừng bán, hoặc không thuộc thực đơn site.
+ * quan (cùng danh mục cha, cùng nằm trong menu chính của site). `slug` là
+ * `ManagedProduct.slug` do Backend cấp (xem `Product.slug` trong `fetchMenu`)
+ * — trả về null nếu sản phẩm không tồn tại, ngừng bán, hoặc không thuộc thực
+ * đơn site.
  */
 export async function getProductDetail(slug: string): Promise<ProductDetailData | null> {
-  const { menuProducts, productById, categoryById, mediaById } = await loadCatalogSnapshot();
+  const { menus, menuProducts, productById, categoryById, mediaById, modifierGroups: allModifierGroups } =
+    await loadCatalogSnapshot();
 
-  const managedProduct = productById.get(slug);
+  const managedProduct = Array.from(productById.values()).find((product) => product.slug === slug);
 
   if (!managedProduct || managedProduct.status !== "active") {
     return null;
   }
 
-  const siteMenuRows = menuProducts
-    .filter((row) => row.menuId === SITE_MAIN_MENU_ID && row.isAvailable)
-    .sort((a, b) => a.sortOrder - b.sortOrder);
+  const siteMenuRows = listMenuRows(
+    menus.find((menu) => menu.code === SITE_MAIN_MENU_CODE),
+    menuProducts,
+  );
 
   const currentRow = siteMenuRows.find((row) => row.productId === managedProduct.id);
 
@@ -306,11 +307,14 @@ export async function getProductDetail(slug: string): Promise<ProductDetailData 
 
   const category = resolveParentCategory(managedProduct.categoryId, categoryById);
   const categoryBucket = resolveMenuCategoryBucket(category?.name ?? "");
-  const modifierGroups = await listModifierGroupsByIds(managedProduct.modifierGroupIds);
+  // Giữ đúng thứ tự nhóm tùy chọn Admin đã sắp trên sản phẩm.
+  const modifierGroups = managedProduct.modifierGroupIds
+    .map((groupId) => allModifierGroups.find((group) => group.id === groupId))
+    .filter((group): group is ManagedModifierGroup => group !== undefined);
 
   const product: ProductDetail = {
     id: managedProduct.id,
-    slug: managedProduct.id,
+    slug: managedProduct.slug,
     name: managedProduct.name,
     category: categoryBucket,
     price: currentRow.priceOverride ?? managedProduct.price,
@@ -346,7 +350,8 @@ export async function getProductDetail(slug: string): Promise<ProductDetailData 
 
     relatedProducts.push({
       id: relatedProducts.length + 1,
-      slug: candidate.id,
+      productId: candidate.id,
+      slug: candidate.slug,
       name: candidate.name,
       category: categoryBucket,
       price: row.priceOverride ?? candidate.price,
