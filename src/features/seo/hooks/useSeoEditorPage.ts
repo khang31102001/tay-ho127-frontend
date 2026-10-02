@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 import type { ManagedMedia } from "@/features/media";
 import { listMedia } from "@/features/media";
@@ -25,7 +25,7 @@ type UseSeoEditorPageParams = {
  * useSeoMetadataForm + tự truyền entityDefaults (xem ProductEditor.tsx).
  */
 export function useSeoEditorPage({ entityType, entityId }: UseSeoEditorPageParams) {
-  const router = useRouter();
+  const router = useNavigationRouter();
 
   const [entry, setEntry] = useState<SeoDirectoryEntry | null>(null);
   const [settings, setSettings] = useState<ManagedSeoSettings | null>(null);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 import { listOrganizations } from "@/features/organization";
 import { useAsyncData } from "@/hooks/useAsyncData";
@@ -19,7 +19,7 @@ import {
 type FiscalYearForm = { organizationId: string; code: string; name: string; startDate: string; endDate: string; isActive: boolean };
 
 export function useFiscalYearEditor({ id }: { id?: string }) {
-  const router = useRouter();
+  const router = useNavigationRouter();
   const isEditMode = id !== undefined;
   const [form, setForm] = useState<FiscalYearForm>({ organizationId: "", code: "", name: "", startDate: "", endDate: "", isActive: true });
 
@@ -62,7 +62,7 @@ export function useFiscalYearEditor({ id }: { id?: string }) {
 type SystemSettingForm = { code: string; name: string; value: string; organizationId: string; isActive: boolean };
 
 export function useSystemSettingEditor({ id }: { id?: string }) {
-  const router = useRouter();
+  const router = useNavigationRouter();
   const isEditMode = id !== undefined;
   const [form, setForm] = useState<SystemSettingForm>({ code: "", name: "", value: "", organizationId: "", isActive: true });
 

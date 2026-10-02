@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 import { listPermissions } from "@/features/permissions";
 import { useAsyncData } from "@/hooks/useAsyncData";
@@ -47,7 +47,7 @@ type UseAdminMenuEditorParams = {
 };
 
 export function useAdminMenuEditor({ id, canManagePermissions }: UseAdminMenuEditorParams) {
-  const router = useRouter();
+  const router = useNavigationRouter();
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<AdminMenuFormValue>(EMPTY_FORM);

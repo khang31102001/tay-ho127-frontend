@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 import type { ManagedMedia } from "@/features/media";
 import { listMedia } from "@/features/media";
@@ -39,7 +39,7 @@ function buildEmptyForm(pageId: string, nextDisplayOrder: number): PageSectionFo
 }
 
 export function usePageSectionEditor({ pageId, id }: UsePageSectionEditorParams) {
-  const router = useRouter();
+  const router = useNavigationRouter();
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<PageSectionFormValue>(buildEmptyForm(pageId, 1));
