@@ -93,3 +93,28 @@
     @apply outline-none ring-offset-2 ring-offset-brand-cream focus-visible:ring-4 focus-visible:ring-brand-red/40;
   }
 }
+
+/* Loading dùng chung (xem src/components/shared/loading). Đặt ngoài @layer để keyframes không bị purge. */
+@keyframes nav-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes nav-overlay-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes app-init-bar {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+
+/* Trễ 120ms: route nhanh hơn ngưỡng này sẽ không thấy overlay chớp. */
+.nav-overlay-in { animation: nav-overlay-in 150ms ease-out 120ms both; }
+.nav-overlay-out { animation: nav-overlay-out 250ms ease-out both; }
+.app-init-bar { animation: app-init-bar 1.2s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .app-init-bar { animation-duration: 3s; }
+}

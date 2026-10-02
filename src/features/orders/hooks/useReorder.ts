@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 // Import thẳng (không qua barrel) — lý do đầy đủ xem features/menu/services/menu.service.ts.
 import { useCart, type CartItemModifierSelection, type CartProduct } from "@/features/cart";
@@ -23,7 +23,7 @@ export type ReorderResult = {
  */
 export function useReorder() {
   const { addToCart } = useCart();
-  const router = useRouter();
+  const router = useNavigationRouter();
   const [isReordering, setIsReordering] = useState(false);
 
   async function reorder(order: ManagedOrder): Promise<ReorderResult> {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 import { LogOut, Menu } from "lucide-react";
 
 import { useAdminAuth } from "@/features/admin-auth";
@@ -10,7 +10,7 @@ type AdminHeaderProps = {
 };
 
 export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
-  const router = useRouter();
+  const router = useNavigationRouter();
   const { user, logout } = useAdminAuth();
 
   async function handleLogout() {

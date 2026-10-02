@@ -2,7 +2,7 @@
 
 import { useState, type ChangeEvent } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 import MenuBackgroundDecoration from "@/components/ui/MenuBackgroundDecoration";
 import { useCart } from "../context/cart-context";
@@ -35,7 +35,7 @@ import { GeneralOrderOptions } from "./GeneralOrderOptions";
  * Checkout để khách review trước khi xác nhận (xem CheckoutReview.tsx).
  */
 export function CartPageSection() {
-  const router = useRouter();
+  const router = useNavigationRouter();
   const { cartItems, totalPrice, updateQuantity, removeFromCart, updateCartItemNote } = useCart();
   const {
     deliveryMethods,
