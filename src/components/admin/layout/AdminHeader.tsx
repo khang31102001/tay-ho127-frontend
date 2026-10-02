@@ -19,7 +19,7 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
   }
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-brand-line bg-white px-5 md:px-8">
+    <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-brand-line bg-white px-5 md:px-8">
       <div className="flex items-center gap-3">
         <button
           type="button"
