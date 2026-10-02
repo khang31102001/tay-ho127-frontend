@@ -13,6 +13,7 @@ import "@/styles/components.css";
 // Import thông tin site tập trung từ data.
 import { site } from "@/data/site";
 import { getSiteUrl } from "@/lib/site-url";
+import { NavigationLoadingProvider } from "@/provider/navigation-loading-provider";
 
 // Metadata SEO mặc định của Next.js App Router.
 // (site) và admin có thể override qua metadata riêng ở layout con.
@@ -40,7 +41,9 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="vi">
-      <body className="min-h-svh">{children}</body>
+      <body className="min-h-svh">
+        <NavigationLoadingProvider>{children}</NavigationLoadingProvider>
+      </body>
     </html>
   );
 }

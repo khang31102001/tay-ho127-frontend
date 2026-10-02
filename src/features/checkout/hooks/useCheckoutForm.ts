@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 import type { CartItem } from "@/features/cart";
 import { calculateCartItemTotal, consumeCartReviewedFlag, useCart } from "@/features/cart";
@@ -47,7 +47,7 @@ function pickDefault<T extends { id: string; isDefault: boolean }>(methods: T[])
 }
 
 export function useCheckoutForm({ cartItems, totalPrice, clearCart }: UseCheckoutFormParams) {
-  const router = useRouter();
+  const router = useNavigationRouter();
   const { user: currentUser } = useAuth();
 
   /**

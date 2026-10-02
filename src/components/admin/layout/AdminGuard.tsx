@@ -3,6 +3,8 @@
 import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 
+import { AppInitLoading } from "@/components/shared/loading/AppInitLoading";
+import { site } from "@/data/site";
 import { useAdminAuth } from "@/features/admin-auth";
 
 type AdminGuardProps = {
@@ -21,9 +23,13 @@ export function AdminGuard({ children }: AdminGuardProps) {
     }
   }, [isAuthLoaded, user, router]);
 
-  if (!isAuthLoaded || !user) {
-    return null;
-  }
+  const isReady = isAuthLoaded && !!user;
 
-  return <>{children}</>;
+  // AppInitLoading nằm cạnh children (không thay thế) để tự fade-out mượt khi ready.
+  return (
+    <>
+      {isReady && children}
+      <AppInitLoading isReady={isReady} logoSrc={site.assets.logoColor} title="Quản trị Tây Hồ 127" />
+    </>
+  );
 }

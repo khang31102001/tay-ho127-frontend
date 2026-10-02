@@ -1,13 +1,13 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 import { useAdminAuth } from "../context/admin-auth-context";
 import { loginAdmin } from "../services/admin-auth.service";
 
 export function useAdminLoginForm() {
-  const router = useRouter();
+  const router = useNavigationRouter();
   const { login } = useAdminAuth();
 
   const [email, setEmail] = useState("");

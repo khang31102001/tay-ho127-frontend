@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 import { useCart } from "@/features/cart";
 import {
@@ -21,7 +21,7 @@ import type { PaymentSession } from "../types/payment.types";
  * thấy session.
  */
 export function usePaymentPage(sessionId: string) {
-  const router = useRouter();
+  const router = useNavigationRouter();
   const { clearCart } = useCart();
 
   const [session, setSession] = useState<PaymentSession | null | undefined>(undefined);

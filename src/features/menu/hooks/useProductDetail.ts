@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type MouseEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 import { useCart, useFlyToCart } from "@/features/cart";
 import type { ProductDetail } from "../types/menu.types";
@@ -18,7 +18,7 @@ const MAX_QUANTITY = 20;
 export function useProductDetail(product: ProductDetail) {
   const { addToCart } = useCart();
   const { flyToCart } = useFlyToCart();
-  const router = useRouter();
+  const router = useNavigationRouter();
 
   const [quantity, setQuantity] = useState(MIN_QUANTITY);
 

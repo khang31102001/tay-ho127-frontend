@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 
+import { NavigationOverlay } from "@/components/shared/loading/NavigationOverlay";
 import { AdminGuard } from "./AdminGuard";
 import { AdminHeader } from "./AdminHeader";
 import { AdminSidebar } from "./AdminSidebar";
@@ -54,7 +55,10 @@ export function AdminDashboardShell({ children }: AdminDashboardShellProps) {
         <div className="flex min-h-svh min-w-0 flex-1 flex-col">
           <AdminHeader onMenuClick={() => setIsMobileNavOpen(true)} />
 
-          <main className="flex-1 px-5 py-6 md:px-8">{children}</main>
+          <main className="relative flex-1 px-5 py-6 md:px-8">
+            {children}
+            <NavigationOverlay />
+          </main>
         </div>
       </div>
     </AdminGuard>
