@@ -300,7 +300,13 @@ export const SEED_NAVIGATION_ITEMS: ManagedNavigationItem[] = [
   { id: "nav-item-admin-brand", menuId: "nav-menu-admin", parentId: null, label: "Brand", targetType: "route", targetId: null, url: null, icon: null, sortOrder: 7, isVisible: true },
   { id: "nav-item-admin-brand-settings", menuId: "nav-menu-admin", parentId: "nav-item-admin-brand", label: "Cài đặt thương hiệu", targetType: "route", targetId: null, url: "/admin/brand/settings", icon: "Store", sortOrder: 1, isVisible: true },
 
-  { id: "nav-item-admin-config", menuId: "nav-menu-admin", parentId: null, label: "Cấu hình", targetType: "route", targetId: null, url: null, icon: null, sortOrder: 8, isVisible: true },
+  { id: "nav-item-admin-seo", menuId: "nav-menu-admin", parentId: null, label: "SEO", targetType: "route", targetId: null, url: null, icon: null, sortOrder: 8, isVisible: true },
+  { id: "nav-item-admin-seo-dashboard", menuId: "nav-menu-admin", parentId: "nav-item-admin-seo", label: "Tổng quan", targetType: "route", targetId: null, url: "/admin/seo", icon: "Gauge", sortOrder: 1, isVisible: true },
+  { id: "nav-item-admin-seo-metadata", menuId: "nav-menu-admin", parentId: "nav-item-admin-seo", label: "SEO Metadata", targetType: "route", targetId: null, url: "/admin/seo/metadata", icon: "Search", sortOrder: 2, isVisible: true },
+  { id: "nav-item-admin-seo-settings", menuId: "nav-menu-admin", parentId: "nav-item-admin-seo", label: "Cài đặt SEO", targetType: "route", targetId: null, url: "/admin/seo/settings", icon: "Settings2", sortOrder: 3, isVisible: true },
+  { id: "nav-item-admin-seo-redirects", menuId: "nav-menu-admin", parentId: "nav-item-admin-seo", label: "Chuyển hướng (Redirects)", targetType: "route", targetId: null, url: "/admin/seo/redirects", icon: "ArrowRightLeft", sortOrder: 4, isVisible: true },
+
+  { id: "nav-item-admin-config", menuId: "nav-menu-admin", parentId: null, label: "Cấu hình", targetType: "route", targetId: null, url: null, icon: null, sortOrder: 9, isVisible: true },
   { id: "nav-item-admin-config-payment-methods", menuId: "nav-menu-admin", parentId: "nav-item-admin-config", label: "Phương thức thanh toán", targetType: "route", targetId: null, url: "/admin/settings/payment-methods", icon: "Wallet", sortOrder: 1, isVisible: true },
   { id: "nav-item-admin-config-delivery-methods", menuId: "nav-menu-admin", parentId: "nav-item-admin-config", label: "Phương thức giao hàng", targetType: "route", targetId: null, url: "/admin/settings/delivery-methods", icon: "Truck", sortOrder: 2, isVisible: true },
   { id: "nav-item-admin-config-navigation", menuId: "nav-menu-admin", parentId: "nav-item-admin-config", label: "Navigation", targetType: "route", targetId: null, url: "/admin/settings/navigation", icon: "Route", sortOrder: 3, isVisible: true },

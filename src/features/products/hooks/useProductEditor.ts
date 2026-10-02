@@ -11,6 +11,16 @@ import { listCategories } from "@/features/categories";
 import { listMedia } from "@/features/media";
 import { listModifierGroups } from "@/features/modifier-groups";
 import {
+  buildProductSchema,
+  getSeoSettings,
+  isSeoFormEmpty,
+  upsertSeoMetadata,
+  useSeoMetadataForm,
+  useSeoSchemaForm,
+  type ManagedSeoSettings,
+} from "@/features/seo";
+import { getSiteUrl } from "@/lib/site-url";
+import {
   createProduct,
   deleteProduct,
   getProductById,
@@ -41,12 +51,20 @@ export function useProductEditor({ id }: UseProductEditorParams) {
   const [categoryOptions, setCategoryOptions] = useState<ManagedCategory[]>([]);
   const [mediaOptions, setMediaOptions] = useState<ManagedMedia[]>([]);
   const [modifierGroupOptions, setModifierGroupOptions] = useState<ManagedModifierGroup[]>([]);
+  const [seoSettings, setSeoSettings] = useState<ManagedSeoSettings | null>(null);
   const [isLoading, setIsLoading] = useState(isEditMode);
+
+  // Tab "SEO" — xem ghi chú trong features/seo/hooks/useSeoMetadataForm.ts.
+  const seo = useSeoMetadataForm("product", id);
+  // Section "Structured Data" trong tab SEO — Product là schema type có ví dụ
+  // cụ thể (SKU/Brand) ở Task 7, xem features/seo/hooks/useSeoSchemaForm.ts.
+  const schema = useSeoSchemaForm("product", id, "Product");
 
   useEffect(() => {
     listCategories().then(setCategoryOptions);
     listMedia().then(setMediaOptions);
     listModifierGroups().then(setModifierGroupOptions);
+    getSeoSettings().then(setSeoSettings);
   }, []);
 
   useEffect(() => {
@@ -109,10 +127,30 @@ export function useProductEditor({ id }: UseProductEditorParams) {
   async function handleSave() {
     if (isEditMode) {
       await updateProduct(id, form);
+      await seo.save();
+      await schema.save();
     } else {
-      await createProduct(form);
+      const created = await createProduct(form);
+
+      if (!isSeoFormEmpty(seo.form)) {
+        await upsertSeoMetadata("product", created.id, seo.form);
+      }
+      // Schema override (SKU/Brand/Advanced JSON-LD) chỉ có ý nghĩa khi đã có
+      // URL thật — bỏ qua lúc tạo mới, Admin cấu hình lại sau khi sản phẩm tồn tại.
     }
   }
+
+  const mainMedia = form.mediaIds[0] ? mediaOptions.find((media) => media.id === form.mediaIds[0]) : undefined;
+
+  const generatedSchemaPreview = buildProductSchema({
+    name: form.name || "(chưa đặt tên)",
+    description: form.description,
+    imageUrl: mainMedia?.url,
+    price: form.price,
+    url: `${getSiteUrl()}/thuc-don/${id ?? "..."}`,
+    sku: schema.form.config?.sku,
+    brand: schema.form.config?.brand,
+  });
 
   async function handleDelete() {
     if (isEditMode) {
@@ -132,7 +170,11 @@ export function useProductEditor({ id }: UseProductEditorParams) {
     categoryOptions,
     mediaOptions,
     modifierGroupOptions,
-    isLoading,
+    seo,
+    seoSettings,
+    schema,
+    generatedSchemaPreview,
+    isLoading: isLoading || (isEditMode && (seo.isLoading || schema.isLoading)),
     isEditMode,
     handleSave,
     handleDelete,

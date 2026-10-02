@@ -4,6 +4,10 @@ import { Header } from "@/components/layout/Header";
 import { AppProviders } from "@/provider/app-providers";
 import { LoadingProvider } from "@/provider/loading-provider";
 import FloatingActions from "@/components/layout/FloatingActions";
+import { JsonLd } from "@/components/shared/JsonLd";
+// Import thẳng service (không qua barrel @/features/seo) — cùng lý do
+// navigationApi bên dưới (barrel re-export cả UI Admin).
+import { resolveGlobalSchemas } from "@/features/seo/services/seo-schema-resolver.service";
 // Import thẳng navigationApi (không qua barrel @/features/navigation) —
 // barrel đó re-export cả Explorer/Editor/Tree admin (UI "use client"), import
 // qua barrel ở đây sẽ kéo UI admin vào bundle Site. Lý do đầy đủ xem
@@ -27,14 +31,19 @@ interface SiteLayoutProps {
 // session — xem chú thích trong hook đó để biết lý do (mock dùng localStorage,
 // Server Component không đọc được).
 export default async function SiteLayout({ children }: SiteLayoutProps) {
-  const [headerMenu, footerMenu] = await Promise.all([
+  const [headerMenu, footerMenu, globalSchemas] = await Promise.all([
     navigationApi.getByLocation("header"),
     navigationApi.getByLocation("footer"),
+    // GLOBAL SCHEMA (Task 9): Organization + Restaurant + WebSite, render 1 lần
+    // duy nhất cho toàn bộ User Site — không lặp lại ở từng page con.
+    resolveGlobalSchemas(),
   ]);
 
   return (
     <LoadingProvider>
       <AppProviders>
+        <JsonLd data={globalSchemas} />
+
         <div className="flex min-h-svh flex-col">
           <Header variant="dark" navItems={headerMenu?.items ?? []} />
 

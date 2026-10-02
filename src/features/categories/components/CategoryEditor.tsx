@@ -1,11 +1,15 @@
 "use client";
 
+import { useState } from "react";
+
 import { DataEditor } from "@/components/admin/templates/DataEditor/DataEditor";
 import {
   adminFieldInputClassName,
   adminFieldLabelClassName,
 } from "@/components/admin/templates/formFieldClassName";
 import type { EntityStatus } from "@/components/admin/templates/StatusBadge";
+import { Tabs, type TabItem } from "@/components/ui/Tabs";
+import { SeoFieldsForm } from "@/features/seo";
 
 import { useCategoryEditor } from "../hooks/useCategoryEditor";
 
@@ -13,17 +17,26 @@ type CategoryEditorProps = {
   id?: string;
 };
 
+const TABS: TabItem[] = [
+  { id: "general", label: "Chung" },
+  { id: "seo", label: "SEO" },
+];
+
 export function CategoryEditor({ id }: CategoryEditorProps) {
   const {
     form,
     updateField,
     parentOptions,
+    mediaOptions,
+    seo,
+    seoSettings,
     isLoading,
     isEditMode,
     handleSave,
     handleDelete,
     goToExplore,
   } = useCategoryEditor({ id });
+  const [activeTab, setActiveTab] = useState("general");
 
   return (
     <DataEditor
@@ -35,59 +48,78 @@ export function CategoryEditor({ id }: CategoryEditorProps) {
       onDelete={isEditMode ? handleDelete : undefined}
       onDeleted={goToExplore}
     >
-      <label className={adminFieldLabelClassName}>
-        Tên danh mục
-        <input
-          type="text"
-          required
-          value={form.name}
-          onChange={(event) => updateField("name", event.target.value)}
-          className={adminFieldInputClassName}
-        />
-      </label>
+      <Tabs tabs={TABS} activeTab={activeTab} onChange={setActiveTab} />
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <label className={adminFieldLabelClassName}>
-          Danh mục cha (tùy chọn)
-          <select
-            value={form.parentId ?? ""}
-            onChange={(event) =>
-              updateField("parentId", event.target.value === "" ? null : event.target.value)
-            }
-            className={adminFieldInputClassName}
-          >
-            <option value="">Không có (danh mục gốc)</option>
+      <div className="pt-5">
+        {activeTab === "general" && (
+          <div className="space-y-4">
+            <label className={adminFieldLabelClassName}>
+              Tên danh mục
+              <input
+                type="text"
+                required
+                value={form.name}
+                onChange={(event) => updateField("name", event.target.value)}
+                className={adminFieldInputClassName}
+              />
+            </label>
 
-            {parentOptions.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </label>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className={adminFieldLabelClassName}>
+                Danh mục cha (tùy chọn)
+                <select
+                  value={form.parentId ?? ""}
+                  onChange={(event) =>
+                    updateField("parentId", event.target.value === "" ? null : event.target.value)
+                  }
+                  className={adminFieldInputClassName}
+                >
+                  <option value="">Không có (danh mục gốc)</option>
 
-        <label className={adminFieldLabelClassName}>
-          Thứ tự hiển thị
-          <input
-            type="number"
-            value={form.sortOrder}
-            onChange={(event) => updateField("sortOrder", Number(event.target.value))}
-            className={adminFieldInputClassName}
+                  {parentOptions.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className={adminFieldLabelClassName}>
+                Thứ tự hiển thị
+                <input
+                  type="number"
+                  value={form.sortOrder}
+                  onChange={(event) => updateField("sortOrder", Number(event.target.value))}
+                  className={adminFieldInputClassName}
+                />
+              </label>
+            </div>
+
+            <label className={adminFieldLabelClassName}>
+              Trạng thái
+              <select
+                value={form.status}
+                onChange={(event) => updateField("status", event.target.value as EntityStatus)}
+                className={adminFieldInputClassName}
+              >
+                <option value="active">Hoạt động</option>
+                <option value="inactive">Ngừng hoạt động</option>
+              </select>
+            </label>
+          </div>
+        )}
+
+        {activeTab === "seo" && seoSettings && (
+          <SeoFieldsForm
+            form={seo.form}
+            updateField={seo.updateField}
+            mediaOptions={mediaOptions}
+            entityDefaults={{ title: form.name, description: "", imageMediaId: null }}
+            settings={seoSettings}
+            previewUrl={null}
           />
-        </label>
+        )}
       </div>
-
-      <label className={adminFieldLabelClassName}>
-        Trạng thái
-        <select
-          value={form.status}
-          onChange={(event) => updateField("status", event.target.value as EntityStatus)}
-          className={adminFieldInputClassName}
-        >
-          <option value="active">Hoạt động</option>
-          <option value="inactive">Ngừng hoạt động</option>
-        </select>
-      </label>
     </DataEditor>
   );
 }

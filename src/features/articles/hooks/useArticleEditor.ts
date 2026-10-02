@@ -7,6 +7,13 @@ import type { ManagedMedia } from "@/features/media";
 import { listMedia } from "@/features/media";
 import { listArticleCategories, type ManagedArticleCategory } from "@/features/article-categories";
 import { listArticleTags, type ManagedArticleTag } from "@/features/article-tags";
+import {
+  getSeoSettings,
+  isSeoFormEmpty,
+  upsertSeoMetadata,
+  useSeoMetadataForm,
+  type ManagedSeoSettings,
+} from "@/features/seo";
 
 import type { ArticleUpsertInput } from "../services/article.service";
 import {
@@ -43,8 +50,12 @@ export function useArticleEditor({ id }: UseArticleEditorParams) {
   const [mediaOptions, setMediaOptions] = useState<ManagedMedia[]>([]);
   const [categoryOptions, setCategoryOptions] = useState<ManagedArticleCategory[]>([]);
   const [tagOptions, setTagOptions] = useState<ManagedArticleTag[]>([]);
+  const [seoSettings, setSeoSettings] = useState<ManagedSeoSettings | null>(null);
   const [isLoading, setIsLoading] = useState(isEditMode);
   const [isSlugAvailable, setIsSlugAvailable] = useState<boolean | undefined>(undefined);
+
+  // Tab "SEO" — xem ghi chú trong features/seo/hooks/useSeoMetadataForm.ts.
+  const seo = useSeoMetadataForm("article", id);
 
   useEffect(() => {
     Promise.all([listMedia(), listArticleCategories(), listArticleTags()]).then(
@@ -54,6 +65,7 @@ export function useArticleEditor({ id }: UseArticleEditorParams) {
         setTagOptions(tags);
       },
     );
+    getSeoSettings().then(setSeoSettings);
   }, []);
 
   useEffect(() => {
@@ -124,8 +136,13 @@ export function useArticleEditor({ id }: UseArticleEditorParams) {
 
     if (isEditMode) {
       await updateArticle(id, form);
+      await seo.save();
     } else {
-      await createArticle(form);
+      const created = await createArticle(form);
+
+      if (!isSeoFormEmpty(seo.form)) {
+        await upsertSeoMetadata("article", created.id, seo.form);
+      }
     }
   }
 
@@ -146,7 +163,9 @@ export function useArticleEditor({ id }: UseArticleEditorParams) {
     mediaOptions,
     categoryOptions,
     tagOptions,
-    isLoading,
+    seo,
+    seoSettings,
+    isLoading: isLoading || (isEditMode && seo.isLoading),
     isEditMode,
     isSlugAvailable,
     /** Chỉ có khi đang sửa bài viết đã tồn tại — dùng để bật nút "Xem trước". */

@@ -3,6 +3,16 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import type { ManagedMedia } from "@/features/media";
+import { listMedia } from "@/features/media";
+import {
+  getSeoSettings,
+  isSeoFormEmpty,
+  upsertSeoMetadata,
+  useSeoMetadataForm,
+  type ManagedSeoSettings,
+} from "@/features/seo";
+
 import type { ManagedCategory } from "../types/category.types";
 import {
   createCategory,
@@ -31,13 +41,20 @@ export function useCategoryEditor({ id }: UseCategoryEditorParams) {
 
   const [form, setForm] = useState<CategoryFormValue>(EMPTY_FORM);
   const [parentOptions, setParentOptions] = useState<ManagedCategory[]>([]);
+  const [mediaOptions, setMediaOptions] = useState<ManagedMedia[]>([]);
+  const [seoSettings, setSeoSettings] = useState<ManagedSeoSettings | null>(null);
   const [isLoading, setIsLoading] = useState(isEditMode);
+
+  // Tab "SEO" — xem ghi chú trong features/seo/hooks/useSeoMetadataForm.ts.
+  const seo = useSeoMetadataForm("category", id);
 
   useEffect(() => {
     listCategories().then((categories) => {
       // Không cho chọn chính nó làm parent (tránh vòng lặp tự tham chiếu).
       setParentOptions(categories.filter((category) => category.id !== id));
     });
+    listMedia().then(setMediaOptions);
+    getSeoSettings().then(setSeoSettings);
   }, [id]);
 
   useEffect(() => {
@@ -74,8 +91,13 @@ export function useCategoryEditor({ id }: UseCategoryEditorParams) {
   async function handleSave() {
     if (isEditMode) {
       await updateCategory(id, form);
+      await seo.save();
     } else {
-      await createCategory(form);
+      const created = await createCategory(form);
+
+      if (!isSeoFormEmpty(seo.form)) {
+        await upsertSeoMetadata("category", created.id, seo.form);
+      }
     }
   }
 
@@ -93,7 +115,10 @@ export function useCategoryEditor({ id }: UseCategoryEditorParams) {
     form,
     updateField,
     parentOptions,
-    isLoading,
+    mediaOptions,
+    seo,
+    seoSettings,
+    isLoading: isLoading || (isEditMode && seo.isLoading),
     isEditMode,
     handleSave,
     handleDelete,

@@ -13,6 +13,11 @@ import { listArticleCategories } from "@/features/article-categories/services/ar
 import { listArticleTags } from "@/features/article-tags/services/article-tag.service";
 import { buildMetadata } from "@/lib/seo/build-metadata";
 import { resolveSeoPayload } from "@/lib/seo/resolve-seo-payload";
+// Import thẳng service (không qua barrel @/features/seo) — cùng lý do đã áp
+// dụng cho @/features/articles ở trên (barrel re-export cả UI Admin).
+import { resolveSeoPayloadForEntity } from "@/features/seo/services/seo-resolver.service";
+import { resolveArticlePageSchemas } from "@/features/seo/services/seo-schema-resolver.service";
+import { JsonLd } from "@/components/shared/JsonLd";
 
 type ArticleDetailPageProps = {
   params: { slug: string };
@@ -26,17 +31,24 @@ export async function generateMetadata({ params }: ArticleDetailPageProps): Prom
       const article = await getArticleBySlug(params.slug);
       if (!article) return null;
 
-      const media = article.featuredMediaId ? (await listMedia()).find((item) => item.id === article.featuredMediaId) : undefined;
+      const payload = await resolveSeoPayloadForEntity({
+        entityType: "article",
+        entityId: article.id,
+        path: `/bai-viet/${params.slug}`,
+        defaults: {
+          title: article.title,
+          description: article.summary,
+          imageMediaId: article.featuredMediaId,
+        },
+        contentType: "article",
+        publishedTime: article.publishedAt,
+      });
 
       return {
-        title: article.title,
-        description: article.summary,
-        path: `/bai-viet/${params.slug}`,
-        image: media?.url,
-        type: "article",
-        publishedTime: article.publishedAt,
+        ...payload,
         // Bài chưa publish vẫn xem preview được (xem banner "Xem trước" bên
-        // dưới) nhưng không nên lộ ra kết quả tìm kiếm.
+        // dưới) nhưng không nên lộ ra kết quả tìm kiếm — luôn thắng SEO
+        // Override (đúng hành vi buildMetadata: noindex thắng tuyệt đối).
         noindex: article.status !== "published",
       };
     },
@@ -83,8 +95,31 @@ export default async function ArticleDetailPage({ params }: ArticleDetailPagePro
       })
     : null;
 
+  // PAGE SCHEMA (Task 22): Article + BreadcrumbList — chỉ render khi đã publish
+  // thật (bài draft/preview không nên tự nhận là bài viết đã xuất bản trong
+  // structured data, cùng nguyên tắc với noindex ở generateMetadata() trên).
+  const schemas =
+    article.status === "published"
+      ? await resolveArticlePageSchemas({
+          headline: article.title,
+          description: article.summary,
+          imageUrl: media?.url,
+          path: `/bai-viet/${params.slug}`,
+          publishedAt: article.publishedAt,
+          updatedAt: article.updatedAt,
+          authorName: article.authorName,
+          breadcrumb: [
+            { name: "Trang chủ", path: "/" },
+            { name: "Bài viết", path: "/bai-viet" },
+            { name: article.title, path: `/bai-viet/${params.slug}` },
+          ],
+        })
+      : null;
+
   return (
     <section className="section-padding">
+      {schemas && <JsonLd data={schemas} />}
+
       <Container className="max-w-3xl">
         <Link
           href="/bai-viet"
