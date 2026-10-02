@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react";
 
 import { DataEditor } from "@/components/admin/templates/DataEditor/DataEditor";
 import {
@@ -9,12 +10,19 @@ import {
 } from "@/components/admin/templates/formFieldClassName";
 import type { EntityStatus } from "@/components/admin/templates/StatusBadge";
 import { useAdminAuth } from "@/features/admin-auth";
+import { Tabs, type TabItem } from "@/components/ui/Tabs";
+import { SeoFieldsForm, StructuredDataSection } from "@/features/seo";
 
 import { useProductEditor } from "../hooks/useProductEditor";
 
 type ProductEditorProps = {
   id?: string;
 };
+
+const TABS: TabItem[] = [
+  { id: "general", label: "Chung" },
+  { id: "seo", label: "SEO" },
+];
 
 export function ProductEditor({ id }: ProductEditorProps) {
   const {
@@ -25,6 +33,10 @@ export function ProductEditor({ id }: ProductEditorProps) {
     categoryOptions,
     mediaOptions,
     modifierGroupOptions,
+    seo,
+    seoSettings,
+    schema,
+    generatedSchemaPreview,
     isLoading,
     loadError,
     isEditMode,
@@ -33,6 +45,7 @@ export function ProductEditor({ id }: ProductEditorProps) {
     goToExplore,
   } = useProductEditor({ id });
   const { hasPermission } = useAdminAuth();
+  const [activeTab, setActiveTab] = useState("general");
 
   return (
     <DataEditor
@@ -46,6 +59,57 @@ export function ProductEditor({ id }: ProductEditorProps) {
       deleteConfirmDescription="Sản phẩm cũng bị gỡ khỏi mọi thực đơn. Đơn hàng cũ không bị ảnh hưởng. Hành động này không thể hoàn tác."
       onDeleted={goToExplore}
     >
+      <Tabs tabs={TABS} activeTab={activeTab} onChange={setActiveTab} />
+
+      {activeTab === "seo" ? (
+        seoSettings && (
+          <div className="pt-5">
+            <SeoFieldsForm
+              form={seo.form}
+              updateField={seo.updateField}
+              mediaOptions={mediaOptions}
+              entityDefaults={{
+                title: form.name,
+                description: form.description ?? "",
+                imageMediaId: form.mediaIds[0] ?? null,
+              }}
+              settings={seoSettings}
+              previewUrl={isEditMode ? `/thuc-don/${id}` : null}
+            />
+
+            {isEditMode && (
+              <StructuredDataSection
+                schemaTypeLabel="Product"
+                generatedPreview={generatedSchemaPreview}
+                form={schema.form}
+                updateField={schema.updateField}
+                jsonError={schema.jsonError}
+              >
+                <label className={adminFieldLabelClassName}>
+                  SKU (tùy chọn)
+                  <input
+                    type="text"
+                    value={schema.form.config?.sku ?? ""}
+                    onChange={(event) => schema.updateConfigField("sku", event.target.value)}
+                    className={adminFieldInputClassName}
+                  />
+                </label>
+
+                <label className={adminFieldLabelClassName}>
+                  Brand (tùy chọn)
+                  <input
+                    type="text"
+                    value={schema.form.config?.brand ?? ""}
+                    onChange={(event) => schema.updateConfigField("brand", event.target.value)}
+                    className={adminFieldInputClassName}
+                  />
+                </label>
+              </StructuredDataSection>
+            )}
+          </div>
+        )
+      ) : (
+      <div className="space-y-4 pt-5">
       <label className={adminFieldLabelClassName}>
         Tên sản phẩm
         <input
@@ -194,6 +258,8 @@ export function ProductEditor({ id }: ProductEditorProps) {
           <option value="inactive">Ngừng hoạt động</option>
         </select>
       </label>
+      </div>
+      )}
     </DataEditor>
   );
 }

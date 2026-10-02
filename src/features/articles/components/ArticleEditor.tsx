@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Eye } from "lucide-react";
+import { useState } from "react";
 
 import { DataEditor } from "@/components/admin/templates/DataEditor/DataEditor";
 import {
@@ -12,12 +13,19 @@ import { SlugInput } from "@/components/shared/SlugInput";
 import { MediaPicker } from "@/components/shared/MediaPicker";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import type { PublishStatus } from "@/components/shared/PublishStatusBadge";
+import { Tabs, type TabItem } from "@/components/ui/Tabs";
+import { SeoFieldsForm } from "@/features/seo";
 
 import { useArticleEditor } from "../hooks/useArticleEditor";
 
 type ArticleEditorProps = {
   id?: string;
 };
+
+const TABS: TabItem[] = [
+  { id: "general", label: "Chung" },
+  { id: "seo", label: "SEO" },
+];
 
 export function ArticleEditor({ id }: ArticleEditorProps) {
   const {
@@ -27,6 +35,8 @@ export function ArticleEditor({ id }: ArticleEditorProps) {
     mediaOptions,
     categoryOptions,
     tagOptions,
+    seo,
+    seoSettings,
     isLoading,
     isEditMode,
     isSlugAvailable,
@@ -35,6 +45,7 @@ export function ArticleEditor({ id }: ArticleEditorProps) {
     handleDelete,
     goToExplore,
   } = useArticleEditor({ id });
+  const [activeTab, setActiveTab] = useState("general");
 
   return (
     <DataEditor
@@ -46,6 +57,27 @@ export function ArticleEditor({ id }: ArticleEditorProps) {
       onDelete={isEditMode ? handleDelete : undefined}
       onDeleted={goToExplore}
     >
+      <Tabs tabs={TABS} activeTab={activeTab} onChange={setActiveTab} />
+
+      {activeTab === "seo" ? (
+        seoSettings && (
+          <div className="pt-5">
+            <SeoFieldsForm
+              form={seo.form}
+              updateField={seo.updateField}
+              mediaOptions={mediaOptions}
+              entityDefaults={{
+                title: form.title,
+                description: form.summary,
+                imageMediaId: form.featuredMediaId,
+              }}
+              settings={seoSettings}
+              previewUrl={form.slug ? `/bai-viet/${form.slug}` : null}
+            />
+          </div>
+        )
+      ) : (
+      <div className="space-y-4 pt-5">
       <div className="flex items-start justify-between gap-3">
         <label className={`flex-1 ${adminFieldLabelClassName}`}>
           Tiêu đề
@@ -185,6 +217,8 @@ export function ArticleEditor({ id }: ArticleEditorProps) {
           <option value="archived">Lưu trữ</option>
         </select>
       </label>
+      </div>
+      )}
     </DataEditor>
   );
 }

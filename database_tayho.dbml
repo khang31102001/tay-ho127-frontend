@@ -1,30 +1,4 @@
-// =============================================================================
-// database_tayho.dbml
-// Reverse-engineered DB schema for "Bánh Cuốn Tây Hồ 127" (ProjectTayHo127 FE)
-// Source: src/features/**/{types,mocks,services}, src/data/site.ts, app/api/**
-// Paste directly into https://dbdiagram.io
-//
-// IMPORTANT CAVEATS
-// - The current frontend has NO real backend: every admin CRUD feature is a
-//   localStorage-backed mock (`mocks/<name>.mock.ts` SEED array + `services/
-//   <name>.service.ts`). Tables below are the PROPOSED real-backend schema,
-//   not something that exists in a live database today.
-// - Session/identity types `AuthUser` (features/auth) and `AdminUser`
-//   (features/admin-auth) are NOT modeled as tables: they are client-side
-//   session/claims objects. AuthUser carries a `customerId` bridge into
-//   `customers` (via findOrCreateCustomerByContact, matched by phone/email).
-//   AdminUser is NOT linked by any FK to `admin_users` in current FE code
-//   (see ASSUMPTION notes below).
-// - CART DOMAIN: intentionally has NO tables here. `CartItem` / `CartPreferences`
-//   (src/features/cart/types/cart.types.ts) are 100% client-side localStorage
-//   state (keys "tayho-cart", "tayho-cart-preferences") with no backend
-//   persistence today (explicit comment in cart.service.ts). Per task rule
-//   "không đưa UI state ... thành Database Table", no Cart table is fabricated
-//   here — see the `Note cart_domain` block near the bottom for the full
-//   explanation instead of a fake table.
-// - Every `[note: 'ASSUMPTION - ...']` marks something NOT directly confirmed
-//   by a TypeScript type/mock in the frontend — a normalization proposal or a
-//   gap that needs Backend/BA confirmation.
+
 // =============================================================================
 
 Project tayho127 {
@@ -177,6 +151,40 @@ Enum section_type {
   highlight
   testimonial
   cta
+}
+
+// --- SEO domain enums (added: SEO Management + Schema.org module, Phase 0/1) ---
+
+// Polymorphic discriminator for seo_metadata/seo_schema.entity_id - same
+// convention as navigation_items.target_id below (no hard FK possible across
+// multiple target tables). "homepage" is a singleton entity_type with entity_id = NULL.
+Enum seo_entity_type {
+  product
+  category
+  article
+  page
+  homepage
+}
+
+// Open/extensible list per Task 6. "Offer" is normally generated as a nested
+// property of the Product schema (schema.org convention), kept here as an
+// addressable type too in case a standalone override/config row is ever needed.
+Enum seo_schema_type {
+  Organization
+  LocalBusiness
+  Restaurant
+  WebSite
+  WebPage
+  Product
+  BreadcrumbList
+  FAQPage
+  Article
+  Offer
+}
+
+Enum redirect_type {
+  "301"
+  "302"
 }
 
 // =============================================================================
@@ -643,6 +651,86 @@ Table payment_transactions {
 // payments.gateway_reference / payments.transaction_id.
 
 // =============================================================================
+// DOMAIN: SEO
+// Added: SEO Management + Schema.org module (Phase 0/1 proposal, NOT migrated
+// yet - see seo-architecture-analysis.md). Cross-cutting domain: does not
+// belong to Product/Article/Category, only references them polymorphically.
+// Evidence for existing pieces this extends: src/lib/seo/{seo.types.ts,
+// build-metadata.ts, resolve-seo-payload.ts}, app/sitemap.ts, app/robots.ts.
+// =============================================================================
+
+Table seo_metadata {
+  id varchar [pk]
+  entity_type seo_entity_type [not null]
+  entity_id varchar [note: 'ASSUMPTION - polymorphic, nullable only for entity_type=homepage (singleton, no id). No hard FK: see seo_entity_type note.']
+  meta_title varchar [note: 'nullable - falls back to entity default (Product.name / Article.title / ...) then seo_settings.default_title_template. Evidence for fallback concept: src/lib/seo/seo.types.ts + Task 4.']
+  meta_description varchar [note: 'nullable - falls back to entity default (Product.description / Article.summary) then seo_settings.default_description']
+  canonical_url varchar [note: 'nullable - auto-generated from entity slug/path when empty (Task 4). Stored only when Admin needs to override the auto-generated value.']
+  robots_index boolean [not null, default: true, note: 'split from src/lib/seo/seo.types.ts current single `noindex` boolean - see EXTEND note in seo-architecture-analysis.md']
+  robots_follow boolean [not null, default: true]
+  og_title varchar [note: 'nullable - falls back to meta_title']
+  og_description varchar [note: 'nullable - falls back to meta_description']
+  og_image_media_id varchar [ref: > media.id, note: 'nullable - falls back to entity main image (Product.mediaIds[0] / Article.featuredMediaId) then seo_settings.default_og_image_media_id']
+  twitter_title varchar [note: 'nullable - falls back to og_title']
+  twitter_description varchar [note: 'nullable - falls back to og_description']
+  twitter_image_media_id varchar [ref: > media.id, note: 'nullable - falls back to og_image_media_id']
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (entity_type, entity_id) [unique, name: 'uq_seo_metadata_entity']
+  }
+
+  Note: 'Per-entity SEO override only (Task 3). Every field is optional by design - resolveSEO() fills gaps from entity defaults then seo_settings (Task 4/31). No meta_keywords field, per explicit task instruction (no confirmed business requirement).'
+}
+
+Table seo_settings {
+  id varchar [pk, note: 'fixed singleton value "seo-settings" - same pattern as brand_settings.id']
+  default_title_template varchar [not null, default: '%s | Site Name', note: '"%s" placeholder for the page/entity title']
+  default_description varchar [not null]
+  default_og_image_media_id varchar [ref: > media.id, note: 'nullable']
+  twitter_site varchar [note: 'nullable, e.g. "@tayho127"']
+  twitter_creator varchar [note: 'nullable']
+  default_robots_index boolean [not null, default: true]
+  default_robots_follow boolean [not null, default: true]
+  updated_at timestamp [not null, default: `now()`]
+
+  Note: 'ASSUMPTION - intentionally SMALLER than the Task 5 spec. site_name/site_url/organization_name/organization_logo/business_name/phone/email/address/social URLs were REMOVED here because they duplicate existing brand_settings fields 1:1 (brand_settings.name, .logoMediaId, .phone, .email, .addressLine/.ward/.district/.province, social_links table). Organization/LocalBusiness/Restaurant schema generation should read brand_settings + social_links directly instead of a second copy. Flagged for explicit review in seo-architecture-analysis.md section 8.1 - restore the removed fields here if there is a real business reason SEO identity must differ from brand identity.'
+}
+
+Table seo_schema {
+  id varchar [pk]
+  entity_type seo_entity_type [note: 'nullable when is_global = true (e.g. Organization/WebSite are not attached to one entity)']
+  entity_id varchar [note: 'ASSUMPTION - polymorphic, same convention as seo_metadata.entity_id; nullable when is_global = true']
+  schema_type seo_schema_type [not null]
+  is_global boolean [not null, default: false, note: 'true = rendered once in app/(site)/layout.tsx (Organization/Restaurant/WebSite); false = rendered on the matching page only (Product/BreadcrumbList/Article/FAQPage) - Task 9']
+  config varchar [note: 'JSON - form field values that cannot be derived from entity data (e.g. FAQPage question/answer pairs, or Product.sku/brand if those fields do not exist on the Product entity - see product.types.ts, no sku/brand field today, ASSUMPTION these would need adding to Product or captured here as override-only)']
+  custom_json_ld text [note: 'nullable - Advanced Mode raw JSON-LD override (Task 10). When set together with is_custom_override=true, this REPLACES the generated schema entirely instead of merging.']
+  is_custom_override boolean [not null, default: false]
+  is_active boolean [not null, default: true]
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (entity_type, entity_id, schema_type) [unique, name: 'uq_seo_schema_entity_type']
+  }
+
+  Note: 'Schema.org/JSON-LD configuration (Task 6-10). Prefers deriving fields from live entity data (Product.name/price/description/image -> schema.name/Offer.price/description/image, Task 8) - `config`/`custom_json_ld` only store what cannot be derived, to avoid duplicating Product/Article data.'
+}
+
+Table redirect {
+  id varchar [pk]
+  source_path varchar [unique, not null, note: 'old path, e.g. "/thuc-don/mon-cu" - relative, not tied to any entity FK since the entity may no longer exist']
+  destination_url varchar [not null, note: 'new path or absolute URL']
+  redirect_type redirect_type [not null, default: `'301'`]
+  is_active boolean [not null, default: true]
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+
+  Note: 'Evidence for the need: slug is owned by Product/Category/Article/Page (Task 24 - SEO does not own slug), so any slug rename today produces an immediate 404 with no history. No FK to those entities by design - a redirect must keep working even if the underlying entity is later deleted. ASSUMPTION - no automatic redirect creation on slug rename is implemented per Task 25 ("Không tự tạo redirect nếu chưa xác định được business rule"); this table only stores rows an admin (or a future confirmed automation rule) creates explicitly.'
+}
+
+// =============================================================================
 // DOMAIN: CMS / CONTENT
 // (Not one of the 7 domains requested, but part of the full ERD analyzed
 // previously - included here for schema completeness; drop this section if
@@ -879,6 +967,13 @@ TableGroup "Customer_Auth" {
 TableGroup "Admin_Auth" {
   roles
   admin_users
+}
+
+TableGroup "SEO" {
+  seo_metadata
+  seo_settings
+  seo_schema
+  redirect
 }
 
 TableGroup "Promotion" {

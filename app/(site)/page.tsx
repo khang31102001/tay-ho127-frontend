@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import {
   TopHero,
   StorySection,
@@ -8,13 +10,27 @@ import {
 } from "@/features/home";
 import { fetchFeaturedMenu } from "@/features/menu";
 import { buildMetadata } from "@/lib/seo/build-metadata";
+// Import thẳng service (không qua barrel @/features/seo) — barrel đó re-export
+// cả UI Admin (SeoDashboard/SeoEditor/...), cùng lý do đã áp dụng cho
+// @/features/articles ở app/(site)/bai-viet/page.tsx.
+import { resolveSeoPayloadForEntity } from "@/features/seo/services/seo-resolver.service";
 import { site } from "@/data/site";
 
-export const metadata = buildMetadata({
-  title: site.name,
-  description: site.tagline,
-  path: "/",
-});
+/**
+ * Homepage là entity_type="homepage" (singleton, entityId=null) trong SEO
+ * Metadata (xem Admin > SEO > Metadata > Trang chủ) — không còn build tĩnh
+ * từ site.ts trực tiếp, để Admin cấu hình được qua resolveSeoPayloadForEntity().
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const seoPayload = await resolveSeoPayloadForEntity({
+    entityType: "homepage",
+    entityId: null,
+    path: "/",
+    defaults: { title: site.name, description: site.tagline, imageMediaId: null },
+  });
+
+  return buildMetadata(seoPayload);
+}
 
 // Trang chủ index: các section nối tiếp nhau theo scroll dọc thông thường.
 // Server Component nên fetch dữ liệu "Món yêu thích" trước khi render, tránh

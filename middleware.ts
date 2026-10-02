@@ -1,36 +1,42 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-import { ADMIN_SESSION_COOKIE } from "@/lib/auth/admin-session-cookie";
-
-const ADMIN_LOGIN_PATH = "/admin/login";
+// Import thẳng service (không qua barrel @/features/redirects) — barrel đó
+// re-export UI Admin ("use client": RedirectsExplorer/RedirectEditor), import
+// qua barrel ở Middleware sẽ kéo UI Admin vào Edge bundle. Cùng lý do đã áp
+// dụng cho @/features/seo ở app/(site)/**.
+import { findActiveRedirect } from "@/features/redirects/services/redirect.service";
 
 /**
- * Chặn /admin/* ở server (edge) trước khi HTML render ra — AdminGuard
- * (client component, useEffect) chỉ redirect SAU khi JS đã tải, vẫn để lộ
- * HTML/JS của trang admin trong khoảnh khắc đó. Middleware là lớp bảo vệ
- * thật; AdminGuard vẫn giữ lại như lớp UX phụ (tránh nháy nội dung).
+ * Task 25 — Redirect Management. Kiểm tra pathname khớp source_path đã cấu
+ * hình tại Admin > SEO > Chuyển hướng, trả 301/302 tương ứng nếu có, không
+ * thì cho request đi tiếp bình thường.
  *
- * MOCK CONTRACT: chỉ kiểm tra SỰ TỒN TẠI của cookie phiên (xem
- * src/lib/auth/admin-session-cookie.ts) — không xác thực chữ ký/hạn dùng vì
- * chưa có backend thật cấp session/JWT thật. Khi có backend ASP.NET Core,
- * chỗ này cần verify token thật (vd. giải mã JWT hoặc gọi endpoint whoami).
+ * GIỚI HẠN ĐÃ BIẾT: findActiveRedirect() đọc mock data qua service dùng
+ * localStorage — Middleware chạy phía server (Edge Runtime), KHÔNG truy cập
+ * được localStorage của trình duyệt, nên chỉ thấy được SEED_REDIRECTS tĩnh,
+ * không thấy redirect Admin vừa thêm trong CÙNG session (giống hạn chế đã ghi
+ * nhận ở mọi service mock khác trong repo — xem comment trong menu.service.ts,
+ * navigation.service.ts). Khi có Backend ASP.NET Core thật, thay findActiveRedirect
+ * bằng 1 lệnh gọi API, middleware không cần sửa gì thêm.
  */
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  const hasSession = request.cookies.has(ADMIN_SESSION_COOKIE);
-  const isLoginPath = pathname === ADMIN_LOGIN_PATH;
+  const redirect = findActiveRedirect(request.nextUrl.pathname);
 
-  if (!isLoginPath && !hasSession) {
-    return NextResponse.redirect(new URL(ADMIN_LOGIN_PATH, request.url));
+  if (!redirect) {
+    return NextResponse.next();
   }
 
-  if (isLoginPath && hasSession) {
-    return NextResponse.redirect(new URL("/admin", request.url));
-  }
+  const destination = redirect.destinationUrl.startsWith("http")
+    ? redirect.destinationUrl
+    : new URL(redirect.destinationUrl, request.url);
 
-  return NextResponse.next();
+  return NextResponse.redirect(destination, redirect.redirectType);
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  // Bỏ qua static asset/API/admin/_next — redirect chỉ áp dụng cho route
+  // public (Product/Category/Article/Page cũ đổi slug), không can thiệp vào
+  // khu vực quản trị hay hạ tầng Next.js.
+  matcher: ["/((?!_next|api|admin|images|fonts|favicon.ico).*)"],
 };
