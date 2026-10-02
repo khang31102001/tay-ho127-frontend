@@ -49,6 +49,7 @@ export function BannerEditor({ id }: BannerEditorProps) {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <MediaPicker
+          mediaType="image"
           label="Ảnh Desktop"
           mediaOptions={mediaOptions}
           selectedId={form.desktopMediaId}
@@ -56,6 +57,7 @@ export function BannerEditor({ id }: BannerEditorProps) {
         />
 
         <MediaPicker
+          mediaType="image"
           label="Ảnh Mobile"
           mediaOptions={mediaOptions}
           selectedId={form.mobileMediaId}

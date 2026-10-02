@@ -140,6 +140,7 @@ export function SeoFieldsForm({
         </label>
 
         <MediaPicker
+          mediaType="image"
           label="OG Image"
           mediaOptions={mediaOptions}
           selectedId={form.ogImageMediaId}
@@ -174,6 +175,7 @@ export function SeoFieldsForm({
         </label>
 
         <MediaPicker
+          mediaType="image"
           label="Twitter Image"
           mediaOptions={mediaOptions}
           selectedId={form.twitterImageMediaId}

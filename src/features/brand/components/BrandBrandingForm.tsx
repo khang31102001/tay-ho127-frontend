@@ -17,30 +17,35 @@ export function BrandBrandingForm({ form, mediaOptions, updateField }: BrandBran
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
       <MediaPicker
+        mediaType="image"
         label="Logo chính"
         mediaOptions={mediaOptions}
         selectedId={form.logoMediaId}
         onChange={(mediaId) => updateField("logoMediaId", mediaId)}
       />
       <MediaPicker
+        mediaType="image"
         label="Logo nền tối (Dark)"
         mediaOptions={mediaOptions}
         selectedId={form.logoDarkMediaId}
         onChange={(mediaId) => updateField("logoDarkMediaId", mediaId)}
       />
       <MediaPicker
+        mediaType="image"
         label="Logo nền sáng (Light)"
         mediaOptions={mediaOptions}
         selectedId={form.logoLightMediaId}
         onChange={(mediaId) => updateField("logoLightMediaId", mediaId)}
       />
       <MediaPicker
+        mediaType="image"
         label="Favicon"
         mediaOptions={mediaOptions}
         selectedId={form.faviconMediaId}
         onChange={(mediaId) => updateField("faviconMediaId", mediaId)}
       />
       <MediaPicker
+        mediaType="image"
         label="Ảnh mặc định khi chia sẻ (OG Image)"
         mediaOptions={mediaOptions}
         selectedId={form.ogImageMediaId}

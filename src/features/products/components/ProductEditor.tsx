@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 
 import { DataEditor } from "@/components/admin/templates/DataEditor/DataEditor";
@@ -10,6 +9,7 @@ import {
 } from "@/components/admin/templates/formFieldClassName";
 import type { EntityStatus } from "@/components/admin/templates/StatusBadge";
 import { useAdminAuth } from "@/features/admin-auth";
+import { MediaMultiPicker } from "@/components/shared/MediaPicker";
 import { Tabs, type TabItem } from "@/components/ui/Tabs";
 import { SeoFieldsForm, StructuredDataSection } from "@/features/seo";
 
@@ -28,7 +28,6 @@ export function ProductEditor({ id }: ProductEditorProps) {
   const {
     form,
     updateField,
-    toggleMedia,
     toggleModifierGroup,
     categoryOptions,
     mediaOptions,
@@ -178,45 +177,13 @@ export function ProductEditor({ id }: ProductEditorProps) {
         />
       </label>
 
-      <div>
-        <span className={adminFieldLabelClassName}>Media (chọn từ thư viện)</span>
-
-        {mediaOptions.length === 0 ? (
-          <p className="mt-2 text-[13px] text-brand-muted">
-            Chưa có file nào trong thư viện Media.
-          </p>
-        ) : (
-          <div className="mt-2 grid gap-2 sm:grid-cols-2">
-            {mediaOptions.map((media) => (
-              <label
-                key={media.id}
-                className="flex items-center gap-3 rounded-lg border border-brand-line px-3 py-2 text-[13px] font-medium text-brand-ink"
-              >
-                <input
-                  type="checkbox"
-                  checked={form.mediaIds.includes(media.id)}
-                  onChange={() => toggleMedia(media.id)}
-                  className="size-4 shrink-0 accent-brand-green"
-                />
-
-                {media.type === "image" ? (
-                  <Image
-                    src={media.url}
-                    alt={media.altText ?? media.fileName}
-                    width={32}
-                    height={32}
-                    className="size-8 shrink-0 rounded object-cover"
-                  />
-                ) : (
-                  <span className="size-8 shrink-0 rounded bg-brand-cream" />
-                )}
-
-                <span className="truncate">{media.fileName}</span>
-              </label>
-            ))}
-          </div>
-        )}
-      </div>
+      <MediaMultiPicker
+        label="Media (chọn từ thư viện)"
+        mediaType="image"
+        mediaOptions={mediaOptions}
+        selectedIds={form.mediaIds}
+        onChange={(mediaIds) => updateField("mediaIds", mediaIds)}
+      />
 
       <div>
         <span className={adminFieldLabelClassName}>Nhóm tùy chọn món (Modifier — tùy chọn)</span>
