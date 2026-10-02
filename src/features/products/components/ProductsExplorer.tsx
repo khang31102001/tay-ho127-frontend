@@ -14,6 +14,7 @@ import { buildProductExportRows, PRODUCT_EXPORT_COLUMNS } from "../import-export
 
 const columns: DataExplorerColumn<ProductRow>[] = [
   { key: "name", header: "Tên sản phẩm" },
+  { key: "slug", header: "Slug" },
   { key: "categoryName", header: "Danh mục" },
   {
     key: "price",
@@ -33,12 +34,11 @@ const columns: DataExplorerColumn<ProductRow>[] = [
 ];
 
 export function ProductsExplorer() {
-  const { rows, categories, isLoading, handleDelete, reload } = useProductsExplorer();
-  const { user } = useAdminAuth();
+  const { rows, categories, isLoading, loadError, handleDelete, reload } = useProductsExplorer();
+  const { hasPermission } = useAdminAuth();
 
-  // Import/Export ghi đè hàng loạt sản phẩm. Catalog chưa có module Backend nên
-  // chưa có mã quyền riêng — tạm chỉ cho role super-admin (role Backend có toàn quyền).
-  const canManageProducts = user?.roles.includes("super-admin") ?? false;
+  // Import vừa tạo vừa cập nhật sản phẩm — cần cả 2 quyền.
+  const canImport = hasPermission("products.create") && hasPermission("products.update");
 
   return (
     <DataExplorer<ProductRow>
@@ -47,37 +47,37 @@ export function ProductsExplorer() {
       rows={rows}
       isLoading={isLoading}
       getRowId={(row) => row.id}
-      getSearchableText={(row) => `${row.name} ${row.categoryName}`}
+      getSearchableText={(row) => `${row.name} ${row.slug} ${row.categoryName}`}
       searchPlaceholder="Tìm sản phẩm..."
-      createHref="/admin/catalog/products/new"
+      createHref={hasPermission("products.create") ? "/admin/catalog/products/new" : undefined}
       createLabel="Thêm sản phẩm"
       editHref={(row) => `/admin/catalog/products/${row.id}`}
-      onDelete={handleDelete}
-      emptyState="Chưa có sản phẩm nào."
+      onDelete={hasPermission("products.delete") ? handleDelete : undefined}
+      emptyState={loadError ?? "Chưa có sản phẩm nào."}
       toolbarActions={
-        canManageProducts ? (
-          <>
-            <ExportButton
-              label="Xuất file"
-              fileName="san-pham.csv"
-              columns={PRODUCT_EXPORT_COLUMNS}
-              rows={buildProductExportRows(rows, categories)}
-            />
+        <>
+          <ExportButton
+            label="Xuất file"
+            fileName="san-pham.csv"
+            columns={PRODUCT_EXPORT_COLUMNS}
+            rows={buildProductExportRows(rows, categories)}
+          />
 
+          {canImport && (
             <ImportDialog
               title="Nhập sản phẩm hàng loạt"
               triggerLabel="Nhập file"
               config={{
                 columns: buildProductImportColumns(categories),
                 onImport: async (validRows) => {
-                  const outcome = await importProducts(validRows);
+                  const outcome = await importProducts(validRows, rows);
                   await reload();
                   return outcome;
                 },
               }}
             />
-          </>
-        ) : undefined
+          )}
+        </>
       }
     />
   );

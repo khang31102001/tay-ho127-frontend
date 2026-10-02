@@ -3,6 +3,8 @@ import type { EntityStatus } from "@/components/admin/templates/StatusBadge";
 export type ManagedProduct = {
   id: string;
   name: string;
+  /** Đường dẫn công khai /thuc-don/{slug} — Backend tự sinh từ tên khi để trống, giữ nguyên khi đổi tên. */
+  slug: string;
   categoryId: string;
   price: number;
   description?: string;

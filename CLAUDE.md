@@ -51,11 +51,13 @@ Current features:
 | `features/menu-items` | Admin: simple menu-item CRUD (legacy/first Admin CRUD) | Reuses `MenuItem` type + seed array from global `src/data/menu-items.ts` (shared with `features/menu`) — no local `mocks/` |
 | `features/users` | Admin: user accounts (Backend Identity) | Assigns roles (`features/roles`) and department/brand scopes (`features/organization`) |
 | `features/roles` | Admin: roles + their permissions (Backend AccessControl) | Permission checklist from `features/permissions` |
-| `features/categories` | Admin Catalog: category CRUD | Parent-category self-reference |
+| `features/categories` | Admin Catalog: category CRUD (Backend Catalog) | Parent-category tree, max 3 levels |
 | `features/media` | Admin media library (Backend Media) + `listMedia()` for Site/MediaPicker | `listMedia()` = mock seed (ids referenced by still-mock content) + active Backend media (`GET /media/public`); images from hosts not in `NEXT_PUBLIC_IMAGE_REMOTE_HOSTS` are excluded |
-| `features/products` | Admin Catalog: product CRUD | Depends on `features/categories` + `features/media` |
-| `features/menus` | Admin Catalog: menu CRUD | Not to be confused with `features/menu-items` (different, older domain) |
-| `features/catalog-menu-items` | Admin Catalog: Menu↔Product junction (`priceOverride`, `sortOrder`, `isAvailable`) | Depends on `features/menus` + `features/products` |
+| `features/products` | Admin Catalog: product CRUD + CSV import/export (Backend Catalog) | `slug` = public URL `/thuc-don/{slug}`; depends on `features/categories` + `features/media` + `features/modifier-groups` |
+| `features/menus` | Admin Catalog: sales-menu CRUD (Backend Catalog) | `code` is immutable — the Site looks menus up by code (`thuc-don-chinh`, `mon-yeu-thich`, `goi-y-them`) |
+| `features/menu-products` | Admin Catalog: Menu↔Product junction (`priceOverride`, `sortOrder`, `isAvailable`) (Backend Catalog) | Depends on `features/menus` + `features/products` |
+| `features/modifier-groups` | Admin Catalog: modifier groups + options (Backend Catalog) | Options keep their id when edited (cart/order snapshots reference it) |
+| `features/catalog-public` | Site read-model of the Catalog (`GET /catalog/public`, anonymous) | Used by `features/menu`, orders, reorder, promotions — never the Admin services |
 
 **What stays outside `features/`** (page-chrome or genuinely cross-feature, not a business domain):
 - `src/components/ui/` — UI primitives (Button, Container, ...).
@@ -76,8 +78,9 @@ Current features:
 - Menu data: `features/menu`'s `services/menu.service.ts` exports `fetchMenu()`, returning `mocks/menu-api-response.mock.json` after a simulated delay. Mock today, but the "mock-ness" is internal to the service — swapping in a real backend means changing this file only.
 - Customer auth (`features/auth`) calls mock Route Handlers under `app/api/auth/*` (hard-coded demo data); `findOrCreateCustomerByContact` in `features/customers/services/site-customer-bridge.service.ts` keeps Site customers/orders in a mock localStorage store.
 - Admin auth is real: BFF Route Handlers `app/api/admin/auth/*` log in against the ASP.NET Core Backend (`BACKEND_API_URL`, server-only) and keep its JWTs in HttpOnly cookies; `app/api/admin/backend/[...path]` proxies every Admin call to Backend `/api/v1/*` (adds Bearer, refreshes on 401). The browser never sees a token and the Backend needs no CORS.
-- Admin features backed by the Backend (users, roles, permissions, admin-menus, organization, platform, customers, media library): `services/<name>.service.ts` calls `adminApi` and maps Backend DTOs to the feature's types. Lists load up to 200 rows (Backend max page size) and `DataExplorer` searches/pages them client-side.
-- Admin features NOT yet in the Backend (catalog, content, orders, SEO, settings…) keep the mock pattern: `mocks/<name>.mock.ts` exports a `SEED_*` array; `services/<name>.service.ts` reads/writes a `localStorage` key. Moving one to the Backend means rewriting only that service file.
+- Admin features backed by the Backend (users, roles, permissions, admin-menus, organization, platform, customers, media library, catalog: categories/products/menus/menu-products/modifier-groups): `services/<name>.service.ts` calls `adminApi` and maps Backend DTOs to the feature's types.
+- The Site reads the catalog it sells from `features/catalog-public` (one anonymous snapshot: Server Components call the Backend directly with a 60 s cache, the browser goes through `app/api/catalog/public`). Admin edits show on the Site within ~60 s. Lists load up to 200 rows (Backend max page size) and `DataExplorer` searches/pages them client-side.
+- Admin features NOT yet in the Backend (promotions, content, orders, payments, SEO, settings…) keep the mock pattern: `mocks/<name>.mock.ts` exports a `SEED_*` array; `services/<name>.service.ts` reads/writes a `localStorage` key. Moving one to the Backend means rewriting only that service file.
 - Any new data-fetching/API-calling logic (mock or real) should follow this same pattern: a `services/<name>.service.ts` file inside the owning feature, never a raw `fetch()` inside a component.
 
 ### App Router structure

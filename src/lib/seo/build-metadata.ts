@@ -15,16 +15,21 @@ const SITE_NAME = site.name;
  */
 export function buildMetadata(payload: SeoPayload): Metadata {
   const siteUrl = getSiteUrl();
-  const canonical = `${siteUrl}${payload.path}`;
+  const canonical = payload.canonicalUrl || `${siteUrl}${payload.path}`;
   const title = payload.title.includes(SITE_NAME) ? payload.title : `${payload.title} | ${SITE_NAME}`;
   const images = payload.image ? [{ url: payload.image }] : undefined;
+
+  const ogTitle = payload.ogTitle || title;
+  const ogDescription = payload.ogDescription || payload.description;
+  const twitterTitle = payload.twitterTitle || ogTitle;
+  const twitterDescription = payload.twitterDescription || ogDescription;
 
   const openGraph: Metadata["openGraph"] =
     payload.type === "article"
       ? {
           type: "article",
-          title,
-          description: payload.description,
+          title: ogTitle,
+          description: ogDescription,
           url: canonical,
           siteName: SITE_NAME,
           images,
@@ -33,23 +38,28 @@ export function buildMetadata(payload: SeoPayload): Metadata {
         }
       : {
           type: "website",
-          title,
-          description: payload.description,
+          title: ogTitle,
+          description: ogDescription,
           url: canonical,
           siteName: SITE_NAME,
           images,
         };
 
+  // noindex (field cũ) luôn thắng — nhiều page (404/preview chưa publish) đã
+  // dùng field này trước khi có robotsIndex/robotsFollow riêng biệt.
+  const shouldIndex = payload.noindex ? false : (payload.robotsIndex ?? true);
+  const shouldFollow = payload.noindex ? false : (payload.robotsFollow ?? true);
+
   return {
     title,
     description: payload.description,
     alternates: { canonical },
-    robots: payload.noindex ? { index: false, follow: false } : { index: true, follow: true },
+    robots: { index: shouldIndex, follow: shouldFollow },
     openGraph,
     twitter: {
       card: images ? "summary_large_image" : "summary",
-      title,
-      description: payload.description,
+      title: twitterTitle,
+      description: twitterDescription,
       images: payload.image ? [payload.image] : undefined,
     },
   };

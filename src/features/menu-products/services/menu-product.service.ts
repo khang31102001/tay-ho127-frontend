@@ -1,89 +1,64 @@
+import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/lib/http/admin-api";
+import type { PaginatedResult } from "@/lib/http/api-types";
+
 import type { ManagedMenuProduct } from "../types/menu-product.types";
-import { SEED_MENU_PRODUCTS } from "../mocks/menu-product.mock";
 
 /**
- * MOCK CONTRACT: chưa có backend quản lý liên kết Menu-Product thật. Dữ liệu
- * seed (xem ../mocks/menu-product.mock.ts) + đồng bộ 2 chiều với
- * localStorage.
+ * Admin → Catalog → Liên kết Menu-SP, gọi Backend
+ * /api/v1/catalog/sales-menu-products (quyền sales-menus.*). Mỗi sản phẩm chỉ
+ * xuất hiện 1 lần trong 1 thực đơn — trùng → 409.
  */
-const STORAGE_KEY = "tayho-admin-menu-products";
-const MOCK_DELAY_MS = 300;
 
-function delay(ms: number = MOCK_DELAY_MS): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+/** SalesMenuProductResponse của Backend. */
+type SalesMenuProductDto = {
+  id: string;
+  salesMenuId: string;
+  productId: string;
+  priceOverride: number | null;
+  sortOrder: number;
+  isAvailable: boolean;
+};
+
+function toManagedMenuProduct(dto: SalesMenuProductDto): ManagedMenuProduct {
+  return {
+    id: dto.id,
+    menuId: dto.salesMenuId,
+    productId: dto.productId,
+    priceOverride: dto.priceOverride ?? undefined,
+    sortOrder: dto.sortOrder,
+    isAvailable: dto.isAvailable,
+  };
 }
 
-function readStore(): ManagedMenuProduct[] {
-  if (typeof window === "undefined") {
-    return SEED_MENU_PRODUCTS;
-  }
-
-  try {
-    const saved = window.localStorage.getItem(STORAGE_KEY);
-
-    if (saved) {
-      const parsed: unknown = JSON.parse(saved);
-
-      if (Array.isArray(parsed)) {
-        return parsed as ManagedMenuProduct[];
-      }
-    }
-  } catch (error) {
-    console.error("Không thể đọc dữ liệu Menu-Product:", error);
-  }
-
-  return SEED_MENU_PRODUCTS;
-}
-
-function writeStore(menuProducts: ManagedMenuProduct[]): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(menuProducts));
-  } catch (error) {
-    console.error("Không thể lưu dữ liệu Menu-Product:", error);
-  }
+function toRequest(payload: Omit<ManagedMenuProduct, "id">) {
+  return {
+    salesMenuId: payload.menuId,
+    productId: payload.productId,
+    priceOverride: payload.priceOverride ?? null,
+    sortOrder: payload.sortOrder,
+    isAvailable: payload.isAvailable,
+  };
 }
 
 export async function listMenuProducts(): Promise<ManagedMenuProduct[]> {
-  await delay();
-  return readStore();
+  const page = await adminApi.get<PaginatedResult<SalesMenuProductDto>>("/catalog/sales-menu-products", {
+    params: { pageSize: ADMIN_LIST_PAGE_SIZE },
+  });
+  return page.items.map(toManagedMenuProduct);
 }
 
-export async function getMenuProductById(id: string): Promise<ManagedMenuProduct | null> {
-  await delay();
-  return readStore().find((item) => item.id === id) ?? null;
+export async function getMenuProductById(id: string): Promise<ManagedMenuProduct> {
+  return toManagedMenuProduct(await adminApi.get<SalesMenuProductDto>(`/catalog/sales-menu-products/${id}`));
 }
 
-export async function createMenuProduct(
-  payload: Omit<ManagedMenuProduct, "id">,
-): Promise<ManagedMenuProduct> {
-  await delay();
-
-  const newItem: ManagedMenuProduct = { ...payload, id: `mp-${Date.now()}` };
-
-  writeStore([...readStore(), newItem]);
-
-  return newItem;
+export async function createMenuProduct(payload: Omit<ManagedMenuProduct, "id">): Promise<ManagedMenuProduct> {
+  return toManagedMenuProduct(await adminApi.post<SalesMenuProductDto>("/catalog/sales-menu-products", toRequest(payload)));
 }
 
-export async function updateMenuProduct(
-  id: string,
-  payload: Omit<ManagedMenuProduct, "id">,
-): Promise<ManagedMenuProduct> {
-  await delay();
-
-  const updatedItem: ManagedMenuProduct = { ...payload, id };
-
-  writeStore(readStore().map((item) => (item.id === id ? updatedItem : item)));
-
-  return updatedItem;
+export async function updateMenuProduct(id: string, payload: Omit<ManagedMenuProduct, "id">): Promise<ManagedMenuProduct> {
+  return toManagedMenuProduct(await adminApi.put<SalesMenuProductDto>(`/catalog/sales-menu-products/${id}`, toRequest(payload)));
 }
 
-export async function deleteMenuProduct(id: string): Promise<void> {
-  await delay();
-
-  writeStore(readStore().filter((item) => item.id !== id));
+export function deleteMenuProduct(id: string): Promise<void> {
+  return adminApi.delete<void>(`/catalog/sales-menu-products/${id}`);
 }

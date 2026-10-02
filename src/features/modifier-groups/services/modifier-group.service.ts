@@ -1,95 +1,77 @@
-import type { ManagedModifierGroup } from "../types/modifier-group.types";
-import { SEED_MODIFIER_GROUPS } from "../mocks/modifier-group.mock";
+import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/lib/http/admin-api";
+import type { PaginatedResult } from "@/lib/http/api-types";
 
-const STORAGE_KEY = "tayho-admin-modifier-groups";
-const MOCK_DELAY_MS = 300;
+import type { ManagedModifierGroup, ModifierOption, ModifierSelectionType } from "../types/modifier-group.types";
 
-function delay(ms: number = MOCK_DELAY_MS): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+/**
+ * Admin → Catalog → Tùy chọn món (Modifier), gọi Backend
+ * /api/v1/catalog/modifier-groups (quyền modifier-groups.*). Site đọc nhóm
+ * tùy chọn qua features/catalog-public.
+ *
+ * Option gửi lên là danh sách đầy đủ, có thứ tự. Option đã có giữ nguyên id
+ * (giỏ hàng/đơn hàng tham chiếu optionId); option mới (id bắt đầu bằng
+ * NEW_OPTION_ID_PREFIX, sinh ở Editor) gửi id = null để Backend cấp id.
+ */
+export const NEW_OPTION_ID_PREFIX = "new-";
 
-function readStore(): ManagedModifierGroup[] {
-  if (typeof window === "undefined") {
-    return SEED_MODIFIER_GROUPS;
-  }
+/** ModifierGroupResponse của Backend. */
+type ModifierGroupDto = {
+  id: string;
+  name: string;
+  selectionType: ModifierSelectionType;
+  isRequired: boolean;
+  options: ModifierOption[];
+  createdAtUtc: string;
+  updatedAtUtc: string | null;
+};
 
-  try {
-    const saved = window.localStorage.getItem(STORAGE_KEY);
-
-    if (saved) {
-      const parsed: unknown = JSON.parse(saved);
-
-      if (Array.isArray(parsed)) {
-        return parsed as ManagedModifierGroup[];
-      }
-    }
-  } catch (error) {
-    console.error("Không thể đọc dữ liệu nhóm tùy chọn món:", error);
-  }
-
-  return SEED_MODIFIER_GROUPS;
-}
-
-function writeStore(groups: ManagedModifierGroup[]): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(groups));
-  } catch (error) {
-    console.error("Không thể lưu dữ liệu nhóm tùy chọn món:", error);
-  }
-}
-
-export async function listModifierGroups(): Promise<ManagedModifierGroup[]> {
-  await delay();
-  return readStore();
-}
-
-export async function getModifierGroupById(id: string): Promise<ManagedModifierGroup | null> {
-  await delay();
-  return readStore().find((group) => group.id === id) ?? null;
-}
-
-/** Dùng bởi Site (ProductDetail) — không delay/log lỗi khác biệt, chỉ là alias rõ nghĩa hơn cho nhiều id cùng lúc. */
-export async function listModifierGroupsByIds(ids: string[]): Promise<ManagedModifierGroup[]> {
-  await delay();
-  const idSet = new Set(ids);
-  return readStore().filter((group) => idSet.has(group.id));
+function toManagedModifierGroup(dto: ModifierGroupDto): ManagedModifierGroup {
+  return {
+    id: dto.id,
+    name: dto.name,
+    selectionType: dto.selectionType,
+    isRequired: dto.isRequired,
+    options: dto.options,
+    createdAt: dto.createdAtUtc,
+    updatedAt: dto.updatedAtUtc ?? dto.createdAtUtc,
+  };
 }
 
 export type ModifierGroupUpsertInput = Omit<ManagedModifierGroup, "id" | "createdAt" | "updatedAt">;
 
-export async function createModifierGroup(payload: ModifierGroupUpsertInput): Promise<ManagedModifierGroup> {
-  await delay();
-  const now = new Date().toISOString();
-  const newGroup: ManagedModifierGroup = { ...payload, id: `modgroup-${Date.now()}`, createdAt: now, updatedAt: now };
-
-  writeStore([...readStore(), newGroup]);
-
-  return newGroup;
-}
-
-export async function updateModifierGroup(
-  id: string,
-  payload: ModifierGroupUpsertInput,
-): Promise<ManagedModifierGroup> {
-  await delay();
-  const current = readStore().find((group) => group.id === id);
-  const updated: ManagedModifierGroup = {
-    ...payload,
-    id,
-    createdAt: current?.createdAt ?? new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+function toRequest(payload: ModifierGroupUpsertInput) {
+  return {
+    name: payload.name,
+    selectionType: payload.selectionType,
+    isRequired: payload.isRequired,
+    options: payload.options.map((option) => ({
+      id: option.id.startsWith(NEW_OPTION_ID_PREFIX) ? null : option.id,
+      label: option.label,
+      priceAdjustment: option.priceAdjustment,
+      isDefault: option.isDefault,
+    })),
   };
-
-  writeStore(readStore().map((group) => (group.id === id ? updated : group)));
-
-  return updated;
 }
 
-export async function deleteModifierGroup(id: string): Promise<void> {
-  await delay();
-  writeStore(readStore().filter((group) => group.id !== id));
+export async function listModifierGroups(): Promise<ManagedModifierGroup[]> {
+  const page = await adminApi.get<PaginatedResult<ModifierGroupDto>>("/catalog/modifier-groups", {
+    params: { pageSize: ADMIN_LIST_PAGE_SIZE },
+  });
+  return page.items.map(toManagedModifierGroup);
+}
+
+export async function getModifierGroupById(id: string): Promise<ManagedModifierGroup> {
+  return toManagedModifierGroup(await adminApi.get<ModifierGroupDto>(`/catalog/modifier-groups/${id}`));
+}
+
+export async function createModifierGroup(payload: ModifierGroupUpsertInput): Promise<ManagedModifierGroup> {
+  return toManagedModifierGroup(await adminApi.post<ModifierGroupDto>("/catalog/modifier-groups", toRequest(payload)));
+}
+
+export async function updateModifierGroup(id: string, payload: ModifierGroupUpsertInput): Promise<ManagedModifierGroup> {
+  return toManagedModifierGroup(await adminApi.put<ModifierGroupDto>(`/catalog/modifier-groups/${id}`, toRequest(payload)));
+}
+
+export function deleteModifierGroup(id: string): Promise<void> {
+  return adminApi.delete<void>(`/catalog/modifier-groups/${id}`);
 }

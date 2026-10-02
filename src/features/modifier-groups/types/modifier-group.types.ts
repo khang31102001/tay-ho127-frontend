@@ -34,6 +34,7 @@ export type ManagedModifierGroup = {
   /** single + có option isDefault → luôn thỏa required. multiple + isRequired → phải chọn tối thiểu 1 option mới được thêm vào giỏ. */
   isRequired: boolean;
   options: ModifierOption[];
-  createdAt: string;
-  updatedAt: string;
+  /** Chỉ có ở dữ liệu Admin — snapshot công khai của Site không kèm mốc thời gian. */
+  createdAt?: string;
+  updatedAt?: string;
 };

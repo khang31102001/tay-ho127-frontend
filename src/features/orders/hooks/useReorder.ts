@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 
 // Import thẳng (không qua barrel) — lý do đầy đủ xem features/menu/services/menu.service.ts.
 import { useCart, type CartItemModifierSelection, type CartProduct } from "@/features/cart";
-import { getProductById } from "@/features/products/services/product.service";
-import { getModifierGroupById } from "@/features/modifier-groups/services/modifier-group.service";
+import { getPublicModifierGroupById, getPublicProductById } from "@/features/catalog-public";
 import type { ManagedOrder } from "../types/order.types";
 
 export type ReorderResult = {
@@ -34,7 +33,7 @@ export function useReorder() {
 
     try {
       for (const item of order.items) {
-        const product = await getProductById(item.productId);
+        const product = await getPublicProductById(item.productId);
 
         if (!product || product.status !== "active") {
           skippedCount += 1;
@@ -44,7 +43,7 @@ export function useReorder() {
         const modifiers: CartItemModifierSelection[] = [];
 
         for (const snapshot of item.modifiers ?? []) {
-          const group = await getModifierGroupById(snapshot.groupId);
+          const group = await getPublicModifierGroupById(snapshot.groupId);
           const option = group?.options.find((candidate) => candidate.id === snapshot.optionId);
 
           if (group && option) {

@@ -1,34 +1,23 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 
-import type { ManagedCategory } from "@/features/categories";
-import type { ManagedProduct } from "../types/product.types";
 import { listCategories } from "@/features/categories";
+import { useAsyncData } from "@/hooks/useAsyncData";
+
+import type { ManagedProduct } from "../types/product.types";
 import { deleteProduct, listProducts } from "../services/product.service";
 
 export type ProductRow = ManagedProduct & { categoryName: string };
 
 export function useProductsExplorer() {
-  const [products, setProducts] = useState<ManagedProduct[]>([]);
-  const [categories, setCategories] = useState<ManagedCategory[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data, isLoading, error, reload } = useAsyncData(
+    () => Promise.all([listProducts(), listCategories()]),
+    [],
+    { fallbackError: "Không thể tải sản phẩm." },
+  );
 
-  const loadProducts = useCallback(async () => {
-    setIsLoading(true);
-
-    try {
-      const [productData, categoryData] = await Promise.all([listProducts(), listCategories()]);
-      setProducts(productData);
-      setCategories(categoryData);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadProducts();
-  }, [loadProducts]);
+  const [products, categories] = data ?? [[], []];
 
   const rows = useMemo<ProductRow[]>(() => {
     const categoryNameById = new Map(categories.map((category) => [category.id, category.name]));
@@ -41,14 +30,15 @@ export function useProductsExplorer() {
 
   async function handleDelete(product: ManagedProduct) {
     await deleteProduct(product.id);
-    await loadProducts();
+    await reload();
   }
 
   return {
     rows,
     categories,
     isLoading,
+    loadError: error,
     handleDelete,
-    reload: loadProducts,
+    reload,
   };
 }

@@ -72,7 +72,9 @@ export interface Price {
 // Helper type for UI mapping (Product card)
 export type UiProduct = {
   id: number;
-  /** Định danh ổn định của Product (ManagedProduct.id), dùng để điều hướng sang trang chi tiết `/thuc-don/[slug]`. */
+  /** ManagedProduct.id — định danh dùng cho giỏ hàng/đơn hàng (CartProduct.productId). */
+  productId: string;
+  /** ManagedProduct.slug — đường dẫn trang chi tiết `/thuc-don/[slug]`. */
   slug: string;
   name: string;
   category: "Món mặn" | "Món chay" | "Ăn kèm" | string;
@@ -93,7 +95,7 @@ export type UiProduct = {
  * — chỉ import type (không kéo runtime code Admin vào bundle Site), rỗng nếu
  * món không có modifier nào.
  */
-export type ProductDetail = Omit<UiProduct, "id"> & {
+export type ProductDetail = Omit<UiProduct, "id" | "productId"> & {
   id: string;
   description?: string;
   modifierGroups: ManagedModifierGroup[];

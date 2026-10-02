@@ -4,7 +4,6 @@ export { ModifierGroupEditor } from "./components/ModifierGroupEditor";
 export {
   listModifierGroups,
   getModifierGroupById,
-  listModifierGroupsByIds,
   createModifierGroup,
   updateModifierGroup,
   deleteModifierGroup,

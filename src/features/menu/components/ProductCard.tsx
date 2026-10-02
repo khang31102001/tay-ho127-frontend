@@ -24,14 +24,14 @@ export function ProductCard({ item }: ProductCardProps) {
   const favorited = isFavorite(item.slug);
 
   /**
-   * Dùng item.slug (= ManagedProduct.id thật, xem menu.types.ts) làm
+   * Dùng item.productId (= ManagedProduct.id thật, xem menu.types.ts) làm
    * CartProduct.productId — KHÔNG dùng item.id (chỉ là số thứ tự hiển thị
    * trong danh sách hiện tại). Không còn bước chọn Modifier khi Add to Cart —
    * các tùy chọn dùng chung (Nước mắm/Rau...) giờ là General Order Options,
    * chọn 1 lần cho cả đơn ở Mini Cart/Cart Page (xem features/order-options).
    */
   const cartProduct = {
-    productId: item.slug,
+    productId: item.productId,
     name: item.name,
     basePrice: item.price,
     image: item.image,

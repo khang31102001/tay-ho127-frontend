@@ -4,6 +4,7 @@ import { Plus, Trash2 } from "lucide-react";
 
 import { DataEditor } from "@/components/admin/templates/DataEditor/DataEditor";
 import { adminFieldInputClassName, adminFieldLabelClassName } from "@/components/admin/templates/formFieldClassName";
+import { useAdminAuth } from "@/features/admin-auth";
 
 import { useModifierGroupEditor } from "../hooks/useModifierGroupEditor";
 import { MODIFIER_SELECTION_TYPE_OPTIONS, type ModifierSelectionType } from "../types/modifier-group.types";
@@ -20,20 +21,24 @@ export function ModifierGroupEditor({ id }: ModifierGroupEditorProps) {
     updateOption,
     removeOption,
     isLoading,
+    loadError,
     isEditMode,
     handleSave,
     handleDelete,
     goToExplore,
   } = useModifierGroupEditor({ id });
+  const { hasPermission } = useAdminAuth();
 
   return (
     <DataEditor
       title={isEditMode ? "Sửa nhóm tùy chọn món" : "Thêm nhóm tùy chọn món"}
       backHref="/admin/catalog/modifier-groups"
       isLoading={isLoading}
+      loadError={loadError}
       onSave={handleSave}
       onSaved={goToExplore}
-      onDelete={isEditMode ? handleDelete : undefined}
+      onDelete={isEditMode && hasPermission("modifier-groups.delete") ? handleDelete : undefined}
+      deleteConfirmDescription="Nhóm cũng bị gỡ khỏi mọi sản phẩm đang dùng. Hành động này không thể hoàn tác."
       onDeleted={goToExplore}
     >
       <label className={adminFieldLabelClassName}>

@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { useAsyncData } from "@/hooks/useAsyncData";
+
 import type { ManagedMenu } from "../types/menu.types";
 import {
   createMenu,
@@ -14,6 +16,7 @@ import {
 export type MenuFormValue = Omit<ManagedMenu, "id">;
 
 const EMPTY_FORM: MenuFormValue = {
+  code: "",
   name: "",
   status: "active",
 };
@@ -27,31 +30,17 @@ export function useMenuEditor({ id }: UseMenuEditorParams) {
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<MenuFormValue>(EMPTY_FORM);
-  const [isLoading, setIsLoading] = useState(isEditMode);
+
+  const existing = useAsyncData(() => getMenuById(id ?? ""), [id], {
+    enabled: isEditMode,
+    fallbackError: "Không thể tải thực đơn.",
+  });
 
   useEffect(() => {
-    if (!isEditMode) {
-      return;
-    }
-
-    let isCancelled = false;
-
-    getMenuById(id).then((menu) => {
-      if (isCancelled) {
-        return;
-      }
-
-      if (menu) {
-        setForm(menu);
-      }
-
-      setIsLoading(false);
-    });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [id, isEditMode]);
+    if (!existing.data) return;
+    const { code, name, status } = existing.data;
+    setForm({ code, name, status });
+  }, [existing.data]);
 
   function updateField<K extends keyof MenuFormValue>(field: K, value: MenuFormValue[K]) {
     setForm((previous) => ({ ...previous, [field]: value }));
@@ -78,7 +67,8 @@ export function useMenuEditor({ id }: UseMenuEditorParams) {
   return {
     form,
     updateField,
-    isLoading,
+    isLoading: existing.isLoading,
+    loadError: existing.error,
     isEditMode,
     handleSave,
     handleDelete,

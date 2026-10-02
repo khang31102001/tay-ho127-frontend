@@ -1,6 +1,7 @@
 "use client";
 
 import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templates/DataExplorer/DataExplorer";
+import { useAdminAuth } from "@/features/admin-auth";
 import { formatCurrency } from "@/lib/format-currency";
 
 import { useMenuProductsExplorer } from "../hooks/useMenuProductsExplorer";
@@ -33,7 +34,8 @@ const columns: DataExplorerColumn<ManagedMenuProductRow>[] = [
 ];
 
 export function MenuProductsExplorer() {
-  const { rows, isLoading, handleDelete } = useMenuProductsExplorer();
+  const { rows, isLoading, loadError, handleDelete } = useMenuProductsExplorer();
+  const { hasPermission } = useAdminAuth();
 
   return (
     <DataExplorer<ManagedMenuProductRow>
@@ -44,11 +46,11 @@ export function MenuProductsExplorer() {
       getRowId={(row) => row.id}
       getSearchableText={(row) => `${row.menuName} ${row.productName}`}
       searchPlaceholder="Tìm theo thực đơn hoặc sản phẩm..."
-      createHref="/admin/catalog/menu-products/new"
+      createHref={hasPermission("sales-menus.create") ? "/admin/catalog/menu-products/new" : undefined}
       createLabel="Thêm liên kết"
       editHref={(row) => `/admin/catalog/menu-products/${row.id}`}
-      onDelete={handleDelete}
-      emptyState="Chưa có liên kết nào."
+      onDelete={hasPermission("sales-menus.delete") ? handleDelete : undefined}
+      emptyState={loadError ?? "Chưa có liên kết nào."}
     />
   );
 }

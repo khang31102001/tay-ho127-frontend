@@ -1,6 +1,7 @@
 "use client";
 
 import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templates/DataExplorer/DataExplorer";
+import { useAdminAuth } from "@/features/admin-auth";
 
 import { useModifierGroupsExplorer } from "../hooks/useModifierGroupsExplorer";
 import { MODIFIER_SELECTION_TYPE_OPTIONS, type ManagedModifierGroup } from "../types/modifier-group.types";
@@ -29,7 +30,8 @@ const columns: DataExplorerColumn<ManagedModifierGroup>[] = [
 ];
 
 export function ModifierGroupsExplorer() {
-  const { rows, isLoading, handleDelete } = useModifierGroupsExplorer();
+  const { rows, isLoading, loadError, handleDelete } = useModifierGroupsExplorer();
+  const { hasPermission } = useAdminAuth();
 
   return (
     <DataExplorer<ManagedModifierGroup>
@@ -40,11 +42,11 @@ export function ModifierGroupsExplorer() {
       getRowId={(row) => row.id}
       getSearchableText={(row) => `${row.name} ${row.options.map((option) => option.label).join(" ")}`}
       searchPlaceholder="Tìm theo tên nhóm, tên lựa chọn..."
-      createHref="/admin/catalog/modifier-groups/new"
+      createHref={hasPermission("modifier-groups.create") ? "/admin/catalog/modifier-groups/new" : undefined}
       createLabel="Thêm nhóm"
       editHref={(row) => `/admin/catalog/modifier-groups/${row.id}`}
-      onDelete={handleDelete}
-      emptyState="Chưa có nhóm tùy chọn món nào."
+      onDelete={hasPermission("modifier-groups.delete") ? handleDelete : undefined}
+      emptyState={loadError ?? "Chưa có nhóm tùy chọn món nào."}
     />
   );
 }

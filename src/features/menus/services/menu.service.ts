@@ -1,86 +1,57 @@
+import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/lib/http/admin-api";
+import type { PaginatedResult } from "@/lib/http/api-types";
+
 import type { ManagedMenu } from "../types/menu.types";
-import { SEED_MENUS } from "../mocks/menu.mock";
 
 /**
- * MOCK CONTRACT: chưa có backend quản lý thực đơn (Catalog) thật. Dữ liệu
- * seed (xem ../mocks/menu.mock.ts) + đồng bộ 2 chiều với localStorage.
+ * Admin → Catalog → Thực đơn, gọi Backend /api/v1/catalog/sales-menus (quyền
+ * sales-menus.*). `code` chỉ nhập khi tạo (Site tra thực đơn theo code), trùng
+ * code → 409. Xóa thực đơn xóa luôn các dòng Menu-SP của nó.
  */
-const STORAGE_KEY = "tayho-admin-catalog-menus";
-const MOCK_DELAY_MS = 300;
 
-function delay(ms: number = MOCK_DELAY_MS): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+/** SalesMenuResponse của Backend. */
+type SalesMenuDto = {
+  id: string;
+  code: string;
+  name: string;
+  isActive: boolean;
+};
 
-function readStore(): ManagedMenu[] {
-  if (typeof window === "undefined") {
-    return SEED_MENUS;
-  }
-
-  try {
-    const saved = window.localStorage.getItem(STORAGE_KEY);
-
-    if (saved) {
-      const parsed: unknown = JSON.parse(saved);
-
-      if (Array.isArray(parsed)) {
-        return parsed as ManagedMenu[];
-      }
-    }
-  } catch (error) {
-    console.error("Không thể đọc dữ liệu thực đơn catalog:", error);
-  }
-
-  return SEED_MENUS;
-}
-
-function writeStore(menus: ManagedMenu[]): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(menus));
-  } catch (error) {
-    console.error("Không thể lưu dữ liệu thực đơn catalog:", error);
-  }
+function toManagedMenu(dto: SalesMenuDto): ManagedMenu {
+  return { id: dto.id, code: dto.code, name: dto.name, status: dto.isActive ? "active" : "inactive" };
 }
 
 export async function listMenus(): Promise<ManagedMenu[]> {
-  await delay();
-  return readStore();
+  const page = await adminApi.get<PaginatedResult<SalesMenuDto>>("/catalog/sales-menus", {
+    params: { pageSize: ADMIN_LIST_PAGE_SIZE },
+  });
+  return page.items.map(toManagedMenu);
 }
 
-export async function getMenuById(id: string): Promise<ManagedMenu | null> {
-  await delay();
-  return readStore().find((menu) => menu.id === id) ?? null;
+export async function getMenuById(id: string): Promise<ManagedMenu> {
+  return toManagedMenu(await adminApi.get<SalesMenuDto>(`/catalog/sales-menus/${id}`));
 }
 
 export async function createMenu(payload: Omit<ManagedMenu, "id">): Promise<ManagedMenu> {
-  await delay();
-
-  const newMenu: ManagedMenu = { ...payload, id: `menu-${Date.now()}` };
-
-  writeStore([...readStore(), newMenu]);
-
-  return newMenu;
+  return toManagedMenu(
+    await adminApi.post<SalesMenuDto>("/catalog/sales-menus", {
+      code: payload.code.trim(),
+      name: payload.name,
+      isActive: payload.status === "active",
+    }),
+  );
 }
 
-export async function updateMenu(
-  id: string,
-  payload: Omit<ManagedMenu, "id">,
-): Promise<ManagedMenu> {
-  await delay();
-
-  const updatedMenu: ManagedMenu = { ...payload, id };
-
-  writeStore(readStore().map((menu) => (menu.id === id ? updatedMenu : menu)));
-
-  return updatedMenu;
+/** Không gửi `code` — Backend không cho đổi code sau khi tạo. */
+export async function updateMenu(id: string, payload: Omit<ManagedMenu, "id" | "code">): Promise<ManagedMenu> {
+  return toManagedMenu(
+    await adminApi.put<SalesMenuDto>(`/catalog/sales-menus/${id}`, {
+      name: payload.name,
+      isActive: payload.status === "active",
+    }),
+  );
 }
 
-export async function deleteMenu(id: string): Promise<void> {
-  await delay();
-
-  writeStore(readStore().filter((menu) => menu.id !== id));
+export function deleteMenu(id: string): Promise<void> {
+  return adminApi.delete<void>(`/catalog/sales-menus/${id}`);
 }
