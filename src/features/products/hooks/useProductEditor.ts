@@ -81,19 +81,6 @@ export function useProductEditor({ id }: UseProductEditorParams) {
     setForm((previous) => ({ ...previous, [field]: value }));
   }
 
-  function toggleMedia(mediaId: string) {
-    setForm((previous) => {
-      const hasMedia = previous.mediaIds.includes(mediaId);
-
-      return {
-        ...previous,
-        mediaIds: hasMedia
-          ? previous.mediaIds.filter((item) => item !== mediaId)
-          : [...previous.mediaIds, mediaId],
-      };
-    });
-  }
-
   function toggleModifierGroup(modifierGroupId: string) {
     setForm((previous) => {
       const hasGroup = previous.modifierGroupIds.includes(modifierGroupId);
@@ -148,7 +135,6 @@ export function useProductEditor({ id }: UseProductEditorParams) {
   return {
     form,
     updateField,
-    toggleMedia,
     toggleModifierGroup,
     categoryOptions,
     mediaOptions,

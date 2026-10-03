@@ -6,6 +6,8 @@ import { createPortal } from "react-dom";
 type BottomSheetDialogProps = {
   ariaLabel: string;
   onClose: () => void;
+  /** Ghi đè kích thước panel (mặc định: sm:max-w-[420px]). */
+  panelClassName?: string;
   children: ReactNode;
 };
 
@@ -20,7 +22,12 @@ type BottomSheetDialogProps = {
  * trên desktop + bottom sheet trên mobile cùng lúc trong 1 lần render), ép
  * dùng chung sẽ phải thêm nhiều prop cấu hình chỉ để phục vụ 1 consumer.
  */
-export function BottomSheetDialog({ ariaLabel, onClose, children }: BottomSheetDialogProps) {
+export function BottomSheetDialog({
+  ariaLabel,
+  onClose,
+  panelClassName = "sm:max-w-[420px]",
+  children,
+}: BottomSheetDialogProps) {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -58,7 +65,7 @@ export function BottomSheetDialog({ ariaLabel, onClose, children }: BottomSheetD
       <div
         role="dialog"
         aria-label={ariaLabel}
-        className={`flex max-h-[85vh] w-full flex-col overflow-hidden rounded-t-2xl bg-white shadow-soft transition-transform duration-200 ease-out sm:max-w-[420px] sm:rounded-2xl ${
+        className={`flex max-h-[85vh] w-full flex-col overflow-hidden rounded-t-2xl bg-white shadow-soft transition-transform duration-200 ease-out sm:rounded-2xl ${panelClassName} ${
           isVisible ? "translate-y-0" : "translate-y-full sm:translate-y-4"
         }`}
       >

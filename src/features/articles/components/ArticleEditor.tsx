@@ -134,6 +134,7 @@ export function ArticleEditor({ id }: ArticleEditorProps) {
       </div>
 
       <MediaPicker
+        mediaType="image"
         label="Ảnh đại diện"
         mediaOptions={mediaOptions}
         selectedId={form.featuredMediaId}

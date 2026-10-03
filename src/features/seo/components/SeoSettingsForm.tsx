@@ -57,6 +57,7 @@ export function SeoSettingsForm() {
             </label>
 
             <MediaPicker
+              mediaType="image"
               label="OG Image mặc định"
               mediaOptions={mediaOptions}
               selectedId={form.defaultOgImageMediaId}

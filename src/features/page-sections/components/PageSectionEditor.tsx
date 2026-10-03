@@ -93,6 +93,7 @@ export function PageSectionEditor({ pageId, id }: PageSectionEditorProps) {
       </label>
 
       <MediaPicker
+        mediaType="image"
         label="Ảnh minh họa (tùy chọn)"
         mediaOptions={mediaOptions}
         selectedId={form.mediaId ?? null}

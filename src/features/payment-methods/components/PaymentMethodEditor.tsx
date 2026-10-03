@@ -61,6 +61,7 @@ export function PaymentMethodEditor({ id }: PaymentMethodEditorProps) {
       </label>
 
       <MediaPicker
+        mediaType="image"
         label="Icon / Logo"
         mediaOptions={mediaOptions}
         selectedId={form.iconMediaId}

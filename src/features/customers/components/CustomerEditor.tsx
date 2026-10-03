@@ -111,6 +111,7 @@ export function CustomerEditor({ id }: CustomerEditorProps) {
       </div>
 
       <MediaPicker
+        mediaType="image"
         label="Ảnh đại diện (tùy chọn)"
         mediaOptions={mediaOptions}
         selectedId={form.avatarMediaId ?? null}
