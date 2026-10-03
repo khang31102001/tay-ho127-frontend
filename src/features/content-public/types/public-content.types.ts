@@ -57,3 +57,10 @@ export type PublicBanner = {
   placement: string;
   displayOrder: number;
 };
+
+/** Page đã xuất bản — đủ để Navigation đổi tham chiếu page thành URL. `slug` là đường dẫn trang ("/", "/thuc-don"). */
+export type PublicPage = {
+  id: string;
+  name: string;
+  slug: string;
+};

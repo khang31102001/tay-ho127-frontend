@@ -1,37 +1,24 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useAsyncData } from "@/hooks/useAsyncData";
 
 import type { ManagedPage } from "../types/page.types";
 import { deletePage, listPages } from "../services/page.service";
 
 export function usePagesExplorer() {
-  const [pages, setPages] = useState<ManagedPage[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const loadPages = useCallback(async () => {
-    setIsLoading(true);
-
-    try {
-      const data = await listPages();
-      setPages(data);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadPages();
-  }, [loadPages]);
+  const { data, isLoading, error, reload } = useAsyncData(listPages, [], {
+    fallbackError: "Không thể tải danh sách page.",
+  });
 
   async function handleDelete(page: ManagedPage) {
     await deletePage(page.id);
-    await loadPages();
+    await reload();
   }
 
   return {
-    rows: pages,
+    rows: data ?? [],
     isLoading,
+    loadError: error,
     handleDelete,
   };
 }

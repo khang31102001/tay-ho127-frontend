@@ -1,9 +1,8 @@
 import { createMockStore } from "@/mocks/create-mock-store";
-// Đi thẳng vào service của features/pages (không qua barrel) — barrel đó
-// re-export cả PagesExplorer/PageEditor (UI admin), lý do xem
-// app/(site)/bai-viet/page.tsx. Navigation CHỈ đọc slug để resolve URL —
-// không copy title/content/SEO của Page sang Navigation (xem types.ts).
-import { getPageById } from "@/features/pages/services/page.service";
+// Navigation CHỈ đọc đường dẫn của page ĐÃ XUẤT BẢN (features/content-public, chạy được cả server lẫn
+// trình duyệt) — không copy title/content/SEO của Page sang Navigation (xem types.ts), và không
+// dùng service Admin của features/pages (cần phiên đăng nhập admin).
+import { listPublishedPages } from "@/features/content-public";
 
 import { SEED_NAVIGATION_ITEMS, SEED_NAVIGATION_MENUS } from "../mocks/navigation.mock";
 import type {
@@ -32,19 +31,27 @@ const itemStore = createMockStore<ManagedNavigationItem>({
   delayMs: 350,
 });
 
-/** targetType="page" thì resolve url thật từ CMS Page (chỉ lấy slug, không copy nội dung page). */
-async function resolveItemUrl(item: ManagedNavigationItem): Promise<string | null> {
+/**
+ * targetType="page" thì resolve url thật từ CMS Page (chỉ lấy đường dẫn, không copy nội dung page);
+ * page không tồn tại/chưa xuất bản thì dùng url đã lưu trên item.
+ */
+function resolveItemUrl(item: ManagedNavigationItem, pathByPageId: Map<string, string>): string | null {
   if (item.targetType === "page" && item.targetId) {
-    const page = await getPageById(item.targetId);
-    return page?.slug ?? item.url ?? null;
+    return pathByPageId.get(item.targetId) ?? item.url ?? null;
   }
   return item.url ?? null;
 }
 
 async function resolveFlatItems(items: ManagedNavigationItem[]): Promise<ManagedNavigationItem[]> {
-  return Promise.all(
-    items.map(async (item) => ({ ...item, url: await resolveItemUrl(item) })),
-  );
+  // Chỉ gọi Backend khi có item trỏ tới page — và đúng 1 lần cho cả menu.
+  const hasPageTarget = items.some((item) => item.targetType === "page" && item.targetId);
+  const pathByPageId = new Map<string, string>();
+
+  if (hasPageTarget) {
+    (await listPublishedPages()).forEach((page) => pathByPageId.set(page.id, page.slug));
+  }
+
+  return items.map((item) => ({ ...item, url: resolveItemUrl(item, pathByPageId) }));
 }
 
 /** Dựng cây hoàn chỉnh (resolve URL + build tree + lọc visible + sort) cho 1 menu. */

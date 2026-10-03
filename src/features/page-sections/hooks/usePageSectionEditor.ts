@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
+import { useAsyncData } from "@/hooks/useAsyncData";
 import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
-import type { ManagedMedia } from "@/features/media";
 import { listMedia } from "@/features/media";
 
 import type { PageSectionUpsertInput } from "../services/page-section.service";
@@ -43,48 +44,30 @@ export function usePageSectionEditor({ pageId, id }: UsePageSectionEditorParams)
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<PageSectionFormValue>(buildEmptyForm(pageId, 1));
-  const [mediaOptions, setMediaOptions] = useState<ManagedMedia[]>([]);
-  const [isLoading, setIsLoading] = useState(isEditMode);
+  const mediaOptionsData = useAsyncData(listMedia, [], { fallbackError: "Không thể tải thư viện media." });
+  const existing = useAsyncData(() => getSectionById(pageId, id ?? ""), [pageId, id], {
+    enabled: isEditMode,
+    fallbackError: "Không thể tải section.",
+  });
+  // Chế độ tạo mới: gợi ý displayOrder = lớn nhất hiện có + 1.
+  const siblings = useAsyncData(() => listSectionsByPageId(pageId), [pageId], {
+    enabled: !isEditMode,
+    fallbackError: "Không thể tải danh sách section.",
+  });
 
   useEffect(() => {
-    listMedia().then(setMediaOptions);
-  }, []);
+    if (isEditMode || !siblings.data) return;
+
+    const maxOrder = siblings.data.reduce((max, section) => Math.max(max, section.displayOrder), 0);
+    setForm(buildEmptyForm(pageId, maxOrder + 1));
+  }, [siblings.data, pageId, isEditMode]);
 
   useEffect(() => {
-    if (isEditMode) {
-      return;
-    }
+    if (!existing.data) return;
 
-    listSectionsByPageId(pageId).then((sections) => {
-      const maxOrder = sections.reduce((max, section) => Math.max(max, section.displayOrder), 0);
-      setForm(buildEmptyForm(pageId, maxOrder + 1));
-    });
-  }, [pageId, isEditMode]);
-
-  useEffect(() => {
-    if (!isEditMode) {
-      return;
-    }
-
-    let isCancelled = false;
-
-    getSectionById(id).then((section) => {
-      if (isCancelled) {
-        return;
-      }
-
-      if (section) {
-        const { id: _sectionId, ...rest } = section;
-        setForm(rest);
-      }
-
-      setIsLoading(false);
-    });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [id, isEditMode]);
+    const { id: _sectionId, ...rest } = existing.data;
+    setForm(rest);
+  }, [existing.data]);
 
   function updateField<K extends keyof PageSectionFormValue>(
     field: K,
@@ -103,7 +86,7 @@ export function usePageSectionEditor({ pageId, id }: UsePageSectionEditorParams)
 
   async function handleDelete() {
     if (isEditMode) {
-      await deleteSection(id);
+      await deleteSection(pageId, id);
     }
   }
 
@@ -114,8 +97,9 @@ export function usePageSectionEditor({ pageId, id }: UsePageSectionEditorParams)
   return {
     form,
     updateField,
-    mediaOptions,
-    isLoading,
+    mediaOptions: mediaOptionsData.data ?? [],
+    isLoading: existing.isLoading,
+    loadError: existing.error ?? siblings.error,
     isEditMode,
     handleSave,
     handleDelete,
