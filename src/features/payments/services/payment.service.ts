@@ -1,165 +1,56 @@
-import { updateOrderPaymentStatus, type PaymentStatus } from "@/features/orders";
+import type { PaymentStatus } from "@/features/orders";
+import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/lib/http/admin-api";
+import { isApiError } from "@/lib/http/api-error";
+import type { PaginatedResult } from "@/lib/http/api-types";
 
-import { SEED_PAYMENTS } from "../mocks/payment.mock";
-import { PAYMENT_TRANSITIONS } from "../types/payment-transitions";
 import type { ManagedPayment } from "../types/payment.types";
-import type { PaymentTransactionAction, PaymentTransactionResult } from "../types/payment-transaction.types";
-import { appendTransaction } from "./payment-transaction.service";
 
-const STORAGE_KEY = "tayho-admin-payments";
-const MOCK_DELAY_MS = 300;
+/**
+ * Admin → Sales → Thanh toán, gọi Backend /api/v1/sales/payments (quyền payments.view / payments.manage).
+ *
+ * - Bản ghi thanh toán do Backend tạo cùng đơn hàng (COD: "chờ thanh toán"; QR/ví: đã "paid" ngay khi nhân viên xác nhận
+ *   phiên thanh toán). Admin không tự tạo thanh toán và không xóa.
+ * - "Đã thanh toán" chỉ do người có quyền payments.manage (hoặc cổng thanh toán sau này) đặt — khách không tự đặt được.
+ * - Trạng thái kế tiếp hợp lệ do Backend quyết định (`nextStatuses`); mỗi lần chuyển Backend ghi một dòng nhật ký bất biến
+ *   (payment-transaction.service.ts) và đồng bộ trạng thái thanh toán của đơn hàng.
+ */
 
-function delay(): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, MOCK_DELAY_MS));
-}
+/** PaymentResponse của Backend — khớp ManagedPayment 1:1 (giá trị rỗng là null, được chuẩn hóa ở toManagedPayment). */
+type PaymentDto = Omit<ManagedPayment, "transactionId" | "gateway" | "gatewayReference"> & {
+  transactionId: string | null;
+  gateway: string | null;
+  gatewayReference: string | null;
+};
 
-function readStore(): ManagedPayment[] {
-  if (typeof window === "undefined") {
-    return SEED_PAYMENTS;
-  }
-  const raw = window.localStorage.getItem(STORAGE_KEY);
-  if (!raw) {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(SEED_PAYMENTS));
-    return SEED_PAYMENTS;
-  }
-  return JSON.parse(raw) as ManagedPayment[];
-}
-
-function writeStore(payments: ManagedPayment[]): void {
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payments));
+function toManagedPayment(dto: PaymentDto): ManagedPayment {
+  return {
+    ...dto,
+    transactionId: dto.transactionId ?? undefined,
+    gateway: dto.gateway ?? undefined,
+    gatewayReference: dto.gatewayReference ?? undefined,
+  };
 }
 
 export async function listPayments(): Promise<ManagedPayment[]> {
-  await delay();
-  return [...readStore()].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-}
-
-export async function getPaymentById(id: string): Promise<ManagedPayment | undefined> {
-  await delay();
-  return readStore().find((payment) => payment.id === id);
-}
-
-/** Dùng bởi Order Tracking (Site) — tra Payment theo Order để hiển thị trạng thái/nút "Thanh toán lại". */
-export async function getPaymentByOrderId(orderId: string): Promise<ManagedPayment | undefined> {
-  await delay();
-  return readStore().find((payment) => payment.orderId === orderId);
-}
-
-export type CreatePaymentInput = {
-  orderId: string;
-  orderCode: string;
-  paymentMethodCode: string;
-  paymentMethodLabel: string;
-  amount: number;
-};
-
-/**
- * Tạo Payment ban đầu (status "pending") ngay sau khi Order được tạo —
- * gọi từ Checkout (features/checkout), KHÔNG gọi từ trong order.service.ts,
- * để tránh phụ thuộc vòng features/orders <-> features/payments (payments
- * đã phụ thuộc orders qua updateOrderPaymentStatus).
- */
-export async function createPayment(input: CreatePaymentInput): Promise<ManagedPayment> {
-  await delay();
-  const now = new Date().toISOString();
-  const payment: ManagedPayment = {
-    id: `payment-${Date.now()}`,
-    orderId: input.orderId,
-    orderCode: input.orderCode,
-    paymentMethodCode: input.paymentMethodCode,
-    paymentMethodLabel: input.paymentMethodLabel,
-    amount: input.amount,
-    status: "pending",
-    paidAt: null,
-    failedAt: null,
-    createdAt: now,
-    updatedAt: now,
-  };
-
-  writeStore([...readStore(), payment]);
-
-  await appendTransaction({
-    paymentId: payment.id,
-    action: "created",
-    result: "success",
-    changedBy: "Hệ thống",
-    message: "Khởi tạo giao dịch từ đơn hàng mới.",
+  const page = await adminApi.get<PaginatedResult<PaymentDto>>("/sales/payments", {
+    params: { pageSize: ADMIN_LIST_PAGE_SIZE },
   });
-
-  return payment;
+  return page.items.map(toManagedPayment);
 }
 
-const TRANSITION_ACTION: Record<PaymentStatus, PaymentTransactionAction> = {
-  pending: "retry",
-  paid: "charge",
-  failed: "charge",
-  refunded: "refund",
-  cancelled: "cancel",
-};
-
-const TRANSITION_RESULT: Record<PaymentStatus, PaymentTransactionResult> = {
-  pending: "success",
-  paid: "success",
-  failed: "failed",
-  refunded: "success",
-  cancelled: "success",
-};
-
-/**
- * Chỉ cho phép chuyển trạng thái hợp lệ theo PAYMENT_TRANSITIONS (chặn ở
- * service layer). Mỗi lần chuyển đều ghi 1 PaymentTransaction audit log mới
- * (không sửa entry cũ) và đồng bộ Order.paymentStatus qua features/orders
- * để list/badge của Order vẫn hiển thị đúng mà không cần Order tự biết gì
- * về domain Payment.
- */
-export async function transitionPayment(
-  paymentId: string,
-  toStatus: PaymentStatus,
-  changedBy: string,
-  note?: string,
-): Promise<ManagedPayment> {
-  await delay();
-  const existing = readStore();
-  const payment = existing.find((item) => item.id === paymentId);
-  if (!payment) {
-    throw new Error(`Không tìm thấy giao dịch thanh toán: ${paymentId}`);
+/** null khi không tồn tại (Backend 404). */
+export async function getPaymentById(id: string): Promise<ManagedPayment | null> {
+  try {
+    return toManagedPayment(await adminApi.get<PaymentDto>(`/sales/payments/${id}`));
+  } catch (error) {
+    if (isApiError(error) && error.kind === "not_found") {
+      return null;
+    }
+    throw error;
   }
-
-  const allowedNextStatuses = PAYMENT_TRANSITIONS[payment.status];
-  if (!allowedNextStatuses.includes(toStatus)) {
-    throw new Error(`Không thể chuyển thanh toán từ "${payment.status}" sang "${toStatus}"`);
-  }
-
-  const now = new Date().toISOString();
-  const updated: ManagedPayment = {
-    ...payment,
-    status: toStatus,
-    updatedAt: now,
-    paidAt: toStatus === "paid" ? now : payment.paidAt,
-    failedAt: toStatus === "failed" ? now : payment.failedAt,
-  };
-
-  writeStore(existing.map((item) => (item.id === paymentId ? updated : item)));
-
-  await appendTransaction({
-    paymentId,
-    action: TRANSITION_ACTION[toStatus],
-    result: TRANSITION_RESULT[toStatus],
-    changedBy,
-    message: note,
-  });
-
-  await updateOrderPaymentStatus(payment.orderId, toStatus);
-
-  return updated;
 }
 
-/**
- * #14 PAYMENT FLOW — Site-facing: khách bấm "[Thanh toán lại]" khi Payment ở
- * trạng thái failed (Order không biến mất, vẫn giữ nguyên — chỉ Payment đổi
- * trạng thái). Chuyển về "pending" (chờ xác nhận lại) — mock hiện chưa gọi
- * cổng thanh toán thật nên không tự nhảy thẳng lên "paid".
- */
-export async function retryPayment(paymentId: string): Promise<ManagedPayment> {
-  return transitionPayment(paymentId, "pending", "Khách hàng", "Khách hàng yêu cầu thanh toán lại.");
+/** Người thực hiện ghi vào nhật ký là tài khoản admin đang đăng nhập (Backend lấy từ token). 400 nếu chuyển trạng thái không hợp lệ. */
+export async function transitionPayment(paymentId: string, toStatus: PaymentStatus, note?: string): Promise<ManagedPayment> {
+  return toManagedPayment(await adminApi.post<PaymentDto>(`/sales/payments/${paymentId}/transition`, { toStatus, note }));
 }

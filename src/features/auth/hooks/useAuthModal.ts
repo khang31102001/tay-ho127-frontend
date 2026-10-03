@@ -1,28 +1,14 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import {
-  forgotPassword,
-  loginWithCredentials,
-  loginWithGoogle,
-  registerAccount,
-} from "../services/auth.service";
+import { forgotPassword, loginWithCredentials, registerAccount } from "../services/auth.service";
 import type { AuthUser } from "../types/auth.types";
-// Import thẳng service (không qua barrel @/features/customers) — barrel đó
-// re-export cả Explorer/Editor admin (UI "use client"), import qua barrel ở
-// đây (Site) sẽ kéo UI admin vào bundle Site. Lý do đầy đủ xem
-// features/menu/services/menu.service.ts.
-import { findOrCreateCustomerByContact } from "@/features/customers/services/site-customer-bridge.service";
 
-/** Bridge Auth↔Customer (Phase 6) — mọi AuthUser trước khi vào onAuthenticated đều có customerId, dùng để đặt hàng/Order History. */
-async function resolveAuthUserWithCustomerId(user: AuthUser): Promise<AuthUser> {
-  const customer = await findOrCreateCustomerByContact({
-    fullName: user.name,
-    phone: user.phone,
-    email: user.email,
-  });
-  return { ...user, customerId: customer.id };
-}
+/**
+ * Đăng nhập Google chưa được cấu hình ở Backend (cần GoogleAuth:ClientId) — nút vẫn hiển thị nhưng báo rõ thay vì giả vờ
+ * đăng nhập. Khi bật Google, thay hàm xử lý bên dưới bằng lời gọi POST /api/v1/customer/auth/google với idToken của Google.
+ */
+const GOOGLE_NOT_AVAILABLE_MESSAGE = "Đăng nhập bằng Google chưa khả dụng. Vui lòng đăng nhập bằng email.";
 
 export type AuthMode = "login" | "register" | "forgot-password";
 
@@ -35,13 +21,14 @@ type UseAuthModalParams = {
 export function useAuthModal({ open, onClose, onAuthenticated }: UseAuthModalParams) {
   const [mode, setMode] = useState<AuthMode>("login");
 
-  const [email, setEmail] = useState("demo@tayho127.vn");
-  const [password, setPassword] = useState("123456");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState<"credentials" | "google" | null>(null);
+  const [loading, setLoading] = useState<"credentials" | null>(null);
 
   const [registerFullName, setRegisterFullName] = useState("");
   const [registerPhone, setRegisterPhone] = useState("");
+  const [registerEmail, setRegisterEmail] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
   const [registerConfirmPassword, setRegisterConfirmPassword] = useState("");
   const [registerError, setRegisterError] = useState("");
@@ -100,7 +87,7 @@ export function useAuthModal({ open, onClose, onAuthenticated }: UseAuthModalPar
 
     try {
       const result = await loginWithCredentials({ email, password });
-      onAuthenticated(await resolveAuthUserWithCustomerId(result.data.user));
+      onAuthenticated(result.data.user);
     } catch (error) {
       setError(error instanceof Error ? error.message : "Đăng nhập thất bại.");
     } finally {
@@ -108,18 +95,8 @@ export function useAuthModal({ open, onClose, onAuthenticated }: UseAuthModalPar
     }
   }
 
-  async function handleGoogleLogin() {
-    setError("");
-    setLoading("google");
-
-    try {
-      const result = await loginWithGoogle();
-      onAuthenticated(await resolveAuthUserWithCustomerId(result.data.user));
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "Đăng nhập Google thất bại.");
-    } finally {
-      setLoading(null);
-    }
+  function handleGoogleLogin() {
+    setError(GOOGLE_NOT_AVAILABLE_MESSAGE);
   }
 
   async function handleRegisterSubmit(event: FormEvent<HTMLFormElement>) {
@@ -138,10 +115,13 @@ export function useAuthModal({ open, onClose, onAuthenticated }: UseAuthModalPar
       const result = await registerAccount({
         fullName: registerFullName,
         phone: registerPhone,
+        email: registerEmail,
         password: registerPassword,
         confirmPassword: registerConfirmPassword,
       });
+      // Đăng ký xong là đã đăng nhập (cookie phiên được máy chủ ghi).
       setRegisterSuccess(result.message);
+      onAuthenticated(result.data.user);
     } catch (error) {
       setRegisterError(error instanceof Error ? error.message : "Đăng ký thất bại.");
     } finally {
@@ -183,6 +163,8 @@ export function useAuthModal({ open, onClose, onAuthenticated }: UseAuthModalPar
     setRegisterFullName,
     registerPhone,
     setRegisterPhone,
+    registerEmail,
+    setRegisterEmail,
     registerPassword,
     setRegisterPassword,
     registerConfirmPassword,

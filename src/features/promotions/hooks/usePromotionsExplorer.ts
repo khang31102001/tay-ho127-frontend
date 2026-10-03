@@ -3,8 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { ManagedPromotion } from "../types/promotion.types";
-import { promotionApi } from "../api/promotion-api";
-import { resolvePromotionEffectiveStatus } from "../services/promotion.service";
+import { deletePromotion, listPromotions, resolvePromotionEffectiveStatus } from "../services/promotion.service";
 
 export type PromotionRow = ManagedPromotion & { effectiveStatus: ManagedPromotion["status"] };
 
@@ -16,7 +15,7 @@ export function usePromotionsExplorer() {
     setIsLoading(true);
 
     try {
-      const data = await promotionApi.list();
+      const data = await listPromotions();
       setPromotions(data);
     } finally {
       setIsLoading(false);
@@ -33,7 +32,7 @@ export function usePromotionsExplorer() {
   );
 
   async function handleDelete(promotion: ManagedPromotion) {
-    await promotionApi.delete(promotion.id);
+    await deletePromotion(promotion.id);
     await loadPromotions();
   }
 

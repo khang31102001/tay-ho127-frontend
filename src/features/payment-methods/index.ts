@@ -4,7 +4,6 @@ export { PaymentMethodEditor } from "./components/PaymentMethodEditor";
 export {
   listPaymentMethods,
   getPaymentMethodById,
-  getPaymentMethodByCode,
   listAvailablePaymentMethods,
   createPaymentMethod,
   updatePaymentMethod,

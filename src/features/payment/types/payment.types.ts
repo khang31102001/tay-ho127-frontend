@@ -1,5 +1,3 @@
-import type { CartItem, CartItemModifierSelection } from "@/features/cart";
-
 /**
  * 3 phương thức thanh toán cố định hiển thị ở Checkout (PHƯƠNG THỨC THANH
  * TOÁN) — khác PaymentMethodGroup thật của Admin (features/payment-methods:
@@ -19,24 +17,13 @@ export const PAYMENT_METHOD_OPTIONS = [
 
 export type PaymentMethod = (typeof PAYMENT_METHOD_OPTIONS)[number]["value"];
 
-/** Provider cụ thể khi PaymentMethod = DIGITAL_WALLET — có thể bổ sung thêm sau (xem resolveDigitalWalletProvider). */
-export const DIGITAL_WALLET_PROVIDER_OPTIONS = [
-  { value: "APPLE_PAY", label: "Apple Pay" },
-  { value: "GOOGLE_PAY", label: "Google Pay" },
-] as const;
-
-export type DigitalWalletProvider = (typeof DIGITAL_WALLET_PROVIDER_OPTIONS)[number]["value"];
-
 /**
- * PaymentStatus của PaymentSession/mock gateway — KHÁC PaymentStatus của
- * ManagedPayment (features/orders: pending/paid/failed/refunded/cancelled).
- * "processing" chỉ tồn tại trong lúc confirmPaymentSession() đang chạy
- * createOrder()/createPayment() thật; "success" mới là lúc Order/Payment thật
- * được tạo (xem services/payment-session.service.ts).
+ * Trạng thái của PaymentSession (Backend) — KHÁC PaymentStatus của ManagedPayment (features/orders:
+ * pending/paid/failed/refunded/cancelled). "success" nghĩa là nhân viên đã xác nhận nhận được tiền VÀ đơn hàng đã được tạo;
+ * hết hạn mà chưa xác nhận thì Backend tự chuyển "cancelled".
  */
 export const PAYMENT_STATUS_OPTIONS = [
   { value: "pending", label: "Chờ thanh toán" },
-  { value: "processing", label: "Đang xử lý" },
   { value: "success", label: "Thành công" },
   { value: "failed", label: "Thất bại" },
   { value: "cancelled", label: "Đã hủy" },
@@ -44,54 +31,65 @@ export const PAYMENT_STATUS_OPTIONS = [
 
 export type PaymentStatus = (typeof PAYMENT_STATUS_OPTIONS)[number]["value"];
 
+export type PaymentSessionModifier = {
+  groupId: string;
+  groupName: string;
+  optionId: string;
+  optionLabel: string;
+  priceAdjustment: number;
+};
+
+/** Một dòng món như đã báo giá lúc tạo phiên (chỉ để hiển thị — xác nhận sẽ tính lại giá ở Backend). */
+export type PaymentSessionItem = {
+  productId: string;
+  productName: string;
+  /** Id media của ảnh món (chưa đổi sang URL — trang thanh toán không hiển thị ảnh). */
+  productImage: string | null;
+  unitPrice: number;
+  quantity: number;
+  lineTotal: number;
+  note?: string;
+  modifiers: PaymentSessionModifier[];
+};
+
 /**
- * PaymentSession = "giữ chỗ" đơn hàng + phiên thanh toán cho QR/DIGITAL_WALLET
- * — KHÔNG tạo ManagedOrder/ManagedPayment thật cho tới khi mock gateway báo
- * "success" (xem confirmPaymentSession trong payment-session.service.ts).
- * CASH bỏ qua session này hoàn toàn — tạo Order ngay (xem useCheckoutForm).
+ * PaymentSession = "giữ chỗ" đơn hàng cho QR/DIGITAL_WALLET — Backend CHƯA tạo đơn cho tới khi nhân viên xác nhận đã nhận tiền
+ * (Admin → Sales → Thanh toán). Khách chuyển khoản theo thông tin ngân hàng + mã tham chiếu rồi chờ; trang thanh toán tự
+ * kiểm tra trạng thái cho tới khi "success" và chuyển sang trang theo dõi đơn. CASH bỏ qua session này — đặt đơn ngay.
  *
- * Toàn bộ field bên dưới là SNAPSHOT tại thời điểm khách bấm "TIẾP TỤC THANH
- * TOÁN" — chỉ để HIỂN THỊ tại Payment Page, KHÔNG phải nguồn tin cậy cuối:
- * createOrder() vẫn tự tra cứu lại giá thật từ Catalog khi xác nhận thanh
- * toán thành công, không nới lỏng biên tin cậy Frontend/Backend đã có.
+ * Mọi số tiền do Backend tính (client không gửi) và là con số KHÁCH PHẢI TRẢ; thông tin ngân hàng là của phương thức thanh
+ * toán tại thời điểm tạo phiên.
  */
 export interface PaymentSession {
   id: string;
-  /** Mã tham chiếu giao dịch — hiển thị ở Payment Page, dùng chung làm khoá tra cứu bên mock-payment-gateway. */
+  /** Mã tham chiếu giao dịch — khách ghi vào nội dung chuyển khoản để nhân viên đối chiếu. */
   referenceCode: string;
   status: PaymentStatus;
 
-  paymentMethod: PaymentMethod;
-  digitalWalletProvider?: DigitalWalletProvider;
-  /** code/label của ManagedPaymentMethod cụ thể khách chọn — cần cho createOrder() (service tự tra cứu lại theo code, không tin Frontend). */
+  /** Suy ra từ kênh của phương thức: "qr" → QR, "digital_wallet" → DIGITAL_WALLET. */
+  paymentMethod: Exclude<PaymentMethod, "CASH">;
   paymentMethodCode: string;
   paymentMethodLabel: string;
 
-  customerId: string | null;
   customerName: string;
   phone: string;
   email?: string;
 
-  items: CartItem[];
+  items: PaymentSessionItem[];
 
   deliveryMethodCode: string;
   deliveryMethodLabel: string;
   isPickup: boolean;
   deliveryAddressSnapshot: string;
 
-  /** Order Preference — áp dụng cho toàn đơn, đã chọn ở Cart Page. */
   wantsUtensils: boolean;
   note?: string;
-  /** General Order Options đã chọn (Nước mắm/Rau...) — lưu raw (chưa resolve) giống `items`, confirmPaymentSession() truyền tiếp groupId/optionId vào createOrder() để tự tra cứu lại label/giá thật. */
-  orderOptionSelections: CartItemModifierSelection[];
+  orderOptionSelections: PaymentSessionModifier[];
 
   subtotal: number;
   shippingFee: number;
   discount: number;
-  /** Mã giảm giá đã áp dụng ở Checkout (nếu có) — cần snapshot lại đây để confirmPaymentSession() truyền tiếp vào createOrder() khi tạo Order thật. */
   discountCode?: string;
-  promotionId?: string;
-  /** Số tiền giảm trên shippingFee (mã "free_shipping") — snapshot để confirmPaymentSession() truyền tiếp vào createOrder(), giống discount/discountCode. */
   shippingDiscount: number;
   totalAmount: number;
 
@@ -99,15 +97,14 @@ export interface PaymentSession {
   bankAccountNumber?: string;
   bankAccountHolder?: string;
 
-  /** Chống double-submit — cùng idempotencyKey không tạo 2 session (giống Order). */
-  idempotencyKey?: string;
-
-  /** Gắn vào sau khi Order thật được tạo (status chuyển "success"). */
+  /** Có sau khi phiên thành công (đơn đã được tạo). */
   orderId: string | null;
   orderCode: string | null;
+  /** Lý do khi nhân viên từ chối ("Chưa thấy tiền chuyển khoản") hoặc phiên hết hạn — hiển thị cho khách. */
+  resolutionNote?: string;
 
   createdAt: string;
   updatedAt: string;
-  /** Mốc hết hạn giữ chỗ (mock: 15 phút kể từ createdAt) — quá hạn mà vẫn "pending" thì tự chuyển "cancelled" khi đọc lại. */
+  /** Mốc hết hạn giữ chỗ (theo cấu hình Cấu hình đơn hàng) — quá hạn mà chưa được xác nhận thì phiên tự hủy. */
   expiresAt: string;
 }

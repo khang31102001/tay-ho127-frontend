@@ -1,62 +1,24 @@
-import { SEED_PAYMENT_TRANSACTIONS } from "../mocks/payment-transaction.mock";
-import type {
-  ManagedPaymentTransaction,
-  PaymentTransactionAction,
-  PaymentTransactionResult,
-} from "../types/payment-transaction.types";
+import { adminApi } from "@/lib/http/admin-api";
 
-const STORAGE_KEY = "tayho-admin-payment-transactions";
-const MOCK_DELAY_MS = 300;
+import type { ManagedPaymentTransaction } from "../types/payment-transaction.types";
 
-function delay(): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, MOCK_DELAY_MS));
-}
-
-function readStore(): ManagedPaymentTransaction[] {
-  if (typeof window === "undefined") {
-    return SEED_PAYMENT_TRANSACTIONS;
-  }
-  const raw = window.localStorage.getItem(STORAGE_KEY);
-  if (!raw) {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(SEED_PAYMENT_TRANSACTIONS));
-    return SEED_PAYMENT_TRANSACTIONS;
-  }
-  return JSON.parse(raw) as ManagedPaymentTransaction[];
-}
-
-function writeStore(transactions: ManagedPaymentTransaction[]): void {
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
-}
-
-export async function listTransactionsByPaymentId(paymentId: string): Promise<ManagedPaymentTransaction[]> {
-  await delay();
-  return readStore()
-    .filter((transaction) => transaction.paymentId === paymentId)
-    .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-}
-
-export type AppendTransactionInput = {
-  paymentId: string;
-  action: PaymentTransactionAction;
-  result: PaymentTransactionResult;
-  changedBy: string;
-  gateway?: string;
-  gatewayReference?: string;
-  message?: string;
+/** PaymentTransactionResponse của Backend — khớp ManagedPaymentTransaction (giá trị rỗng là null). */
+type PaymentTransactionDto = Omit<ManagedPaymentTransaction, "gateway" | "gatewayReference" | "message"> & {
+  gateway: string | null;
+  gatewayReference: string | null;
+  message: string | null;
 };
 
 /**
- * Append-only — không có hàm update/delete cho PaymentTransaction, vì đây
- * là audit log gọi gateway, mỗi lần đổi trạng thái phải tạo entry mới thay
- * vì sửa entry cũ.
+ * Nhật ký giao dịch của một thanh toán (cũ nhất trước) — CHỈ ĐỌC: Backend chỉ thêm dòng mới mỗi lần đổi trạng thái, không có
+ * API sửa hay xóa. Không chứa số thẻ/CVV/secret, chỉ tóm tắt kết quả.
  */
-export async function appendTransaction(input: AppendTransactionInput): Promise<ManagedPaymentTransaction> {
-  const existing = readStore();
-  const transaction: ManagedPaymentTransaction = {
-    id: `ptx-${Date.now()}`,
-    createdAt: new Date().toISOString(),
-    ...input,
-  };
-  writeStore([...existing, transaction]);
-  return transaction;
+export async function listTransactionsByPaymentId(paymentId: string): Promise<ManagedPaymentTransaction[]> {
+  const transactions = await adminApi.get<PaymentTransactionDto[]>(`/sales/payments/${paymentId}/transactions`);
+  return transactions.map((transaction) => ({
+    ...transaction,
+    gateway: transaction.gateway ?? undefined,
+    gatewayReference: transaction.gatewayReference ?? undefined,
+    message: transaction.message ?? undefined,
+  }));
 }

@@ -133,7 +133,7 @@ export function PaymentDetail({ paymentId }: PaymentDetailProps) {
         </div>
 
         <div className="space-y-4">
-          <PaymentActions status={payment.status} isUpdating={isUpdating} onTransition={handleTransition} />
+          <PaymentActions nextStatuses={payment.nextStatuses} isUpdating={isUpdating} onTransition={handleTransition} />
         </div>
       </div>
 

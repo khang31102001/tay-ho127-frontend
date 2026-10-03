@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, type FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -8,15 +8,9 @@ import { formatCurrency } from "@/lib/format-currency";
 import MenuBackgroundDecoration from "@/components/ui/MenuBackgroundDecoration";
 import { StatusTimeline, type StatusTimelineEntry } from "@/components/shared/StatusTimeline";
 import { PriceSummary } from "@/components/shared/PriceSummary";
-// Import thẳng (không qua barrel @/features/payments) — barrel đó re-export
-// cả Explorer/Detail admin (UI "use client"), lý do đầy đủ xem
-// features/menu/services/menu.service.ts.
-import { getPaymentByOrderId, retryPayment } from "@/features/payments/services/payment.service";
-import type { ManagedPayment } from "@/features/payments/types/payment.types";
-import { getOrderByCode } from "../services/order.service";
+import { useOrderTracking } from "../hooks/useOrderTracking";
 import { resolveCustomerOrderStatusLabel } from "../utils/customer-order-status-label";
 import { PAYMENT_STATUS_LABEL } from "../types/payment-status";
-import type { ManagedOrder } from "../types/order.types";
 
 type OrderTrackingPageProps = {
   orderCode: string;
@@ -30,42 +24,13 @@ type OrderTrackingPageProps = {
  * dùng orderCode (mã công khai) đúng yêu cầu #17.
  */
 export function OrderTrackingPage({ orderCode }: OrderTrackingPageProps) {
-  const [order, setOrder] = useState<ManagedOrder | null | undefined>(undefined);
-  const [payment, setPayment] = useState<ManagedPayment | null>(null);
-  const [isRetrying, setIsRetrying] = useState(false);
+  const { order, status, submitPhone, isVerifyingPhone, phoneError, handleRetryPayment, isRetrying, retryError } =
+    useOrderTracking(orderCode);
+  const [phoneInput, setPhoneInput] = useState("");
 
-  useEffect(() => {
-    let isMounted = true;
-    getOrderByCode(orderCode).then((data) => {
-      if (isMounted) setOrder(data ?? null);
-    });
-    return () => {
-      isMounted = false;
-    };
-  }, [orderCode]);
-
-  useEffect(() => {
-    if (!order) return;
-    let isMounted = true;
-    getPaymentByOrderId(order.id).then((data) => {
-      if (isMounted) setPayment(data ?? null);
-    });
-    return () => {
-      isMounted = false;
-    };
-  }, [order]);
-
-  async function handleRetryPayment() {
-    if (!payment) return;
-    setIsRetrying(true);
-    try {
-      const updated = await retryPayment(payment.id);
-      setPayment(updated);
-    } catch (error) {
-      console.error("Không thể thanh toán lại:", error);
-    } finally {
-      setIsRetrying(false);
-    }
+  function handleSubmitPhone(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void submitPhone(phoneInput.trim());
   }
 
   return (
@@ -73,13 +38,45 @@ export function OrderTrackingPage({ orderCode }: OrderTrackingPageProps) {
       <MenuBackgroundDecoration leftColor="#F5C884" rightColor="#F5C884" />
 
       <div className="mx-auto max-w-[730px] space-y-3">
-        {order === undefined ? (
+        {status === "loading" ? (
           <section className="rounded-lg bg-white p-10 text-center text-[15px] text-[#4b4b4b] shadow-soft">
             Đang tải thông tin đơn hàng...
           </section>
-        ) : order === null ? (
+        ) : status === "ask-phone" ? (
+          <section className="rounded-lg bg-white p-8 text-center shadow-soft">
+            <h1 className="text-[18px] font-black text-brand-green">TRA CỨU ĐƠN HÀNG {orderCode}</h1>
+            <p className="mt-2 text-[14px] text-[#4b4b4b]">
+              Để bảo vệ thông tin cá nhân, vui lòng nhập số điện thoại bạn đã dùng khi đặt hàng.
+            </p>
+
+            <form onSubmit={handleSubmitPhone} className="mx-auto mt-5 flex max-w-[360px] flex-col gap-3">
+              <input
+                type="tel"
+                value={phoneInput}
+                onChange={(event) => setPhoneInput(event.target.value)}
+                placeholder="09xx xxx xxx"
+                autoComplete="tel"
+                required
+                disabled={isVerifyingPhone}
+                className="h-10 w-full rounded-full border border-[#0f9b55] px-4 outline-none focus:ring-2 focus:ring-[#0f9b55]/20"
+              />
+              {phoneError && <p className="text-[13px] font-bold text-red-600">{phoneError}</p>}
+              <button
+                type="submit"
+                disabled={isVerifyingPhone}
+                className="rounded-md bg-brand-red px-8 py-3 text-[14px] font-black text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isVerifyingPhone ? "Đang kiểm tra..." : "Xem đơn hàng"}
+              </button>
+            </form>
+
+            <Link href="/thuc-don" className="mt-5 inline-block font-bold text-brand-green hover:underline">
+              ← Quay lại thực đơn
+            </Link>
+          </section>
+        ) : status === "error" || !order ? (
           <section className="rounded-lg bg-white p-10 text-center shadow-soft">
-            <p className="text-[15px] text-[#4b4b4b]">Không tìm thấy đơn hàng.</p>
+            <p className="text-[15px] text-[#4b4b4b]">Không thể tải thông tin đơn hàng. Vui lòng thử lại sau.</p>
             <Link href="/thuc-don" className="mt-4 inline-block font-bold text-brand-green hover:underline">
               ← Quay lại thực đơn
             </Link>
@@ -206,7 +203,7 @@ export function OrderTrackingPage({ orderCode }: OrderTrackingPageProps) {
             />
 
             {/* #14 PAYMENT FLOW — Order không biến mất khi Payment fail, chỉ hiện nút thanh toán lại. */}
-            {payment?.status === "failed" && (
+            {order.paymentStatus === "failed" && order.orderStatus !== "cancelled" && (
               <section className="rounded-lg border border-red-300 bg-red-50 p-6 text-center shadow-soft">
                 <p className="text-[15px] font-black text-red-600">Thanh toán thất bại</p>
                 <p className="mt-1 text-[13px] text-red-500">
@@ -221,10 +218,11 @@ export function OrderTrackingPage({ orderCode }: OrderTrackingPageProps) {
                 >
                   {isRetrying ? "Đang xử lý..." : "Thanh toán lại"}
                 </button>
+                {retryError && <p className="mt-2 text-[13px] font-bold text-red-600">{retryError}</p>}
               </section>
             )}
 
-            {payment?.status === "pending" && payment.paymentMethodCode !== "cod" && (
+            {order.paymentStatus === "pending" && order.paymentMethodCode !== "cod" && order.orderStatus !== "cancelled" && (
               <section className="rounded-lg border border-orange-300 bg-orange-50 p-6 text-center shadow-soft">
                 <p className="text-[13px] font-bold text-orange-700">
                   Đơn hàng đang chờ xác nhận thanh toán ({order.paymentMethodLabel}).

@@ -1,94 +1,72 @@
-import { SEED_ORDER_OPTIONS } from "../mocks/order-option.mock";
+import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/lib/http/admin-api";
+import { isApiError } from "@/lib/http/api-error";
+import type { PaginatedResult } from "@/lib/http/api-types";
+import { salesApi } from "@/lib/http/sales-api";
+
 import type { ManagedOrderOptionGroup } from "../types/order-option.types";
 
 /**
- * Cùng pattern localStorage-backed mock với các domain khác (xem CLAUDE.md —
- * mocks/<name>.mock.ts + services/<name>.service.ts). Admin Explorer/Editor
- * (features/order-options/components) quản lý CRUD tại đây — Cart/Checkout
- * chỉ gọi listGeneralOrderOptions(), không cần đổi khi Admin thêm/sửa/xóa.
+ * Tùy chọn chung của đơn hàng (Nước mắm, Rau...) — Backend module Sales (/api/v1/sales/order-option-groups, quyền
+ * order-option-groups.*). Áp dụng cho TOÀN đơn, khác modifier của từng món (features/modifier-groups).
+ *
+ * - Admin (Cấu hình → Tùy chọn chung đơn hàng) gọi qua `adminApi`.
+ * - Giỏ hàng/Checkout đọc qua `salesApi` (/public/order-options, không cần đăng nhập).
+ *
+ * Danh sách option gửi lên là đầy đủ, có thứ tự. Option đã có giữ nguyên id (đơn hàng tham chiếu optionId); option mới (id
+ * bắt đầu bằng NEW_OPTION_ID_PREFIX, sinh ở Editor) gửi id = null để Backend cấp id. Phụ phí của option được cộng MỘT LẦN
+ * cho cả đơn (không nhân số lượng).
  */
-const STORAGE_KEY = "tayho-admin-order-options";
-const MOCK_DELAY_MS = 150;
-
-function delay(ms: number = MOCK_DELAY_MS): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function readStore(): ManagedOrderOptionGroup[] {
-  if (typeof window === "undefined") {
-    return SEED_ORDER_OPTIONS;
-  }
-
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return SEED_ORDER_OPTIONS;
-
-    const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as ManagedOrderOptionGroup[]) : SEED_ORDER_OPTIONS;
-  } catch (error) {
-    console.error("Không thể đọc dữ liệu General Order Options:", error);
-    return SEED_ORDER_OPTIONS;
-  }
-}
-
-function writeStore(groups: ManagedOrderOptionGroup[]): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(groups));
-  } catch (error) {
-    console.error("Không thể lưu dữ liệu General Order Options:", error);
-  }
-}
-
-/**
- * Tương đương GET /order-options — Cart/Checkout PHẢI gọi hàm này để lấy
- * danh sách General Order Options, không hard-code Nước mắm/Rau trong UI.
- */
-export async function listGeneralOrderOptions(): Promise<ManagedOrderOptionGroup[]> {
-  await delay();
-  return readStore();
-}
-
-/** Dùng bởi order.service.ts khi tạo Order — tra cứu lại label/giá thật theo groupId, không tin dữ liệu Frontend gửi lên (giống getModifierGroupById). */
-export async function getOrderOptionGroupById(id: string): Promise<ManagedOrderOptionGroup | null> {
-  await delay();
-  return readStore().find((group) => group.id === id) ?? null;
-}
+export const NEW_OPTION_ID_PREFIX = "new-";
 
 export type OrderOptionGroupUpsertInput = Omit<ManagedOrderOptionGroup, "id" | "createdAt" | "updatedAt">;
 
-export async function createOrderOptionGroup(payload: OrderOptionGroupUpsertInput): Promise<ManagedOrderOptionGroup> {
-  await delay();
-  const now = new Date().toISOString();
-  const newGroup: ManagedOrderOptionGroup = { ...payload, id: `order-opt-${Date.now()}`, createdAt: now, updatedAt: now };
-
-  writeStore([...readStore(), newGroup]);
-
-  return newGroup;
+function toRequest(payload: OrderOptionGroupUpsertInput) {
+  return {
+    name: payload.name,
+    selectionType: payload.selectionType,
+    isRequired: payload.isRequired,
+    options: payload.options.map((option) => ({
+      id: option.id.startsWith(NEW_OPTION_ID_PREFIX) ? null : option.id,
+      label: option.label,
+      priceAdjustment: option.priceAdjustment,
+      isDefault: option.isDefault,
+    })),
+  };
 }
 
-export async function updateOrderOptionGroup(
-  id: string,
-  payload: OrderOptionGroupUpsertInput,
-): Promise<ManagedOrderOptionGroup> {
-  await delay();
-  const current = readStore().find((group) => group.id === id);
-  const updated: ManagedOrderOptionGroup = {
-    ...payload,
-    id,
-    createdAt: current?.createdAt ?? new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
+/** Danh sách cho màn Admin. */
+export async function listOrderOptionGroups(): Promise<ManagedOrderOptionGroup[]> {
+  const page = await adminApi.get<PaginatedResult<ManagedOrderOptionGroup>>("/sales/order-option-groups", {
+    params: { pageSize: ADMIN_LIST_PAGE_SIZE },
+  });
+  return page.items;
+}
 
-  writeStore(readStore().map((group) => (group.id === id ? updated : group)));
+/** null khi không tồn tại (Backend 404). */
+export async function getOrderOptionGroupById(id: string): Promise<ManagedOrderOptionGroup | null> {
+  try {
+    return await adminApi.get<ManagedOrderOptionGroup>(`/sales/order-option-groups/${id}`);
+  } catch (error) {
+    if (isApiError(error) && error.kind === "not_found") {
+      return null;
+    }
+    throw error;
+  }
+}
 
-  return updated;
+/** Danh sách cho Giỏ hàng/Checkout (công khai) — không hard-code Nước mắm/Rau trong UI. */
+export function listGeneralOrderOptions(): Promise<ManagedOrderOptionGroup[]> {
+  return salesApi.get<ManagedOrderOptionGroup[]>("/public/order-options");
+}
+
+export function createOrderOptionGroup(payload: OrderOptionGroupUpsertInput): Promise<ManagedOrderOptionGroup> {
+  return adminApi.post<ManagedOrderOptionGroup>("/sales/order-option-groups", toRequest(payload));
+}
+
+export function updateOrderOptionGroup(id: string, payload: OrderOptionGroupUpsertInput): Promise<ManagedOrderOptionGroup> {
+  return adminApi.put<ManagedOrderOptionGroup>(`/sales/order-option-groups/${id}`, toRequest(payload));
 }
 
 export async function deleteOrderOptionGroup(id: string): Promise<void> {
-  await delay();
-  writeStore(readStore().filter((group) => group.id !== id));
+  await adminApi.delete(`/sales/order-option-groups/${id}`);
 }

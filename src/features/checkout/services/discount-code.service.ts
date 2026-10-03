@@ -1,11 +1,8 @@
-// Đi thẳng vào api/type của Promotion thay vì qua index.ts (barrel) — barrel
+// Đi thẳng vào service/type của Promotion thay vì qua index.ts (barrel) — barrel
 // còn re-export "use client" PromotionsExplorer/PromotionEditor (Admin UI), import
 // qua đó sẽ kéo thêm UI Admin vào bundle JS của Checkout (site công khai), giống lý
 // do order.service.ts đi thẳng vào product.service.ts thay vì barrel features/products.
-// promotionApi (không phải service trực tiếp) để khi NEXT_PUBLIC_API_MODE=real,
-// Checkout tự chuyển sang gọi Backend thật qua POST /promotions/validate mà
-// không cần sửa file này.
-import { promotionApi } from "@/features/promotions/api/promotion-api";
+import { validatePromotion } from "@/features/promotions/services/site-promotion.service";
 import type { PromotionValidateRequestItem } from "@/features/promotions/types/promotion.types";
 
 /** Kết quả áp dụng mã thành công — Checkout State giữ nguyên object này để gửi lên `createOrder()`/`createPaymentSession()`. */
@@ -30,7 +27,7 @@ export async function applyDiscountCode(
   rawCode: string,
   params: { subtotal: number; shippingFee: number; items: PromotionValidateRequestItem[] },
 ): Promise<AppliedDiscount> {
-  const result = await promotionApi.validate({
+  const result = await validatePromotion({
     code: rawCode,
     subtotal: params.subtotal,
     shippingFee: params.shippingFee,

@@ -2,14 +2,12 @@
 
 import { useEffect, useState } from "react";
 
-// Đi thẳng vào api/type thay vì qua index.ts (barrel) — barrel còn re-export
-// "use client" OrderOptionsExplorer/OrderOptionEditor (Admin UI), import qua
-// đó sẽ kéo thêm UI Admin vào bundle JS của site công khai (Mini Cart/Cart
-// Page/Checkout đều dùng hook này), giống lý do order.service.ts đi thẳng vào
-// product.service.ts thay vì qua barrel features/products. orderOptionApi
-// (không phải service trực tiếp) để khi NEXT_PUBLIC_API_MODE=real, Cart tự
-// chuyển sang gọi Backend thật mà không cần sửa hook này.
-import { orderOptionApi } from "@/features/order-options/api/order-option-api";
+// Đi thẳng vào service/type thay vì qua index.ts (barrel) — barrel còn re-export
+// "use client" OrderOptionsExplorer/OrderOptionEditor (Admin UI), import qua đó sẽ
+// kéo thêm UI Admin vào bundle JS của site công khai (Mini Cart/Cart Page/Checkout
+// đều dùng hook này), giống lý do order.service.ts đi thẳng vào product.service.ts
+// thay vì qua barrel features/products.
+import { listGeneralOrderOptions } from "@/features/order-options/services/order-option.service";
 import type { ManagedOrderOptionGroup } from "@/features/order-options/types/order-option.types";
 import { useCart } from "../context/cart-context";
 import {
@@ -35,15 +33,25 @@ export function useOrderOptions() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    orderOptionApi.list().then((result) => {
+    listGeneralOrderOptions().then((result) => {
       setGroups(result);
       setIsLoading(false);
 
-      // Chưa từng chọn gì (giỏ hàng mới/lần đầu) — seed sẵn option isDefault của từng nhóm,
-      // giống hành vi cũ của modifier per-item, để khách không phải tự chọn lại cái hiển nhiên.
-      if (orderOptionSelections.length === 0) {
+      // Lựa chọn đã lưu trong giỏ có thể trỏ tới nhóm/lựa chọn Admin đã xóa hoặc đổi (hoặc dữ liệu cũ từ trước khi chuyển
+      // sang Backend) — giữ lại phần còn hợp lệ (kèm nhãn/giá mới nhất), bỏ phần còn lại để không bị Backend từ chối khi đặt hàng.
+      const stillValidSelections = resolveSelectedModifiers(result, buildSelectionMapFromModifiers(orderOptionSelections));
+
+      if (stillValidSelections.length === 0) {
+        // Chưa từng chọn gì (giỏ hàng mới/lần đầu) hoặc toàn bộ lựa chọn cũ đã lỗi thời — seed sẵn option isDefault của từng nhóm,
+        // giống hành vi cũ của modifier per-item, để khách không phải tự chọn lại cái hiển nhiên.
         setOrderOptionSelections(resolveSelectedModifiers(result, buildDefaultSelectionMap(result)));
+      } else if (stillValidSelections.length !== orderOptionSelections.length) {
+        setOrderOptionSelections(stillValidSelections);
       }
+    }).catch((error) => {
+      // Không tải được tùy chọn chung: giỏ hàng vẫn dùng được, chỉ không có nhóm tùy chọn để chọn.
+      console.error("Không thể tải tùy chọn chung của đơn hàng:", error);
+      setIsLoading(false);
     });
     // Chỉ chạy 1 lần khi mount — cố tình không thêm orderOptionSelections vào deps để tránh seed lại mỗi khi khách vừa tự chọn xong.
     // eslint-disable-next-line react-hooks/exhaustive-deps

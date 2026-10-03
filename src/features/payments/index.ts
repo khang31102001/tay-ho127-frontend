@@ -1,11 +1,11 @@
 export { PaymentsExplorer } from "./components/PaymentsExplorer";
 export { PaymentDetail } from "./components/PaymentDetail";
+export { PaymentSessionsPanel } from "./components/PaymentSessionsPanel";
 
-export { listPayments, getPaymentById, getPaymentByOrderId, createPayment, transitionPayment, retryPayment } from "./services/payment.service";
-export type { CreatePaymentInput } from "./services/payment.service";
+export { listPayments, getPaymentById, transitionPayment } from "./services/payment.service";
 export { listTransactionsByPaymentId } from "./services/payment-transaction.service";
+export { listPaymentSessions, confirmPaymentSession, rejectPaymentSession } from "./services/payment-session-admin.service";
 
-export { PAYMENT_TRANSITIONS } from "./types/payment-transitions";
 export { PAYMENT_TRANSACTION_ACTION_OPTIONS } from "./types/payment-transaction.types";
 export type { PaymentTransactionAction, PaymentTransactionResult } from "./types/payment-transaction.types";
 

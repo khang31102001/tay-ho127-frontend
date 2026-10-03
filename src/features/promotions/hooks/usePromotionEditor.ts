@@ -8,8 +8,13 @@ import type { ManagedProduct } from "@/features/products";
 import { listCategories } from "@/features/categories";
 import { listProducts } from "@/features/products";
 
-import { promotionApi } from "../api/promotion-api";
-import type { PromotionFormValue } from "../services/promotion.service";
+import {
+  createPromotion,
+  deletePromotion,
+  getPromotionById,
+  updatePromotion,
+  type PromotionFormValue,
+} from "../services/promotion.service";
 
 const EMPTY_FORM: PromotionFormValue = {
   code: "",
@@ -52,7 +57,7 @@ export function usePromotionEditor({ id }: UsePromotionEditorParams) {
 
     let isCancelled = false;
 
-    promotionApi.getById(id).then((promotion) => {
+    getPromotionById(id).then((promotion) => {
       if (isCancelled) {
         return;
       }
@@ -107,15 +112,15 @@ export function usePromotionEditor({ id }: UsePromotionEditorParams) {
     }
 
     if (isEditMode) {
-      await promotionApi.update(id, normalizedForm);
+      await updatePromotion(id, normalizedForm);
     } else {
-      await promotionApi.create(normalizedForm);
+      await createPromotion(normalizedForm);
     }
   }
 
   async function handleDelete() {
     if (isEditMode) {
-      await promotionApi.delete(id);
+      await deletePromotion(id);
     }
   }
 
