@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 import type { ManagedMedia } from "@/features/media";
 import { listMedia } from "@/features/media";
@@ -43,7 +43,7 @@ type UseArticleEditorParams = {
 };
 
 export function useArticleEditor({ id }: UseArticleEditorParams) {
-  const router = useRouter();
+  const router = useNavigationRouter();
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<ArticleFormValue>(EMPTY_FORM);

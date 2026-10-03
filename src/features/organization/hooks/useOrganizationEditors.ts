@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 import { useAsyncData } from "@/hooks/useAsyncData";
 
@@ -22,7 +22,7 @@ import {
 type CodeNameStatusForm = { code: string; name: string; isActive: boolean };
 
 export function useOrganizationEditor({ id }: { id?: string }) {
-  const router = useRouter();
+  const router = useNavigationRouter();
   const isEditMode = id !== undefined;
   const [form, setForm] = useState<CodeNameStatusForm>({ code: "", name: "", isActive: true });
 
@@ -58,7 +58,7 @@ export function useOrganizationEditor({ id }: { id?: string }) {
 type DepartmentForm = CodeNameStatusForm & { organizationId: string; parentId: string };
 
 export function useDepartmentEditor({ id }: { id?: string }) {
-  const router = useRouter();
+  const router = useNavigationRouter();
   const isEditMode = id !== undefined;
   const [form, setForm] = useState<DepartmentForm>({ code: "", name: "", isActive: true, organizationId: "", parentId: "" });
 
@@ -121,7 +121,7 @@ export function useDepartmentEditor({ id }: { id?: string }) {
 type BrandForm = CodeNameStatusForm & { organizationId: string };
 
 export function useBrandEditor({ id }: { id?: string }) {
-  const router = useRouter();
+  const router = useNavigationRouter();
   const isEditMode = id !== undefined;
   const [form, setForm] = useState<BrandForm>({ code: "", name: "", isActive: true, organizationId: "" });
 

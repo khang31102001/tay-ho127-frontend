@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 import { useAsyncData } from "@/hooks/useAsyncData";
 import { listMedia } from "@/features/media";
@@ -35,7 +35,7 @@ type UseCategoryEditorParams = {
 };
 
 export function useCategoryEditor({ id }: UseCategoryEditorParams) {
-  const router = useRouter();
+  const router = useNavigationRouter();
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<CategoryFormValue>(EMPTY_FORM);

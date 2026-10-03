@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 import { listPermissions, type ManagedPermission } from "@/features/permissions";
 import { useAsyncData } from "@/hooks/useAsyncData";
@@ -46,7 +46,7 @@ type UseRoleEditorParams = {
 };
 
 export function useRoleEditor({ id, canManagePermissions }: UseRoleEditorParams) {
-  const router = useRouter();
+  const router = useNavigationRouter();
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<RoleFormValue>(EMPTY_FORM);

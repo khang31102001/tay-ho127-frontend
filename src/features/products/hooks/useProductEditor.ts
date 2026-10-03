@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 import { listCategories } from "@/features/categories";
 import { listMedia } from "@/features/media";
@@ -44,7 +44,7 @@ type UseProductEditorParams = {
 };
 
 export function useProductEditor({ id }: UseProductEditorParams) {
-  const router = useRouter();
+  const router = useNavigationRouter();
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<ProductFormValue>(EMPTY_FORM);

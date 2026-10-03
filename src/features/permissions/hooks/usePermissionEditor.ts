@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 import { useAsyncData } from "@/hooks/useAsyncData";
 
@@ -21,7 +21,7 @@ export type PermissionFormValue = {
 const EMPTY_FORM: PermissionFormValue = { code: "", name: "", isActive: true };
 
 export function usePermissionEditor({ id }: { id?: string }) {
-  const router = useRouter();
+  const router = useNavigationRouter();
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<PermissionFormValue>(EMPTY_FORM);

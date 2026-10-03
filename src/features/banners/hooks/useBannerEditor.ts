@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 import type { ManagedMedia } from "@/features/media";
 import { listMedia } from "@/features/media";
@@ -60,7 +60,7 @@ type UseBannerEditorParams = {
 };
 
 export function useBannerEditor({ id }: UseBannerEditorParams) {
-  const router = useRouter();
+  const router = useNavigationRouter();
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<BannerFormValue>(EMPTY_FORM);

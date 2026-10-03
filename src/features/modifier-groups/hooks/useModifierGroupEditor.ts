@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 import { useAsyncData } from "@/hooks/useAsyncData";
 
@@ -43,7 +43,7 @@ type UseModifierGroupEditorParams = {
 };
 
 export function useModifierGroupEditor({ id }: UseModifierGroupEditorParams) {
-  const router = useRouter();
+  const router = useNavigationRouter();
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<ModifierGroupFormValue>(EMPTY_FORM);

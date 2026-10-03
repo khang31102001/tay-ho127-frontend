@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 import {
   assignUserBrand,
@@ -69,7 +69,7 @@ async function syncAssignments(
 }
 
 export function useUserEditor({ id, permissions }: { id?: string; permissions: UserEditorPermissions }) {
-  const router = useRouter();
+  const router = useNavigationRouter();
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<UserFormValue>(EMPTY_FORM);

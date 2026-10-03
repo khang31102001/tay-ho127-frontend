@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 import { navigationApi } from "../api/navigation.api";
 import type { NavigationLocation } from "../types/navigation.types";
@@ -25,7 +25,7 @@ type UseNavigationMenuEditorParams = {
 };
 
 export function useNavigationMenuEditor({ id }: UseNavigationMenuEditorParams) {
-  const router = useRouter();
+  const router = useNavigationRouter();
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<NavigationMenuFormValue>(EMPTY_FORM);

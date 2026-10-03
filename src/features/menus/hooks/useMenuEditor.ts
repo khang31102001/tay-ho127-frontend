@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 import { useAsyncData } from "@/hooks/useAsyncData";
 
@@ -26,7 +26,7 @@ type UseMenuEditorParams = {
 };
 
 export function useMenuEditor({ id }: UseMenuEditorParams) {
-  const router = useRouter();
+  const router = useNavigationRouter();
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<MenuFormValue>(EMPTY_FORM);

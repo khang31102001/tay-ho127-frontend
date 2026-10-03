@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 import { listPages, type ManagedPage } from "@/features/pages";
 
@@ -38,7 +38,7 @@ type UseNavigationItemEditorParams = {
 };
 
 export function useNavigationItemEditor({ menuId, itemId }: UseNavigationItemEditorParams) {
-  const router = useRouter();
+  const router = useNavigationRouter();
   const isEditMode = itemId !== undefined;
 
   const [form, setForm] = useState<NavigationItemFormValue>(EMPTY_FORM);

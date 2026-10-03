@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 import type { ModifierOption, ModifierSelectionType } from "@/features/modifier-groups/types/modifier-group.types";
 
@@ -35,7 +35,7 @@ type UseOrderOptionEditorParams = {
 };
 
 export function useOrderOptionEditor({ id }: UseOrderOptionEditorParams) {
-  const router = useRouter();
+  const router = useNavigationRouter();
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<OrderOptionGroupFormValue>(EMPTY_FORM);

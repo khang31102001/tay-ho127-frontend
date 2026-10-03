@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 import type { PageUpsertInput } from "../services/page.service";
 import {
@@ -25,7 +25,7 @@ type UsePageEditorParams = {
 };
 
 export function usePageEditor({ id }: UsePageEditorParams) {
-  const router = useRouter();
+  const router = useNavigationRouter();
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<PageFormValue>(EMPTY_FORM);
