@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
-import type { ManagedMedia } from "@/features/media";
+import { useAsyncData } from "@/hooks/useAsyncData";
 import { listMedia } from "@/features/media";
 
 import type { BannerPlacement } from "../types/banner.types";
@@ -64,50 +64,32 @@ export function useBannerEditor({ id }: UseBannerEditorParams) {
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<BannerFormValue>(EMPTY_FORM);
-  const [mediaOptions, setMediaOptions] = useState<ManagedMedia[]>([]);
-  const [isLoading, setIsLoading] = useState(isEditMode);
+  const mediaOptionsData = useAsyncData(listMedia, [], { fallbackError: "Không thể tải thư viện media." });
+  const existing = useAsyncData(() => getBannerById(id ?? ""), [id], {
+    enabled: isEditMode,
+    fallbackError: "Không thể tải banner.",
+  });
 
   useEffect(() => {
-    listMedia().then(setMediaOptions);
-  }, []);
+    if (!existing.data) return;
 
-  useEffect(() => {
-    if (!isEditMode) {
-      return;
-    }
-
-    let isCancelled = false;
-
-    getBannerById(id).then((banner) => {
-      if (isCancelled) {
-        return;
-      }
-
-      if (banner) {
-        setForm({
-          name: banner.name,
-          desktopMediaId: banner.desktopMediaId,
-          mobileMediaId: banner.mobileMediaId,
-          altText: banner.altText,
-          heading: banner.heading ?? "",
-          subheading: banner.subheading ?? "",
-          ctaLabel: banner.ctaLabel ?? "",
-          ctaUrl: banner.ctaUrl ?? "",
-          placement: banner.placement,
-          startAt: toDateInputValue(banner.startAt),
-          endAt: toDateInputValue(banner.endAt),
-          displayOrder: banner.displayOrder,
-          isActive: banner.isActive,
-        });
-      }
-
-      setIsLoading(false);
+    const banner = existing.data;
+    setForm({
+      name: banner.name,
+      desktopMediaId: banner.desktopMediaId,
+      mobileMediaId: banner.mobileMediaId,
+      altText: banner.altText,
+      heading: banner.heading ?? "",
+      subheading: banner.subheading ?? "",
+      ctaLabel: banner.ctaLabel ?? "",
+      ctaUrl: banner.ctaUrl ?? "",
+      placement: banner.placement,
+      startAt: toDateInputValue(banner.startAt),
+      endAt: toDateInputValue(banner.endAt),
+      displayOrder: banner.displayOrder,
+      isActive: banner.isActive,
     });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [id, isEditMode]);
+  }, [existing.data]);
 
   function updateField<K extends keyof BannerFormValue>(field: K, value: BannerFormValue[K]) {
     setForm((previous) => ({ ...previous, [field]: value }));
@@ -154,8 +136,9 @@ export function useBannerEditor({ id }: UseBannerEditorParams) {
   return {
     form,
     updateField,
-    mediaOptions,
-    isLoading,
+    mediaOptions: mediaOptionsData.data ?? [],
+    isLoading: existing.isLoading,
+    loadError: existing.error,
     isEditMode,
     handleSave,
     handleDelete,

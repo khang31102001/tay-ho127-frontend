@@ -1,121 +1,93 @@
+import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/lib/http/admin-api";
+import type { PaginatedResult } from "@/lib/http/api-types";
+
 import type { BannerPlacement, ManagedBanner } from "../types/banner.types";
-import { SEED_BANNERS } from "../mocks/banner.mock";
 
 /**
- * MOCK CONTRACT: chưa có backend quản lý Banner thật. Dữ liệu seed (xem
- * ../mocks/banner.mock.ts) + đồng bộ 2 chiều với localStorage. Khi có backend
- * thật, chỉ cần thay nội dung các hàm dưới đây — Site chỉ phụ thuộc
- * `listActiveBannersByPlacement()`, không đụng vào cách lưu trữ.
+ * Admin → Content → Banner, gọi Backend /api/v1/content/banners (quyền banners.*).
+ * Site đọc banner ĐANG CHẠY (bật + trong khoảng startAt/endAt) qua
+ * features/content-public, không qua file này.
+ *
+ * - `ctaUrl` chỉ nhận đường dẫn trong site ("/thuc-don") hoặc URL http(s) — Backend trả 400 với scheme khác.
+ * - `startAt`/`endAt` là mốc UTC (null = không giới hạn); `endAt` phải sau `startAt`.
  */
-const STORAGE_KEY = "tayho-admin-banners";
-const MOCK_DELAY_MS = 300;
 
-function delay(ms: number = MOCK_DELAY_MS): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function readStore(): ManagedBanner[] {
-  if (typeof window === "undefined") {
-    return SEED_BANNERS;
-  }
-
-  try {
-    const saved = window.localStorage.getItem(STORAGE_KEY);
-
-    if (saved) {
-      const parsed: unknown = JSON.parse(saved);
-
-      if (Array.isArray(parsed)) {
-        return parsed as ManagedBanner[];
-      }
-    }
-  } catch (error) {
-    console.error("Không thể đọc dữ liệu Banner admin:", error);
-  }
-
-  return SEED_BANNERS;
-}
-
-function writeStore(banners: ManagedBanner[]): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(banners));
-  } catch (error) {
-    console.error("Không thể lưu dữ liệu Banner admin:", error);
-  }
-}
-
-export async function listBanners(): Promise<ManagedBanner[]> {
-  await delay();
-  return readStore();
-}
-
-export async function getBannerById(id: string): Promise<ManagedBanner | null> {
-  await delay();
-  return readStore().find((banner) => banner.id === id) ?? null;
-}
-
-/**
- * Banner "đang chạy" cho 1 vị trí — Site (User Site) chỉ nên gọi hàm này,
- * không đọc thẳng localStorage/service khác. Lọc theo isActive + trong
- * khoảng startAt/endAt (nếu có), sắp theo displayOrder.
- */
-export async function listActiveBannersByPlacement(
-  placement: BannerPlacement,
-): Promise<ManagedBanner[]> {
-  await delay();
-
-  const now = new Date().toISOString();
-
-  return readStore()
-    .filter((banner) => {
-      if (banner.placement !== placement || !banner.isActive) {
-        return false;
-      }
-
-      if (banner.startAt && banner.startAt > now) {
-        return false;
-      }
-
-      if (banner.endAt && banner.endAt < now) {
-        return false;
-      }
-
-      return true;
-    })
-    .sort((a, b) => a.displayOrder - b.displayOrder);
-}
+/** BannerResponse của Backend. */
+type BannerDto = {
+  id: string;
+  name: string;
+  desktopMediaId: string | null;
+  mobileMediaId: string | null;
+  altText: string;
+  heading: string | null;
+  subheading: string | null;
+  ctaLabel: string | null;
+  ctaUrl: string | null;
+  placement: BannerPlacement;
+  startAt: string | null;
+  endAt: string | null;
+  displayOrder: number;
+  isActive: boolean;
+};
 
 export type BannerUpsertInput = Omit<ManagedBanner, "id">;
 
+function toManagedBanner(dto: BannerDto): ManagedBanner {
+  return {
+    id: dto.id,
+    name: dto.name,
+    desktopMediaId: dto.desktopMediaId,
+    mobileMediaId: dto.mobileMediaId,
+    altText: dto.altText,
+    heading: dto.heading ?? undefined,
+    subheading: dto.subheading ?? undefined,
+    ctaLabel: dto.ctaLabel ?? undefined,
+    ctaUrl: dto.ctaUrl ?? undefined,
+    placement: dto.placement,
+    startAt: dto.startAt,
+    endAt: dto.endAt,
+    displayOrder: dto.displayOrder,
+    isActive: dto.isActive,
+  };
+}
+
+function toRequest(payload: BannerUpsertInput) {
+  return {
+    name: payload.name,
+    desktopMediaId: payload.desktopMediaId,
+    mobileMediaId: payload.mobileMediaId,
+    altText: payload.altText,
+    heading: payload.heading ?? null,
+    subheading: payload.subheading ?? null,
+    ctaLabel: payload.ctaLabel ?? null,
+    ctaUrl: payload.ctaUrl ?? null,
+    placement: payload.placement,
+    startAt: payload.startAt,
+    endAt: payload.endAt,
+    displayOrder: payload.displayOrder,
+    isActive: payload.isActive,
+  };
+}
+
+export async function listBanners(): Promise<ManagedBanner[]> {
+  const page = await adminApi.get<PaginatedResult<BannerDto>>("/content/banners", {
+    params: { pageSize: ADMIN_LIST_PAGE_SIZE },
+  });
+  return page.items.map(toManagedBanner);
+}
+
+export async function getBannerById(id: string): Promise<ManagedBanner> {
+  return toManagedBanner(await adminApi.get<BannerDto>(`/content/banners/${id}`));
+}
+
 export async function createBanner(payload: BannerUpsertInput): Promise<ManagedBanner> {
-  await delay();
-
-  const newBanner: ManagedBanner = { ...payload, id: `banner-${Date.now()}` };
-
-  writeStore([...readStore(), newBanner]);
-
-  return newBanner;
+  return toManagedBanner(await adminApi.post<BannerDto>("/content/banners", toRequest(payload)));
 }
 
-export async function updateBanner(
-  id: string,
-  payload: BannerUpsertInput,
-): Promise<ManagedBanner> {
-  await delay();
-
-  const updatedBanner: ManagedBanner = { ...payload, id };
-
-  writeStore(readStore().map((banner) => (banner.id === id ? updatedBanner : banner)));
-
-  return updatedBanner;
+export async function updateBanner(id: string, payload: BannerUpsertInput): Promise<ManagedBanner> {
+  return toManagedBanner(await adminApi.put<BannerDto>(`/content/banners/${id}`, toRequest(payload)));
 }
 
-export async function deleteBanner(id: string): Promise<void> {
-  await delay();
-
-  writeStore(readStore().filter((banner) => banner.id !== id));
+export function deleteBanner(id: string): Promise<void> {
+  return adminApi.delete<void>(`/content/banners/${id}`);
 }

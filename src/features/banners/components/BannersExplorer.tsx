@@ -51,7 +51,7 @@ const columns: DataExplorerColumn<ManagedBanner>[] = [
 ];
 
 export function BannersExplorer() {
-  const { rows, isLoading, handleDelete } = useBannersExplorer();
+  const { rows, isLoading, loadError, handleDelete } = useBannersExplorer();
 
   return (
     <DataExplorer<ManagedBanner>
@@ -66,7 +66,7 @@ export function BannersExplorer() {
       createLabel="Thêm banner"
       editHref={(row) => `/admin/content/banners/${row.id}`}
       onDelete={handleDelete}
-      emptyState="Chưa có banner nào."
+      emptyState={loadError ?? "Chưa có banner nào."}
     />
   );
 }

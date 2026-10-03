@@ -20,6 +20,7 @@ export function BannerEditor({ id }: BannerEditorProps) {
     updateField,
     mediaOptions,
     isLoading,
+    loadError,
     isEditMode,
     handleSave,
     handleDelete,
@@ -31,6 +32,7 @@ export function BannerEditor({ id }: BannerEditorProps) {
       title={isEditMode ? "Sửa banner" : "Thêm banner"}
       backHref="/admin/content/banners"
       isLoading={isLoading}
+      loadError={loadError}
       onSave={handleSave}
       onSaved={goToExplore}
       onDelete={isEditMode ? handleDelete : undefined}
