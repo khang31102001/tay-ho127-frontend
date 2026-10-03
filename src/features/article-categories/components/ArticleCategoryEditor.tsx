@@ -20,6 +20,7 @@ export function ArticleCategoryEditor({ id }: ArticleCategoryEditorProps) {
     updateField,
     parentOptions,
     isLoading,
+    loadError,
     isEditMode,
     handleSave,
     handleDelete,
@@ -31,6 +32,7 @@ export function ArticleCategoryEditor({ id }: ArticleCategoryEditorProps) {
       title={isEditMode ? "Sửa danh mục bài viết" : "Thêm danh mục bài viết"}
       backHref="/admin/content/article-categories"
       isLoading={isLoading}
+      loadError={loadError}
       onSave={handleSave}
       onSaved={goToExplore}
       onDelete={isEditMode ? handleDelete : undefined}

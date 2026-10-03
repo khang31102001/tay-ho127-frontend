@@ -1,6 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
+
+import { useAsyncData } from "@/hooks/useAsyncData";
 
 import type { ManagedArticleCategory } from "../types/article-category.types";
 import { deleteArticleCategory, listArticleCategories } from "../services/article-category.service";
@@ -8,41 +10,29 @@ import { deleteArticleCategory, listArticleCategories } from "../services/articl
 export type ArticleCategoryRow = ManagedArticleCategory & { parentName: string };
 
 export function useArticleCategoriesExplorer() {
-  const [categories, setCategories] = useState<ManagedArticleCategory[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const loadCategories = useCallback(async () => {
-    setIsLoading(true);
-
-    try {
-      const data = await listArticleCategories();
-      setCategories(data);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadCategories();
-  }, [loadCategories]);
+  const { data, isLoading, error, reload } = useAsyncData(listArticleCategories, [], {
+    fallbackError: "Không thể tải danh mục bài viết.",
+  });
 
   const rows = useMemo<ArticleCategoryRow[]>(() => {
+    const categories = data ?? [];
     const nameById = new Map(categories.map((category) => [category.id, category.name]));
 
     return categories.map((category) => ({
       ...category,
       parentName: category.parentId ? nameById.get(category.parentId) ?? "—" : "—",
     }));
-  }, [categories]);
+  }, [data]);
 
   async function handleDelete(category: ManagedArticleCategory) {
     await deleteArticleCategory(category.id);
-    await loadCategories();
+    await reload();
   }
 
   return {
     rows,
     isLoading,
+    loadError: error,
     handleDelete,
   };
 }

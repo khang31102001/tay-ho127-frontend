@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
+import { useAsyncData } from "@/hooks/useAsyncData";
 import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
-import type { ManagedMedia } from "@/features/media";
 import { listMedia } from "@/features/media";
-import { listArticleCategories, type ManagedArticleCategory } from "@/features/article-categories";
-import { listArticleTags, type ManagedArticleTag } from "@/features/article-tags";
+import { listArticleCategories } from "@/features/article-categories";
+import { listArticleTags } from "@/features/article-tags";
 import {
   getSeoSettings,
   isSeoFormEmpty,
@@ -20,7 +21,6 @@ import {
   createArticle,
   deleteArticle,
   getArticleById,
-  isSlugTaken,
   updateArticle,
 } from "../services/article.service";
 
@@ -47,70 +47,31 @@ export function useArticleEditor({ id }: UseArticleEditorParams) {
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<ArticleFormValue>(EMPTY_FORM);
-  const [mediaOptions, setMediaOptions] = useState<ManagedMedia[]>([]);
-  const [categoryOptions, setCategoryOptions] = useState<ManagedArticleCategory[]>([]);
-  const [tagOptions, setTagOptions] = useState<ManagedArticleTag[]>([]);
   const [seoSettings, setSeoSettings] = useState<ManagedSeoSettings | null>(null);
-  const [isLoading, setIsLoading] = useState(isEditMode);
-  const [isSlugAvailable, setIsSlugAvailable] = useState<boolean | undefined>(undefined);
+
+  const options = useAsyncData(
+    () => Promise.all([listMedia(), listArticleCategories(), listArticleTags()]),
+    [],
+    { fallbackError: "Không thể tải media, danh mục và thẻ." },
+  );
+  const existing = useAsyncData(() => getArticleById(id ?? ""), [id], {
+    enabled: isEditMode,
+    fallbackError: "Không thể tải bài viết.",
+  });
 
   // Tab "SEO" — xem ghi chú trong features/seo/hooks/useSeoMetadataForm.ts.
   const seo = useSeoMetadataForm("article", id);
 
   useEffect(() => {
-    Promise.all([listMedia(), listArticleCategories(), listArticleTags()]).then(
-      ([media, categories, tags]) => {
-        setMediaOptions(media);
-        setCategoryOptions(categories);
-        setTagOptions(tags);
-      },
-    );
     getSeoSettings().then(setSeoSettings);
   }, []);
 
   useEffect(() => {
-    if (!isEditMode) {
-      return;
-    }
+    if (!existing.data) return;
 
-    let isCancelled = false;
-
-    getArticleById(id).then((article) => {
-      if (isCancelled) {
-        return;
-      }
-
-      if (article) {
-        const { id: _articleId, createdAt: _createdAt, updatedAt: _updatedAt, publishedAt: _publishedAt, ...rest } = article;
-        setForm(rest);
-      }
-
-      setIsLoading(false);
-    });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [id, isEditMode]);
-
-  useEffect(() => {
-    if (!form.slug) {
-      setIsSlugAvailable(undefined);
-      return;
-    }
-
-    let isCancelled = false;
-
-    isSlugTaken(form.slug, id).then((taken) => {
-      if (!isCancelled) {
-        setIsSlugAvailable(!taken);
-      }
-    });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [form.slug, id]);
+    const { id: _articleId, createdAt: _createdAt, updatedAt: _updatedAt, publishedAt: _publishedAt, ...rest } = existing.data;
+    setForm(rest);
+  }, [existing.data]);
 
   function updateField<K extends keyof ArticleFormValue>(field: K, value: ArticleFormValue[K]) {
     setForm((previous) => ({ ...previous, [field]: value }));
@@ -130,10 +91,6 @@ export function useArticleEditor({ id }: UseArticleEditorParams) {
   }
 
   async function handleSave() {
-    if (isSlugAvailable === false) {
-      throw new Error("Slug đã được dùng cho bài viết khác.");
-    }
-
     if (isEditMode) {
       await updateArticle(id, form);
       await seo.save();
@@ -160,14 +117,14 @@ export function useArticleEditor({ id }: UseArticleEditorParams) {
     form,
     updateField,
     toggleTag,
-    mediaOptions,
-    categoryOptions,
-    tagOptions,
+    mediaOptions: options.data?.[0] ?? [],
+    categoryOptions: options.data?.[1] ?? [],
+    tagOptions: options.data?.[2] ?? [],
     seo,
     seoSettings,
-    isLoading: isLoading || (isEditMode && seo.isLoading),
+    isLoading: existing.isLoading || (isEditMode && seo.isLoading),
+    loadError: existing.error ?? options.error,
     isEditMode,
-    isSlugAvailable,
     /** Chỉ có khi đang sửa bài viết đã tồn tại — dùng để bật nút "Xem trước". */
     previewSlug: isEditMode ? form.slug : null,
     handleSave,

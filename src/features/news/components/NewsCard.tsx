@@ -1,11 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import type { NewsArticleView } from "../types/news.types";
+import type { NewsArticleSummaryView } from "../types/news.types";
 import { NewsMeta } from "./NewsMeta";
 
 type NewsCardProps = {
-  article: NewsArticleView;
+  article: NewsArticleSummaryView;
 };
 
 export function NewsCard({ article }: NewsCardProps) {

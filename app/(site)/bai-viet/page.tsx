@@ -2,13 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { Container } from "@/components/ui/Container";
-// Import thẳng service thay vì qua @/features/articles, @/features/media,
-// @/features/article-categories (barrel các feature Admin này re-export cả
-// UI Explorer/Editor — import qua barrel sẽ kéo UI admin vào bundle Site,
-// xem menu.service.ts để biết lý do).
-import { listPublishedArticles } from "@/features/articles/services/article.service";
+// Bài viết/danh mục công khai lấy từ Backend (features/content-public); media import thẳng
+// service (không qua barrel @/features/media — barrel re-export UI Admin, xem menu.service.ts).
+import { getPublicTaxonomy, listPublishedArticles } from "@/features/content-public";
 import { listMedia } from "@/features/media/services/public-media.service";
-import { listArticleCategories } from "@/features/article-categories/services/article-category.service";
 import { buildMetadata } from "@/lib/seo/build-metadata";
 
 export const metadata = buildMetadata({
@@ -18,10 +15,10 @@ export const metadata = buildMetadata({
 });
 
 export default async function ArticleListPage() {
-  const [articles, mediaList, categories] = await Promise.all([
+  const [articles, mediaList, { categories }] = await Promise.all([
     listPublishedArticles(),
     listMedia(),
-    listArticleCategories(),
+    getPublicTaxonomy(),
   ]);
 
   const mediaById = new Map(mediaList.map((media) => [media.id, media]));

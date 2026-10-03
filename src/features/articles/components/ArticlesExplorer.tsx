@@ -24,7 +24,7 @@ const columns: DataExplorerColumn<ArticleRow>[] = [
 ];
 
 export function ArticlesExplorer() {
-  const { rows, statusFilter, setStatusFilter, isLoading, handleDelete } = useArticlesExplorer();
+  const { rows, statusFilter, setStatusFilter, isLoading, loadError, handleDelete } = useArticlesExplorer();
 
   return (
     <DataExplorer<ArticleRow>
@@ -39,7 +39,7 @@ export function ArticlesExplorer() {
       createLabel="Thêm bài viết"
       editHref={(row) => `/admin/content/articles/${row.id}`}
       onDelete={handleDelete}
-      emptyState="Chưa có bài viết nào."
+      emptyState={loadError ?? "Chưa có bài viết nào."}
       toolbarActions={
         <select
           value={statusFilter}

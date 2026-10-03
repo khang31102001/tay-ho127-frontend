@@ -11,7 +11,7 @@ const columns: DataExplorerColumn<ManagedArticleTag>[] = [
 ];
 
 export function ArticleTagsExplorer() {
-  const { rows, isLoading, handleDelete } = useArticleTagsExplorer();
+  const { rows, isLoading, loadError, handleDelete } = useArticleTagsExplorer();
 
   return (
     <DataExplorer<ManagedArticleTag>
@@ -26,7 +26,7 @@ export function ArticleTagsExplorer() {
       createLabel="Thêm thẻ"
       editHref={(row) => `/admin/content/article-tags/${row.id}`}
       onDelete={handleDelete}
-      emptyState="Chưa có thẻ nào."
+      emptyState={loadError ?? "Chưa có thẻ nào."}
     />
   );
 }

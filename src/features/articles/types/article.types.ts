@@ -16,3 +16,6 @@ export type ManagedArticle = {
   createdAt: string;
   updatedAt: string;
 };
+
+/** Dòng của danh sách Admin — Backend không trả `content` (HTML) ở danh sách. */
+export type ManagedArticleListItem = Omit<ManagedArticle, "content">;

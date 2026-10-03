@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
+import { useAsyncData } from "@/hooks/useAsyncData";
 import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 import type { ManagedArticleTag } from "../types/article-tag.types";
@@ -27,31 +29,16 @@ export function useArticleTagEditor({ id }: UseArticleTagEditorParams) {
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<ArticleTagFormValue>(EMPTY_FORM);
-  const [isLoading, setIsLoading] = useState(isEditMode);
+  const existing = useAsyncData(() => getArticleTagById(id ?? ""), [id], {
+    enabled: isEditMode,
+    fallbackError: "Không thể tải thẻ bài viết.",
+  });
 
   useEffect(() => {
-    if (!isEditMode) {
-      return;
-    }
-
-    let isCancelled = false;
-
-    getArticleTagById(id).then((tag) => {
-      if (isCancelled) {
-        return;
-      }
-
-      if (tag) {
-        setForm(tag);
-      }
-
-      setIsLoading(false);
-    });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [id, isEditMode]);
+    if (!existing.data) return;
+    const { name, slug } = existing.data;
+    setForm({ name, slug });
+  }, [existing.data]);
 
   function updateField<K extends keyof ArticleTagFormValue>(field: K, value: ArticleTagFormValue[K]) {
     setForm((previous) => ({ ...previous, [field]: value }));
@@ -78,7 +65,8 @@ export function useArticleTagEditor({ id }: UseArticleTagEditorParams) {
   return {
     form,
     updateField,
-    isLoading,
+    isLoading: existing.isLoading,
+    loadError: existing.error,
     isEditMode,
     handleSave,
     handleDelete,

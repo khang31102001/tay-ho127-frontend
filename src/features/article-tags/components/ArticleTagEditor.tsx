@@ -14,7 +14,7 @@ type ArticleTagEditorProps = {
 };
 
 export function ArticleTagEditor({ id }: ArticleTagEditorProps) {
-  const { form, updateField, isLoading, isEditMode, handleSave, handleDelete, goToExplore } =
+  const { form, updateField, isLoading, loadError, isEditMode, handleSave, handleDelete, goToExplore } =
     useArticleTagEditor({ id });
 
   return (
@@ -22,6 +22,7 @@ export function ArticleTagEditor({ id }: ArticleTagEditorProps) {
       title={isEditMode ? "Sửa thẻ" : "Thêm thẻ"}
       backHref="/admin/content/article-tags"
       isLoading={isLoading}
+      loadError={loadError}
       onSave={handleSave}
       onSaved={goToExplore}
       onDelete={isEditMode ? handleDelete : undefined}

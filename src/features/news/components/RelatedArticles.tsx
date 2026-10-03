@@ -1,8 +1,8 @@
-import type { NewsArticleView } from "../types/news.types";
+import type { NewsArticleSummaryView } from "../types/news.types";
 import { NewsGrid } from "./NewsGrid";
 
 type RelatedArticlesProps = {
-  articles: NewsArticleView[];
+  articles: NewsArticleSummaryView[];
 };
 
 /** Reuse NewsGrid/NewsCard — không tạo RelatedNewsCard riêng vì UI/responsibility giống hệt. */

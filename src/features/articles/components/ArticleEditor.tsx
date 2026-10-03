@@ -38,8 +38,8 @@ export function ArticleEditor({ id }: ArticleEditorProps) {
     seo,
     seoSettings,
     isLoading,
+    loadError,
     isEditMode,
-    isSlugAvailable,
     previewSlug,
     handleSave,
     handleDelete,
@@ -52,6 +52,7 @@ export function ArticleEditor({ id }: ArticleEditorProps) {
       title={isEditMode ? "Sửa bài viết" : "Thêm bài viết"}
       backHref="/admin/content/articles"
       isLoading={isLoading}
+      loadError={loadError}
       onSave={handleSave}
       onSaved={goToExplore}
       onDelete={isEditMode ? handleDelete : undefined}
@@ -108,7 +109,6 @@ export function ArticleEditor({ id }: ArticleEditorProps) {
         onChange={(value) => updateField("slug", value)}
         sourceValue={form.title}
         enableAutoGenerate={!isEditMode}
-        isAvailable={isSlugAvailable}
       />
 
       <label className={adminFieldLabelClassName}>
