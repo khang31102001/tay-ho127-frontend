@@ -2,11 +2,15 @@ export { PromotionsExplorer } from "./components/PromotionsExplorer";
 export { PromotionEditor } from "./components/PromotionEditor";
 export { PromotionStatusBadge } from "./components/PromotionStatusBadge";
 
-export { promotionApi } from "./api/promotion-api";
-
-// resolvePromotionEffectiveStatus là hàm thuần (không gọi network) dùng để
-// hiển thị — không thuộc HTTP boundary nên không đi qua promotionApi, khác
-// list/getById/create/update/delete/validate (xem api/promotion-api.ts).
+// Service Admin (CRUD) gọi Backend; resolvePromotionEffectiveStatus là hàm thuần dùng để hiển thị.
+// Checkout KHÔNG dùng barrel này: nó gọi thẳng services/promotion-validation.service.ts.
+export {
+  listPromotions,
+  getPromotionById,
+  createPromotion,
+  updatePromotion,
+  deletePromotion,
+} from "./services/promotion.service";
 export { resolvePromotionEffectiveStatus } from "./services/promotion.service";
 export type { PromotionFormValue } from "./services/promotion.service";
 

@@ -34,6 +34,7 @@ export function PromotionEditor({ id }: PromotionEditorProps) {
     productOptions,
     categoryOptions,
     isLoading,
+    loadError,
     isEditMode,
     handleSave,
     handleDelete,
@@ -47,6 +48,7 @@ export function PromotionEditor({ id }: PromotionEditorProps) {
       title={isEditMode ? "Sửa mã giảm giá" : "Thêm mã giảm giá"}
       backHref="/admin/catalog/promotions"
       isLoading={isLoading}
+      loadError={loadError}
       onSave={handleSave}
       onSaved={goToExplore}
       onDelete={isEditMode ? handleDelete : undefined}

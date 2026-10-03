@@ -5,7 +5,6 @@ import { getPaymentMethodByCode, isPaymentMethodEligible } from "@/features/paym
 import { getPublicModifierGroupById, getPublicProductById } from "@/features/catalog-public";
 import { listMedia } from "@/features/media/services/public-media.service";
 import { getOrderOptionGroupById } from "@/features/order-options/services/order-option.service";
-import { incrementPromotionUsage } from "@/features/promotions/services/promotion.service";
 
 import { SEED_ORDERS } from "../mocks/order.mock";
 import { ORDER_STATUS_TRANSITIONS, type OrderStatus } from "../types/order-status";
@@ -307,13 +306,8 @@ export async function createOrder(input: CreateOrderInput): Promise<ManagedOrder
 
   writeStore([...existing, order]);
 
-  // Ghi nhận lượt sử dụng SAU KHI Order đã tạo thành công (không phải lúc chỉ
-  // "áp dụng thử" ở Checkout) — lỗi ghi nhận không nên chặn cả đơn hàng vừa tạo.
-  if (order.promotionId) {
-    incrementPromotionUsage(order.promotionId).catch((error) => {
-      console.error("Không thể ghi nhận lượt sử dụng mã giảm giá:", error);
-    });
-  }
+  // usageCount của mã giảm giá do Backend giữ — sẽ được tăng khi module Orders thật ghi nhận đơn
+  // (đơn mock ở đây không còn tự tăng).
 
   return order;
 }

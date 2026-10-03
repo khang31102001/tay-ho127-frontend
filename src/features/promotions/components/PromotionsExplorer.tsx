@@ -44,7 +44,7 @@ const columns: DataExplorerColumn<PromotionRow>[] = [
 ];
 
 export function PromotionsExplorer() {
-  const { rows, isLoading, handleDelete } = usePromotionsExplorer();
+  const { rows, isLoading, loadError, handleDelete } = usePromotionsExplorer();
 
   return (
     <DataExplorer<PromotionRow>
@@ -59,7 +59,7 @@ export function PromotionsExplorer() {
       createLabel="Thêm mã giảm giá"
       editHref={(row) => `/admin/catalog/promotions/${row.id}`}
       onDelete={handleDelete}
-      emptyState="Chưa có mã giảm giá nào."
+      emptyState={loadError ?? "Chưa có mã giảm giá nào."}
     />
   );
 }
