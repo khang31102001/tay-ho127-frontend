@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 
 import { ProductDetail, getProductDetail } from "@/features/menu";
 import { buildMetadata } from "@/lib/seo/build-metadata";
-import { resolveSeoPayload } from "@/lib/seo/resolve-seo-payload";
 import { resolveSeoPayloadForEntity } from "@/features/seo/services/seo-resolver.service";
 import { resolveProductPageSchemas } from "@/features/seo/services/seo-schema-resolver.service";
 import { JsonLd } from "@/components/shared/JsonLd";
@@ -15,17 +14,14 @@ type ProductDetailPageProps = {
 export async function generateMetadata({
   params,
 }: ProductDetailPageProps): Promise<Metadata> {
-  const seoPayload = await resolveSeoPayload({
-    // TEMPORARY CONTRACT: endpoint đề xuất cho khi có Backend ASP.NET Core thật.
-    endpoint: `/products/${params.slug}/seo`,
-    mockResolver: async () => {
-      const data = await getProductDetail(params.slug);
-      if (!data) return null;
+  const data = await getProductDetail(params.slug);
 
-      // Site chỉ đọc catalog public — product.service (Admin, cần phiên đăng nhập) không dùng được ở đây.
-      return resolveSeoPayloadForEntity({
+  // Site chỉ đọc catalog public — product.service (Admin, cần phiên đăng nhập) không dùng được ở đây.
+  // Override SEO khóa theo id sản phẩm (không theo slug) để đổi slug không làm mất override.
+  const seoPayload = data
+    ? await resolveSeoPayloadForEntity({
         entityType: "product",
-        entityId: params.slug,
+        entityId: data.product.id,
         path: `/thuc-don/${params.slug}`,
         defaults: {
           title: data.product.name,
@@ -33,9 +29,8 @@ export async function generateMetadata({
           imageMediaId: null,
         },
         entityImageUrl: data.product.image,
-      });
-    },
-  });
+      })
+    : null;
 
   if (!seoPayload) {
     return buildMetadata({
@@ -60,7 +55,7 @@ export default async function ProductDetailPage({
 
   // PAGE SCHEMA (Task 20): Product + Offer (lồng bên trong) + BreadcrumbList.
   const schemas = await resolveProductPageSchemas({
-    entityId: params.slug,
+    entityId: data.product.id,
     name: data.product.name,
     description: data.product.description,
     imageUrl: data.product.image,

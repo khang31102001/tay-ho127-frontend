@@ -4,15 +4,15 @@ import { getSiteUrl } from "@/lib/site-url";
 // Import thẳng service (không qua barrel @/features/seo) — barrel đó
 // re-export cả UI Admin, cùng lý do đã áp dụng cho @/features/articles ở
 // app/(site)/bai-viet/page.tsx.
-import { getSeoSettings } from "@/features/seo/services/seo-settings.service";
+import { getPublicSeoSettings } from "@/features/seo/services/seo-public.service";
 
-// Dữ liệu đọc từ mock/localStorage có thể đổi bất kỳ lúc nào qua Admin (SEO
-// Settings) — không cache tĩnh, cùng lý do với app/sitemap.ts.
+// SEO Settings đổi bất kỳ lúc nào qua Admin — không dựng tĩnh lúc build (Backend có thể chưa
+// chạy); độ tươi do cache 60 giây của seo-public.service quyết định, cùng lý do với app/sitemap.ts.
 export const dynamic = "force-dynamic";
 
 export default async function robots(): Promise<MetadataRoute.Robots> {
   const siteUrl = getSiteUrl();
-  const settings = await getSeoSettings();
+  const settings = await getPublicSeoSettings();
 
   return {
     rules: [

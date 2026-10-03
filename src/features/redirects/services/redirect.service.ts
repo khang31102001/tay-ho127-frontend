@@ -1,127 +1,63 @@
-import type { ManagedRedirect } from "../types/redirect.types";
-import { SEED_REDIRECTS } from "../mocks/redirect.mock";
+import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/lib/http/admin-api";
+import { isApiError } from "@/lib/http/api-error";
+import type { PaginatedResult } from "@/lib/http/api-types";
+
+import type { ManagedRedirect, RedirectFormValue } from "../types/redirect.types";
 
 /**
- * MOCK CONTRACT: chưa có backend quản lý redirect thật. Dữ liệu seed (xem
- * ../mocks/redirect.mock.ts) + đồng bộ 2 chiều với localStorage — cùng pattern
- * mọi feature admin CRUD khác. Khi có backend thật, chỉ cần thay nội dung các
- * hàm dưới đây.
+ * Admin → SEO → Chuyển hướng, gọi Backend /api/v1/seo/redirects (quyền redirects.*).
+ * Site áp dụng redirect đang BẬT qua redirect-public.service.ts (middleware), không qua file này.
+ *
+ * - `sourcePath` được Backend chuẩn hóa (thêm "/" đầu, bỏ "/" cuối) và phải duy nhất (409 nếu trùng); không được là
+ *   "/", có query/fragment, hay nằm dưới /admin, /api, /_next. Khớp CHÍNH XÁC, không wildcard/regex.
+ * - `destinationUrl` là đường dẫn trong site hoặc URL http(s); Backend trả 400 nếu chuyển về chính nó hoặc tạo vòng lặp.
  */
-const STORAGE_KEY = "tayho-admin-redirects";
-const MOCK_DELAY_MS = 300;
 
-function delay(ms: number = MOCK_DELAY_MS): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+/** RedirectResponse của Backend — khớp ManagedRedirect 1:1. */
+type RedirectDto = ManagedRedirect;
 
-function readStore(): ManagedRedirect[] {
-  if (typeof window === "undefined") {
-    return SEED_REDIRECTS;
-  }
-
-  try {
-    const saved = window.localStorage.getItem(STORAGE_KEY);
-
-    if (saved) {
-      const parsed: unknown = JSON.parse(saved);
-
-      if (Array.isArray(parsed)) {
-        return parsed as ManagedRedirect[];
-      }
-    }
-  } catch (error) {
-    console.error("Không thể đọc dữ liệu redirect:", error);
-  }
-
-  return SEED_REDIRECTS;
-}
-
-function writeStore(redirects: ManagedRedirect[]): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(redirects));
-  } catch (error) {
-    console.error("Không thể lưu dữ liệu redirect:", error);
-  }
-}
-
+/** Cùng quy tắc chuẩn hóa của Backend, để so khớp trùng source ngay khi gõ. */
 function normalizeSourcePath(path: string): string {
   const trimmed = path.trim();
-  return trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  const withSlash = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  return withSlash.length > 1 ? withSlash.replace(/\/+$/, "") : withSlash;
 }
 
 export async function listRedirects(): Promise<ManagedRedirect[]> {
-  await delay();
-  return readStore();
+  const page = await adminApi.get<PaginatedResult<RedirectDto>>("/seo/redirects", {
+    params: { pageSize: ADMIN_LIST_PAGE_SIZE },
+  });
+  return page.items;
 }
 
+/** null khi không tồn tại (Backend 404). */
 export async function getRedirectById(id: string): Promise<ManagedRedirect | null> {
-  await delay();
-  return readStore().find((redirect) => redirect.id === id) ?? null;
+  try {
+    return await adminApi.get<RedirectDto>(`/seo/redirects/${id}`);
+  } catch (error) {
+    if (isApiError(error) && error.kind === "not_found") {
+      return null;
+    }
+    throw error;
+  }
 }
 
 export async function isSourcePathTaken(sourcePath: string, excludeId?: string): Promise<boolean> {
-  await delay(150);
   const normalized = normalizeSourcePath(sourcePath);
-  return readStore().some((redirect) => redirect.sourcePath === normalized && redirect.id !== excludeId);
+  const page = await adminApi.get<PaginatedResult<RedirectDto>>("/seo/redirects", {
+    params: { search: normalized, pageSize: 20 },
+  });
+  return page.items.some((redirect) => redirect.sourcePath === normalized && redirect.id !== excludeId);
 }
 
-export async function createRedirect(
-  payload: Omit<ManagedRedirect, "id" | "createdAt" | "updatedAt">,
-): Promise<ManagedRedirect> {
-  await delay();
-
-  const now = new Date().toISOString();
-  const newRedirect: ManagedRedirect = {
-    ...payload,
-    sourcePath: normalizeSourcePath(payload.sourcePath),
-    id: `redirect-${Date.now()}`,
-    createdAt: now,
-    updatedAt: now,
-  };
-
-  writeStore([...readStore(), newRedirect]);
-
-  return newRedirect;
+export async function createRedirect(payload: RedirectFormValue): Promise<ManagedRedirect> {
+  return adminApi.post<RedirectDto>("/seo/redirects", payload);
 }
 
-export async function updateRedirect(
-  id: string,
-  payload: Omit<ManagedRedirect, "id" | "createdAt" | "updatedAt">,
-): Promise<ManagedRedirect> {
-  await delay();
-
-  const current = readStore();
-  const existing = current.find((redirect) => redirect.id === id);
-  const now = new Date().toISOString();
-
-  const updated: ManagedRedirect = {
-    ...payload,
-    sourcePath: normalizeSourcePath(payload.sourcePath),
-    id,
-    createdAt: existing?.createdAt ?? now,
-    updatedAt: now,
-  };
-
-  writeStore(current.map((redirect) => (redirect.id === id ? updated : redirect)));
-
-  return updated;
+export async function updateRedirect(id: string, payload: RedirectFormValue): Promise<ManagedRedirect> {
+  return adminApi.put<RedirectDto>(`/seo/redirects/${id}`, payload);
 }
 
 export async function deleteRedirect(id: string): Promise<void> {
-  await delay();
-
-  writeStore(readStore().filter((redirect) => redirect.id !== id));
-}
-
-/**
- * Dùng bởi middleware.ts — khớp CHÍNH XÁC theo source_path (không hỗ trợ
- * wildcard/regex, tránh over-engineering khi chưa có nhu cầu cụ thể). Không
- * gọi delay() giả lập ở đây vì middleware chạy trên MỌI request, cần nhanh.
- */
-export function findActiveRedirect(pathname: string): ManagedRedirect | null {
-  return readStore().find((redirect) => redirect.isActive && redirect.sourcePath === pathname) ?? null;
+  await adminApi.delete(`/seo/redirects/${id}`);
 }

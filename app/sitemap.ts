@@ -7,7 +7,7 @@ import { fetchMenu } from "@/features/menu";
 // Bài viết đã xuất bản lấy từ Backend (features/content-public, chỉ chạy phía server).
 import { listPublishedArticles } from "@/features/content-public";
 // Import thẳng service (không qua barrel @/features/seo) — cùng lý do.
-import { listSeoMetadata } from "@/features/seo/services/seo-metadata.service";
+import { listPublicNoIndexEntities } from "@/features/seo/services/seo-public.service";
 import { seoMetadataRowId } from "@/features/seo/utils/seo-metadata-key";
 
 // Dữ liệu (bài viết, thực đơn) đổi bất kỳ lúc nào qua Admin — không render tĩnh lúc build.
@@ -16,18 +16,16 @@ export const dynamic = "force-dynamic";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = getSiteUrl();
 
-  const [menuResponse, articles, seoOverrides] = await Promise.all([
+  const [menuResponse, articles, noIndexEntities] = await Promise.all([
     fetchMenu(),
     listPublishedArticles(),
-    listSeoMetadata(),
+    listPublicNoIndexEntities(),
   ]);
 
   // Task 26: page bị đặt noindex qua SEO Metadata (Admin > SEO) không nên có
   // mặt trong sitemap — search engine sẽ vẫn crawl được URL (không disallow ở
   // robots.txt) nhưng ta không chủ động mời index qua sitemap.
-  const noindexKeys = new Set(
-    seoOverrides.filter((row) => !row.robotsIndex).map((row) => seoMetadataRowId(row.entityType, row.entityId)),
-  );
+  const noindexKeys = new Set(noIndexEntities.map((row) => seoMetadataRowId(row.entityType, row.entityId)));
 
   const allStaticRoutes: MetadataRoute.Sitemap = [
     { url: `${siteUrl}/`, changeFrequency: "weekly", priority: 1 },
@@ -43,7 +41,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .flatMap((group) => group.categories ?? [])
     .flatMap((category) => category.subCategories ?? [])
     .flatMap((subCategory) => subCategory.products ?? [])
-    .filter((product) => !noindexKeys.has(seoMetadataRowId("product", product.slug ?? "")))
+    .filter((product) => !noindexKeys.has(seoMetadataRowId("product", product.id)))
     .map((product) => ({
       url: `${siteUrl}/thuc-don/${product.slug}`,
       changeFrequency: "weekly",
