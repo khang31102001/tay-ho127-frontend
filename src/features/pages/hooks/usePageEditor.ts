@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
+import { useAsyncData } from "@/hooks/useAsyncData";
 import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 import type { PageUpsertInput } from "../services/page.service";
@@ -8,7 +10,6 @@ import {
   createPage,
   deletePage,
   getPageById,
-  isSlugTaken,
   updatePage,
 } from "../services/page.service";
 
@@ -29,61 +30,22 @@ export function usePageEditor({ id }: UsePageEditorParams) {
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<PageFormValue>(EMPTY_FORM);
-  const [isLoading, setIsLoading] = useState(isEditMode);
-  const [isSlugAvailable, setIsSlugAvailable] = useState<boolean | undefined>(undefined);
+  const existing = useAsyncData(() => getPageById(id ?? ""), [id], {
+    enabled: isEditMode,
+    fallbackError: "Không thể tải page.",
+  });
 
   useEffect(() => {
-    if (!isEditMode) {
-      return;
-    }
-
-    let isCancelled = false;
-
-    getPageById(id).then((page) => {
-      if (isCancelled) {
-        return;
-      }
-
-      if (page) {
-        setForm({ name: page.name, slug: page.slug, status: page.status });
-      }
-
-      setIsLoading(false);
-    });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [id, isEditMode]);
-
-  useEffect(() => {
-    if (!form.slug) {
-      setIsSlugAvailable(undefined);
-      return;
-    }
-
-    let isCancelled = false;
-
-    isSlugTaken(form.slug, id).then((taken) => {
-      if (!isCancelled) {
-        setIsSlugAvailable(!taken);
-      }
-    });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [form.slug, id]);
+    if (!existing.data) return;
+    const { name, slug, status } = existing.data;
+    setForm({ name, slug, status });
+  }, [existing.data]);
 
   function updateField<K extends keyof PageFormValue>(field: K, value: PageFormValue[K]) {
     setForm((previous) => ({ ...previous, [field]: value }));
   }
 
   async function handleSave() {
-    if (isSlugAvailable === false) {
-      throw new Error("Đường dẫn (slug) đã được dùng cho page khác.");
-    }
-
     if (isEditMode) {
       await updatePage(id, form);
     } else {
@@ -104,9 +66,9 @@ export function usePageEditor({ id }: UsePageEditorParams) {
   return {
     form,
     updateField,
-    isLoading,
+    isLoading: existing.isLoading,
+    loadError: existing.error,
     isEditMode,
-    isSlugAvailable,
     handleSave,
     handleDelete,
     goToExplore,

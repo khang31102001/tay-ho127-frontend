@@ -21,6 +21,7 @@ export function PageSectionEditor({ pageId, id }: PageSectionEditorProps) {
     updateField,
     mediaOptions,
     isLoading,
+    loadError,
     isEditMode,
     handleSave,
     handleDelete,
@@ -32,6 +33,7 @@ export function PageSectionEditor({ pageId, id }: PageSectionEditorProps) {
       title={isEditMode ? "Sửa section" : "Thêm section"}
       backHref={`/admin/content/pages/${pageId}/sections`}
       isLoading={isLoading}
+      loadError={loadError}
       onSave={handleSave}
       onSaved={goToExplore}
       onDelete={isEditMode ? handleDelete : undefined}

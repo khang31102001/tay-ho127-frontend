@@ -1,8 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-
 import { getPageById } from "@/features/pages";
+import { useAsyncData } from "@/hooks/useAsyncData";
 
 import type { ManagedPageSection } from "../types/page-section.types";
 import {
@@ -16,40 +15,23 @@ type UsePageSectionsExplorerParams = {
 };
 
 export function usePageSectionsExplorer({ pageId }: UsePageSectionsExplorerParams) {
-  const [sections, setSections] = useState<ManagedPageSection[]>([]);
-  const [pageName, setPageName] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const sections = useAsyncData(() => listSectionsByPageId(pageId), [pageId], {
+    fallbackError: "Không thể tải danh sách section.",
+  });
+  const page = useAsyncData(() => getPageById(pageId), [pageId], { fallbackError: "Không thể tải page." });
 
-  const loadSections = useCallback(async () => {
-    setIsLoading(true);
-
-    try {
-      const [sectionData, page] = await Promise.all([
-        listSectionsByPageId(pageId),
-        getPageById(pageId),
-      ]);
-
-      setSections(sectionData);
-      setPageName(page?.name ?? "");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [pageId]);
-
-  useEffect(() => {
-    loadSections();
-  }, [loadSections]);
+  const rows = sections.data ?? [];
 
   async function handleDelete(section: ManagedPageSection) {
-    await deleteSection(section.id);
-    await loadSections();
+    await deleteSection(pageId, section.id);
+    await sections.reload();
   }
 
   /** Đổi chỗ displayOrder với section liền kề — không cần API reorder riêng. */
   async function swapWithNeighbor(section: ManagedPageSection, direction: "up" | "down") {
-    const index = sections.findIndex((item) => item.id === section.id);
+    const index = rows.findIndex((item) => item.id === section.id);
     const neighborIndex = direction === "up" ? index - 1 : index + 1;
-    const neighbor = sections[neighborIndex];
+    const neighbor = rows[neighborIndex];
 
     if (!neighbor) {
       return;
@@ -63,7 +45,7 @@ export function usePageSectionsExplorer({ pageId }: UsePageSectionsExplorerParam
       updateSection(neighborId, { ...neighborRest, displayOrder: section.displayOrder }),
     ]);
 
-    await loadSections();
+    await sections.reload();
   }
 
   function handleMoveUp(section: ManagedPageSection) {
@@ -75,9 +57,10 @@ export function usePageSectionsExplorer({ pageId }: UsePageSectionsExplorerParam
   }
 
   return {
-    rows: sections,
-    pageName,
-    isLoading,
+    rows,
+    pageName: page.data?.name ?? "",
+    isLoading: sections.isLoading || page.isLoading,
+    loadError: sections.error ?? page.error,
     handleDelete,
     handleMoveUp,
     handleMoveDown,

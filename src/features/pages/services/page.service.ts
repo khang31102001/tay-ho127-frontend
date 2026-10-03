@@ -1,66 +1,28 @@
+import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/lib/http/admin-api";
+import type { PaginatedResult } from "@/lib/http/api-types";
+
 import type { ManagedPage } from "../types/page.types";
-import { SEED_PAGES } from "../mocks/page.mock";
 
 /**
- * MOCK CONTRACT: chưa có backend quản lý Page thật. Dữ liệu seed (xem
- * ../mocks/page.mock.ts) + đồng bộ 2 chiều với localStorage. Khi có backend
- * thật, chỉ cần thay nội dung các hàm dưới đây.
+ * Admin → Content → Page, gọi Backend /api/v1/content/pages (quyền pages.*).
+ *
+ * - `slug` là ĐƯỜNG DẪN trang ("/" cho trang chủ, "/thuc-don", "/ve-chung-toi/lich-su"): chữ thường,
+ *   mỗi đoạn nối bằng gạch ngang. Để trống khi tạo → Backend sinh từ tên; để trống khi sửa → giữ nguyên.
+ *   Trùng đường dẫn → 409. Navigation dùng thẳng giá trị này làm URL.
+ * - `publishedAt` do Backend đặt lần đầu page chuyển sang "published", không gửi lên.
+ * - Xóa page xóa luôn các section của nó.
  */
-const STORAGE_KEY = "tayho-admin-pages";
-const MOCK_DELAY_MS = 300;
 
-function delay(ms: number = MOCK_DELAY_MS): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function readStore(): ManagedPage[] {
-  if (typeof window === "undefined") {
-    return SEED_PAGES;
-  }
-
-  try {
-    const saved = window.localStorage.getItem(STORAGE_KEY);
-
-    if (saved) {
-      const parsed: unknown = JSON.parse(saved);
-
-      if (Array.isArray(parsed)) {
-        return parsed as ManagedPage[];
-      }
-    }
-  } catch (error) {
-    console.error("Không thể đọc dữ liệu Page admin:", error);
-  }
-
-  return SEED_PAGES;
-}
-
-function writeStore(pages: ManagedPage[]): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(pages));
-  } catch (error) {
-    console.error("Không thể lưu dữ liệu Page admin:", error);
-  }
-}
-
-export async function listPages(): Promise<ManagedPage[]> {
-  await delay();
-  return readStore();
-}
-
-export async function getPageById(id: string): Promise<ManagedPage | null> {
-  await delay();
-  return readStore().find((page) => page.id === id) ?? null;
-}
-
-export async function isSlugTaken(slug: string, excludeId?: string): Promise<boolean> {
-  await delay(150);
-  return readStore().some((page) => page.slug === slug && page.id !== excludeId);
-}
+/** PageResponse của Backend. */
+type PageDto = {
+  id: string;
+  name: string;
+  slug: string;
+  status: ManagedPage["status"];
+  publishedAt: string | null;
+  createdAtUtc: string;
+  updatedAtUtc: string | null;
+};
 
 export type PageUpsertInput = {
   name: string;
@@ -68,46 +30,41 @@ export type PageUpsertInput = {
   status: ManagedPage["status"];
 };
 
-export async function createPage(payload: PageUpsertInput): Promise<ManagedPage> {
-  await delay();
-
-  const now = new Date().toISOString();
-
-  const newPage: ManagedPage = {
-    ...payload,
-    id: `page-${Date.now()}`,
-    publishedAt: payload.status === "published" ? now : null,
-    createdAt: now,
-    updatedAt: now,
+function toManagedPage(dto: PageDto): ManagedPage {
+  return {
+    id: dto.id,
+    name: dto.name,
+    slug: dto.slug,
+    status: dto.status,
+    publishedAt: dto.publishedAt,
+    createdAt: dto.createdAtUtc,
+    updatedAt: dto.updatedAtUtc ?? dto.createdAtUtc,
   };
+}
 
-  writeStore([...readStore(), newPage]);
+function toRequest(payload: PageUpsertInput) {
+  return { name: payload.name, slug: payload.slug || null, status: payload.status };
+}
 
-  return newPage;
+export async function listPages(): Promise<ManagedPage[]> {
+  const page = await adminApi.get<PaginatedResult<PageDto>>("/content/pages", {
+    params: { pageSize: ADMIN_LIST_PAGE_SIZE },
+  });
+  return page.items.map(toManagedPage);
+}
+
+export async function getPageById(id: string): Promise<ManagedPage> {
+  return toManagedPage(await adminApi.get<PageDto>(`/content/pages/${id}`));
+}
+
+export async function createPage(payload: PageUpsertInput): Promise<ManagedPage> {
+  return toManagedPage(await adminApi.post<PageDto>("/content/pages", toRequest(payload)));
 }
 
 export async function updatePage(id: string, payload: PageUpsertInput): Promise<ManagedPage> {
-  await delay();
-
-  const current = readStore().find((page) => page.id === id);
-  const now = new Date().toISOString();
-
-  const updatedPage: ManagedPage = {
-    id,
-    ...payload,
-    publishedAt:
-      payload.status === "published" ? current?.publishedAt ?? now : current?.publishedAt ?? null,
-    createdAt: current?.createdAt ?? now,
-    updatedAt: now,
-  };
-
-  writeStore(readStore().map((page) => (page.id === id ? updatedPage : page)));
-
-  return updatedPage;
+  return toManagedPage(await adminApi.put<PageDto>(`/content/pages/${id}`, toRequest(payload)));
 }
 
-export async function deletePage(id: string): Promise<void> {
-  await delay();
-
-  writeStore(readStore().filter((page) => page.id !== id));
+export function deletePage(id: string): Promise<void> {
+  return adminApi.delete<void>(`/content/pages/${id}`);
 }

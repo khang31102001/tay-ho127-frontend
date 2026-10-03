@@ -145,11 +145,11 @@ export const SEED_NAVIGATION_ITEMS: ManagedNavigationItem[] = [
     menuId: "nav-menu-footer",
     parentId: null,
     label: "Liên hệ",
-    // Ví dụ targetType "page" — tham chiếu ManagedPage có thật (page-lien-he,
-    // xem features/pages/mocks/page.mock.ts), KHÔNG copy nội dung page sang đây.
+    // Ví dụ targetType "page": khi targetId khớp 1 Page ĐÃ XUẤT BẢN ở Backend thì URL lấy từ đường dẫn của
+    // page đó; không khớp (page nháp/đã xóa, hoặc id mẫu này) thì dùng url bên dưới. KHÔNG copy nội dung page sang đây.
     targetType: "page",
     targetId: "page-lien-he",
-    url: null,
+    url: "/lien-he",
     icon: null,
     sortOrder: 4,
     isVisible: true,

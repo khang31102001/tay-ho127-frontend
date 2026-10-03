@@ -17,7 +17,7 @@ type PageSectionsExplorerProps = {
 };
 
 export function PageSectionsExplorer({ pageId }: PageSectionsExplorerProps) {
-  const { rows, pageName, isLoading, handleDelete, handleMoveUp, handleMoveDown } =
+  const { rows, pageName, isLoading, loadError, handleDelete, handleMoveUp, handleMoveDown } =
     usePageSectionsExplorer({ pageId });
 
   const columns: DataExplorerColumn<ManagedPageSection>[] = [
@@ -97,7 +97,7 @@ export function PageSectionsExplorer({ pageId }: PageSectionsExplorerProps) {
           createLabel="Thêm section"
           editHref={(row) => `/admin/content/pages/${pageId}/sections/${row.id}`}
           onDelete={handleDelete}
-          emptyState="Page này chưa có section nào."
+          emptyState={loadError ?? "Page này chưa có section nào."}
         />
       </div>
     </div>

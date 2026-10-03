@@ -22,8 +22,8 @@ export function PageEditor({ id }: PageEditorProps) {
     form,
     updateField,
     isLoading,
+    loadError,
     isEditMode,
-    isSlugAvailable,
     handleSave,
     handleDelete,
     goToExplore,
@@ -34,6 +34,7 @@ export function PageEditor({ id }: PageEditorProps) {
       title={isEditMode ? "Sửa page" : "Thêm page"}
       backHref="/admin/content/pages"
       isLoading={isLoading}
+      loadError={loadError}
       onSave={handleSave}
       onSaved={goToExplore}
       onDelete={isEditMode ? handleDelete : undefined}
@@ -69,7 +70,6 @@ export function PageEditor({ id }: PageEditorProps) {
           onChange={(segment) => updateField("slug", `/${segment}`)}
           sourceValue={form.name}
           enableAutoGenerate={!isEditMode}
-          isAvailable={isSlugAvailable}
         />
       )}
 

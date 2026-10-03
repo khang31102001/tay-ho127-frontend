@@ -17,7 +17,7 @@ const columns: DataExplorerColumn<ManagedPage>[] = [
 ];
 
 export function PagesExplorer() {
-  const { rows, isLoading, handleDelete } = usePagesExplorer();
+  const { rows, isLoading, loadError, handleDelete } = usePagesExplorer();
 
   return (
     <DataExplorer<ManagedPage>
@@ -32,7 +32,7 @@ export function PagesExplorer() {
       createLabel="Thêm page"
       editHref={(row) => `/admin/content/pages/${row.id}`}
       onDelete={handleDelete}
-      emptyState="Chưa có page nào."
+      emptyState={loadError ?? "Chưa có page nào."}
     />
   );
 }

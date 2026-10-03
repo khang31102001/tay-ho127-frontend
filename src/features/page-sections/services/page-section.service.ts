@@ -1,93 +1,87 @@
-import type { ManagedPageSection } from "../types/page-section.types";
-import { SEED_PAGE_SECTIONS } from "../mocks/page-section.mock";
+import { adminApi } from "@/lib/http/admin-api";
+
+import type { ManagedPageSection, SectionType } from "../types/page-section.types";
 
 /**
- * MOCK CONTRACT: chưa có backend quản lý Section thật. Dữ liệu seed (xem
- * ../mocks/page-section.mock.ts) + đồng bộ 2 chiều với localStorage.
+ * Admin → Content → Page → Section, gọi Backend /api/v1/content/pages/{pageId}/sections (quyền pages.*).
+ * Mọi thao tác đi qua page chứa section: section không thuộc page đó → 404.
+ *
+ * - `body` là văn bản THUẦN (không phải HTML).
+ * - `ctaUrl` chỉ nhận đường dẫn trong site ("/thuc-don") hoặc URL http(s) — scheme khác Backend trả 400.
+ * - Backend gọi loại section là `sectionKind`; FE giữ tên `sectionType` ở model.
  */
-const STORAGE_KEY = "tayho-admin-page-sections";
-const MOCK_DELAY_MS = 300;
 
-function delay(ms: number = MOCK_DELAY_MS): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function readStore(): ManagedPageSection[] {
-  if (typeof window === "undefined") {
-    return SEED_PAGE_SECTIONS;
-  }
-
-  try {
-    const saved = window.localStorage.getItem(STORAGE_KEY);
-
-    if (saved) {
-      const parsed: unknown = JSON.parse(saved);
-
-      if (Array.isArray(parsed)) {
-        return parsed as ManagedPageSection[];
-      }
-    }
-  } catch (error) {
-    console.error("Không thể đọc dữ liệu Section admin:", error);
-  }
-
-  return SEED_PAGE_SECTIONS;
-}
-
-function writeStore(sections: ManagedPageSection[]): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(sections));
-  } catch (error) {
-    console.error("Không thể lưu dữ liệu Section admin:", error);
-  }
-}
-
-export async function listSectionsByPageId(pageId: string): Promise<ManagedPageSection[]> {
-  await delay();
-
-  return readStore()
-    .filter((section) => section.pageId === pageId)
-    .sort((a, b) => a.displayOrder - b.displayOrder);
-}
-
-export async function getSectionById(id: string): Promise<ManagedPageSection | null> {
-  await delay();
-  return readStore().find((section) => section.id === id) ?? null;
-}
+/** PageSectionResponse của Backend. */
+type PageSectionDto = {
+  id: string;
+  pageId: string;
+  sectionKind: SectionType;
+  eyebrow: string | null;
+  heading: string | null;
+  subheading: string | null;
+  body: string | null;
+  mediaId: string | null;
+  ctaLabel: string | null;
+  ctaUrl: string | null;
+  displayOrder: number;
+  isVisible: boolean;
+};
 
 export type PageSectionUpsertInput = Omit<ManagedPageSection, "id">;
 
-export async function createSection(
-  payload: PageSectionUpsertInput,
-): Promise<ManagedPageSection> {
-  await delay();
-
-  const newSection: ManagedPageSection = { ...payload, id: `section-${Date.now()}` };
-
-  writeStore([...readStore(), newSection]);
-
-  return newSection;
+function toManagedPageSection(dto: PageSectionDto): ManagedPageSection {
+  return {
+    id: dto.id,
+    pageId: dto.pageId,
+    sectionType: dto.sectionKind,
+    eyebrow: dto.eyebrow ?? undefined,
+    heading: dto.heading ?? undefined,
+    subheading: dto.subheading ?? undefined,
+    body: dto.body ?? undefined,
+    mediaId: dto.mediaId,
+    ctaLabel: dto.ctaLabel ?? undefined,
+    ctaUrl: dto.ctaUrl ?? undefined,
+    displayOrder: dto.displayOrder,
+    isVisible: dto.isVisible,
+  };
 }
 
-export async function updateSection(
-  id: string,
-  payload: PageSectionUpsertInput,
-): Promise<ManagedPageSection> {
-  await delay();
-
-  const updatedSection: ManagedPageSection = { ...payload, id };
-
-  writeStore(readStore().map((section) => (section.id === id ? updatedSection : section)));
-
-  return updatedSection;
+function toRequest(payload: PageSectionUpsertInput) {
+  return {
+    sectionKind: payload.sectionType,
+    eyebrow: payload.eyebrow || null,
+    heading: payload.heading || null,
+    subheading: payload.subheading || null,
+    body: payload.body || null,
+    mediaId: payload.mediaId ?? null,
+    ctaLabel: payload.ctaLabel || null,
+    ctaUrl: payload.ctaUrl || null,
+    displayOrder: payload.displayOrder,
+    isVisible: payload.isVisible,
+  };
 }
 
-export async function deleteSection(id: string): Promise<void> {
-  await delay();
+const sectionsPath = (pageId: string) => `/content/pages/${pageId}/sections`;
 
-  writeStore(readStore().filter((section) => section.id !== id));
+/** Mọi section của page, đã sắp theo displayOrder. */
+export async function listSectionsByPageId(pageId: string): Promise<ManagedPageSection[]> {
+  return (await adminApi.get<PageSectionDto[]>(sectionsPath(pageId))).map(toManagedPageSection);
+}
+
+export async function getSectionById(pageId: string, id: string): Promise<ManagedPageSection> {
+  return toManagedPageSection(await adminApi.get<PageSectionDto>(`${sectionsPath(pageId)}/${id}`));
+}
+
+export async function createSection(payload: PageSectionUpsertInput): Promise<ManagedPageSection> {
+  return toManagedPageSection(await adminApi.post<PageSectionDto>(sectionsPath(payload.pageId), toRequest(payload)));
+}
+
+export async function updateSection(id: string, payload: PageSectionUpsertInput): Promise<ManagedPageSection> {
+  return toManagedPageSection(
+    await adminApi.put<PageSectionDto>(`${sectionsPath(payload.pageId)}/${id}`, toRequest(payload)),
+  );
+}
+
+export function deleteSection(pageId: string, id: string): Promise<void> {
+  return adminApi.delete<void>(`${sectionsPath(pageId)}/${id}`);
 }

@@ -4,6 +4,7 @@ import type {
   PublicArticle,
   PublicArticleSummary,
   PublicBanner,
+  PublicPage,
   PublicTaxonomy,
 } from "../types/public-content.types";
 
@@ -80,6 +81,29 @@ export async function listActiveBanners(placement: string): Promise<PublicBanner
     return (await getJson<PublicBanner[]>(`/content/public/banners?placement=${encodeURIComponent(placement)}`)) ?? [];
   } catch (error) {
     console.error("Không tải được banner từ Backend:", error);
+    return [];
+  }
+}
+
+/**
+ * Page đã xuất bản (id, tên, đường dẫn). KHÁC các hàm còn lại trong file: chạy được cả ở server (gọi thẳng
+ * Backend) lẫn trình duyệt (qua route công khai app/api/content/public/pages) vì Navigation (header/footer)
+ * tải lại menu ở phía trình duyệt để thấy thay đổi vừa lưu.
+ */
+export async function listPublishedPages(): Promise<PublicPage[]> {
+  try {
+    const response =
+      typeof window === "undefined"
+        ? await fetchBackend("/content/public/pages", { next: { revalidate: PUBLIC_CONTENT_REVALIDATE_SECONDS } })
+        : await fetch("/api/content/public/pages");
+
+    if (!response.ok) {
+      throw new Error(`Public pages: HTTP ${response.status}`);
+    }
+
+    return (await response.json()) as PublicPage[];
+  } catch (error) {
+    console.error("Không tải được danh sách page từ Backend:", error);
     return [];
   }
 }
