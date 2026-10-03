@@ -12,6 +12,8 @@ import {
   updateRedirect,
 } from "../services/redirect.service";
 
+const SOURCE_PATH_CHECK_DEBOUNCE_MS = 400;
+
 const EMPTY_FORM: RedirectFormValue = {
   sourcePath: "",
   destinationUrl: "",
@@ -62,14 +64,24 @@ export function useRedirectEditor({ id }: UseRedirectEditorParams) {
 
     let isCancelled = false;
 
-    isSourcePathTaken(form.sourcePath, id).then((taken) => {
-      if (!isCancelled) {
-        setIsSourcePathAvailable(!taken);
-      }
-    });
+    // Debounce: mỗi lần gõ là 1 request tới Backend. Kiểm tra trùng lỗi thì bỏ qua — Backend vẫn trả 409 khi lưu.
+    const timeoutId = setTimeout(() => {
+      isSourcePathTaken(form.sourcePath, id)
+        .then((taken) => {
+          if (!isCancelled) {
+            setIsSourcePathAvailable(!taken);
+          }
+        })
+        .catch(() => {
+          if (!isCancelled) {
+            setIsSourcePathAvailable(undefined);
+          }
+        });
+    }, SOURCE_PATH_CHECK_DEBOUNCE_MS);
 
     return () => {
       isCancelled = true;
+      clearTimeout(timeoutId);
     };
   }, [form.sourcePath, id]);
 

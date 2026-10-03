@@ -5,23 +5,18 @@ import type { NextRequest } from "next/server";
 // re-export UI Admin ("use client": RedirectsExplorer/RedirectEditor), import
 // qua barrel ở Middleware sẽ kéo UI Admin vào Edge bundle. Cùng lý do đã áp
 // dụng cho @/features/seo ở app/(site)/**.
-import { findActiveRedirect } from "@/features/redirects/services/redirect.service";
+import { findActiveRedirect } from "@/features/redirects/services/redirect-public.service";
 
 /**
  * Task 25 — Redirect Management. Kiểm tra pathname khớp source_path đã cấu
  * hình tại Admin > SEO > Chuyển hướng, trả 301/302 tương ứng nếu có, không
  * thì cho request đi tiếp bình thường.
  *
- * GIỚI HẠN ĐÃ BIẾT: findActiveRedirect() đọc mock data qua service dùng
- * localStorage — Middleware chạy phía server (Edge Runtime), KHÔNG truy cập
- * được localStorage của trình duyệt, nên chỉ thấy được SEED_REDIRECTS tĩnh,
- * không thấy redirect Admin vừa thêm trong CÙNG session (giống hạn chế đã ghi
- * nhận ở mọi service mock khác trong repo — xem comment trong menu.service.ts,
- * navigation.service.ts). Khi có Backend ASP.NET Core thật, thay findActiveRedirect
- * bằng 1 lệnh gọi API, middleware không cần sửa gì thêm.
+ * findActiveRedirect() đọc danh sách redirect đang bật từ Backend (GET /seo/public/redirects),
+ * giữ trong bộ nhớ 60 giây và fail-open khi Backend lỗi — xem redirect-public.service.ts.
  */
-export function middleware(request: NextRequest) {
-  const redirect = findActiveRedirect(request.nextUrl.pathname);
+export async function middleware(request: NextRequest) {
+  const redirect = await findActiveRedirect(request.nextUrl.pathname);
 
   if (!redirect) {
     return NextResponse.next();
