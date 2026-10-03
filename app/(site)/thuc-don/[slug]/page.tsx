@@ -55,7 +55,7 @@ export default async function ProductDetailPage({
 
   // PAGE SCHEMA (Task 20): Product + Offer (lồng bên trong) + BreadcrumbList.
   const schemas = await resolveProductPageSchemas({
-    entityId: params.slug,
+    entityId: data.product.id,
     name: data.product.name,
     description: data.product.description,
     imageUrl: data.product.image,

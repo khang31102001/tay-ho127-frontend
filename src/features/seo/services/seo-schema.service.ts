@@ -1,112 +1,59 @@
-import type { ManagedSeoSchema, SeoSchemaFormValue, SeoSchemaType } from "../types/seo-schema.types";
+import { adminApi } from "@/lib/http/admin-api";
+import { isApiError } from "@/lib/http/api-error";
+
 import type { SeoEntityType } from "../types/seo-metadata.types";
-import { SEED_SEO_SCHEMA } from "../mocks/seo-schema.mock";
+import type { ManagedSeoSchema, SeoSchemaFormValue, SeoSchemaType } from "../types/seo-schema.types";
 
 /**
- * MOCK CONTRACT — cùng pattern seo-metadata.service.ts. Khoá theo BỘ BA
- * (entityType, entityId, schemaType) — 1 entity có thể có nhiều schema override
- * khác nhau (vd. Product vừa có override "Product" vừa có thể có override
- * "FAQPage" sau này), khác seo_metadata chỉ có 1 override/entity.
+ * Admin → Product Editor → "Cấu trúc dữ liệu" (Schema.org / JSON-LD), gọi Backend /api/v1/seo/schemas
+ * (quyền seo-schemas.view|update|delete). Site đọc dòng đang BẬT qua seo-public.service.ts, không qua file này.
+ *
+ * Mỗi (entityType, entityId, schemaType) có tối đa 1 dòng; `entityId` là id (Guid) của entity trên Site — KHÔNG phải
+ * slug. Chỉ lưu phần KHÔNG derive được từ entity (`config`, vd. sku/brand) hoặc JSON-LD thủ công (`customJsonLd`).
+ * Backend trả 400 khi schemaType/entityType lạ, thiếu entityId, JSON-LD không phải JSON object/array, hoặc bật
+ * Advanced Mode mà không có JSON-LD.
  */
-const STORAGE_KEY = "tayho-admin-seo-schema";
-const MOCK_DELAY_MS = 300;
 
-function delay(ms: number = MOCK_DELAY_MS): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+/** SeoSchemaResponse của Backend — khớp ManagedSeoSchema 1:1. */
+type SeoSchemaDto = ManagedSeoSchema;
+
+function keyParams(entityType: SeoEntityType, entityId: string | null, schemaType: SeoSchemaType) {
+  return { entityType, entityId, schemaType };
 }
 
-function readStore(): ManagedSeoSchema[] {
-  if (typeof window === "undefined") {
-    return SEED_SEO_SCHEMA;
-  }
-
-  try {
-    const saved = window.localStorage.getItem(STORAGE_KEY);
-
-    if (saved) {
-      const parsed: unknown = JSON.parse(saved);
-
-      if (Array.isArray(parsed)) {
-        return parsed as ManagedSeoSchema[];
-      }
-    }
-  } catch (error) {
-    console.error("Không thể đọc dữ liệu SEO schema:", error);
-  }
-
-  return SEED_SEO_SCHEMA;
-}
-
-function writeStore(rows: ManagedSeoSchema[]): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
-  } catch (error) {
-    console.error("Không thể lưu dữ liệu SEO schema:", error);
-  }
-}
-
-function matches(row: ManagedSeoSchema, entityType: SeoEntityType, entityId: string | null, schemaType: SeoSchemaType): boolean {
-  return row.entityType === entityType && row.entityId === entityId && row.schemaType === schemaType;
-}
-
-export async function listSeoSchemaByEntity(
-  entityType: SeoEntityType,
-  entityId: string | null,
-): Promise<ManagedSeoSchema[]> {
-  await delay();
-  return readStore().filter((row) => row.entityType === entityType && row.entityId === entityId);
-}
-
+/** null khi entity chưa có dòng cho schemaType này (Backend 404) — schema được generate hoàn toàn từ dữ liệu entity. */
 export async function getSeoSchema(
   entityType: SeoEntityType,
   entityId: string | null,
   schemaType: SeoSchemaType,
 ): Promise<ManagedSeoSchema | null> {
-  await delay();
-  return readStore().find((row) => matches(row, entityType, entityId, schemaType)) ?? null;
+  try {
+    return await adminApi.get<SeoSchemaDto>("/seo/schemas/lookup", {
+      params: keyParams(entityType, entityId, schemaType),
+    });
+  } catch (error) {
+    if (isApiError(error) && error.kind === "not_found") {
+      return null;
+    }
+    throw error;
+  }
 }
 
+/** Tạo mới nếu chưa có dòng, cập nhật nếu đã có — Admin không cần biết dòng đã tồn tại hay chưa. */
 export async function upsertSeoSchema(
   entityType: SeoEntityType,
   entityId: string | null,
   schemaType: SeoSchemaType,
   payload: SeoSchemaFormValue,
 ): Promise<ManagedSeoSchema> {
-  await delay();
-
-  const now = new Date().toISOString();
-  const current = readStore();
-  const existing = current.find((row) => matches(row, entityType, entityId, schemaType));
-
-  const saved: ManagedSeoSchema = {
-    id: existing?.id ?? `seo-schema-${Date.now()}`,
-    entityType,
-    entityId,
-    schemaType,
-    ...payload,
-    createdAt: existing?.createdAt ?? now,
-    updatedAt: now,
-  };
-
-  writeStore(
-    existing
-      ? current.map((row) => (matches(row, entityType, entityId, schemaType) ? saved : row))
-      : [...current, saved],
-  );
-
-  return saved;
+  return adminApi.put<SeoSchemaDto>("/seo/schemas", { entityType, entityId, schemaType, ...payload });
 }
 
+/** Xóa dòng — schema quay lại được generate tự động. Không lỗi nếu chưa có dòng. */
 export async function deleteSeoSchema(
   entityType: SeoEntityType,
   entityId: string | null,
   schemaType: SeoSchemaType,
 ): Promise<void> {
-  await delay();
-
-  writeStore(readStore().filter((row) => !matches(row, entityType, entityId, schemaType)));
+  await adminApi.delete("/seo/schemas", { params: keyParams(entityType, entityId, schemaType) });
 }

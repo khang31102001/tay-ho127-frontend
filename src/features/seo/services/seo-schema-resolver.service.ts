@@ -5,7 +5,7 @@ import { getBrandSettings } from "@/features/brand/services/brand-settings.servi
 import { listMedia } from "@/features/media/services/public-media.service";
 import { getSiteUrl } from "@/lib/site-url";
 
-import { getSeoSchema } from "./seo-schema.service";
+import { getPublicSeoSchema } from "./seo-public.service";
 import {
   buildArticleSchema,
   buildBreadcrumbListSchema,
@@ -68,11 +68,12 @@ export type ProductPageSchemaInput = {
  * PAGE SCHEMA — Product (Task 20): Product + Offer lồng bên trong, cộng
  * BreadcrumbList. Nếu Admin đã bật Custom JSON-LD (Advanced Mode, Task 10)
  * cho entity này thì dùng nguyên JSON đó thay cho object generate — JSON đã
- * được validate hợp lệ lúc lưu (xem useSeoSchemaForm.ts) nên parse an toàn.
+ * được validate hợp lệ lúc lưu (Backend + useSeoSchemaForm.ts) nên parse an toàn.
+ * `entityId` là id (Guid) của sản phẩm, cùng khóa với override SEO Metadata.
  */
 export async function resolveProductPageSchemas(input: ProductPageSchemaInput): Promise<JsonLdObject[]> {
   const siteUrl = getSiteUrl();
-  const override = await getSeoSchema("product", input.entityId, "Product");
+  const override = await getPublicSeoSchema("product", input.entityId, "Product");
 
   let productSchema: JsonLdObject;
 
