@@ -17,7 +17,7 @@ const ENDPOINTS = {
 
 /**
  * Public API duy nhất mà Component/Feature khác được gọi — không nơi gọi nào
- * biết đang chạy mock hay Backend thật, giống navigationApi/promotionApi.
+ * biết đang chạy mock hay Backend thật, giống navigationApi.
  */
 export const orderOptionApi = {
   async list(): Promise<ManagedOrderOptionGroup[]> {
