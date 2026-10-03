@@ -3,6 +3,7 @@ import { fetchBackend } from "@/lib/http/backend-fetch";
 import type {
   PublicArticle,
   PublicArticleSummary,
+  PublicBanner,
   PublicTaxonomy,
 } from "../types/public-content.types";
 
@@ -70,5 +71,15 @@ export async function getPublicTaxonomy(): Promise<PublicTaxonomy> {
   } catch (error) {
     console.error("Không tải được danh mục/thẻ bài viết từ Backend:", error);
     return EMPTY_TAXONOMY;
+  }
+}
+
+/** Banner đang chạy của 1 vị trí (HOME_HERO | HOME_PROMOTION | MENU_HERO | ARTICLE_BANNER), theo thứ tự hiển thị. */
+export async function listActiveBanners(placement: string): Promise<PublicBanner[]> {
+  try {
+    return (await getJson<PublicBanner[]>(`/content/public/banners?placement=${encodeURIComponent(placement)}`)) ?? [];
+  } catch (error) {
+    console.error("Không tải được banner từ Backend:", error);
+    return [];
   }
 }

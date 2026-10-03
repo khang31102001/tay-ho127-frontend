@@ -39,3 +39,21 @@ export type PublicTaxonomy = {
   categories: PublicArticleCategory[];
   tags: PublicArticleTag[];
 };
+
+/**
+ * Banner ĐANG CHẠY (Backend đã lọc bật/tắt và khoảng startAt–endAt). `placement` là vị trí
+ * hiển thị: "HOME_HERO" | "HOME_PROMOTION" | "MENU_HERO" | "ARTICLE_BANNER".
+ */
+export type PublicBanner = {
+  id: string;
+  name: string;
+  desktopMediaId: string | null;
+  mobileMediaId: string | null;
+  altText: string;
+  heading: string | null;
+  subheading: string | null;
+  ctaLabel: string | null;
+  ctaUrl: string | null;
+  placement: string;
+  displayOrder: number;
+};

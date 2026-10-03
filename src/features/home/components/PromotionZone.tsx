@@ -1,16 +1,14 @@
 import Image from "next/image";
 import { Reveal } from "@/components/shared/Reveal";
 import { ButtonLink } from "@/components/ui/ButtonLink";
-// Import thẳng service/type thay vì qua @/features/banners, @/features/media
-// (barrel 2 feature này re-export cả UI Admin Explorer/Editor — import qua
-// barrel sẽ kéo UI admin vào bundle Site, xem menu.service.ts để biết lý do).
-import { listActiveBannersByPlacement } from "@/features/banners/services/banner.service";
+// Banner đang chạy lấy từ Backend (features/content-public); media import thẳng service
+// (không qua barrel @/features/media — barrel re-export UI Admin, xem menu.service.ts).
+import { listActiveBanners } from "@/features/content-public";
 import { listMedia } from "@/features/media/services/public-media.service";
 
 /**
- * MOCK CONTRACT: nội dung mặc định khi chưa có Banner nào bật cho vị trí
- * "HOME_PROMOTION" (banner bị tắt, hết hạn, hoặc bị xóa) — giữ đúng nội dung
- * đã hard-code trước khi có CMS để trang chủ không bao giờ trống.
+ * Nội dung mặc định khi chưa có Banner nào đang chạy cho vị trí "HOME_PROMOTION"
+ * (banner bị tắt, hết hạn, bị xóa, hoặc Backend không phản hồi) — để trang chủ không bao giờ trống.
  */
 const FALLBACK_IMAGE = "/images/promotion-zone-3.png";
 const FALLBACK_ALT = "Ưu đãi bánh cuốn Tây Hồ";
@@ -19,7 +17,7 @@ const FALLBACK_CTA_LABEL = "Xem ưu đãi";
 const FALLBACK_CTA_URL = "/menu";
 
 export async function PromotionZone() {
-  const [banner] = await listActiveBannersByPlacement("HOME_PROMOTION");
+  const [banner] = await listActiveBanners("HOME_PROMOTION");
 
   let imageUrl = FALLBACK_IMAGE;
   let altText = FALLBACK_ALT;
