@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+
+import { useAsyncData } from "@/hooks/useAsyncData";
 import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 import type { ManagedArticleCategory } from "../types/article-category.types";
@@ -31,38 +33,23 @@ export function useArticleCategoryEditor({ id }: UseArticleCategoryEditorParams)
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<ArticleCategoryFormValue>(EMPTY_FORM);
-  const [parentOptions, setParentOptions] = useState<ManagedArticleCategory[]>([]);
-  const [isLoading, setIsLoading] = useState(isEditMode);
+  const categories = useAsyncData(listArticleCategories, [], { fallbackError: "Không thể tải danh mục cha." });
+  const existing = useAsyncData(() => getArticleCategoryById(id ?? ""), [id], {
+    enabled: isEditMode,
+    fallbackError: "Không thể tải danh mục bài viết.",
+  });
+
+  // Không cho chọn chính nó làm parent (Backend cũng chặn chọn danh mục con của nó).
+  const parentOptions = useMemo(
+    () => (categories.data ?? []).filter((category) => category.id !== id),
+    [categories.data, id],
+  );
 
   useEffect(() => {
-    listArticleCategories().then((categories) => {
-      setParentOptions(categories.filter((category) => category.id !== id));
-    });
-  }, [id]);
-
-  useEffect(() => {
-    if (!isEditMode) {
-      return;
-    }
-
-    let isCancelled = false;
-
-    getArticleCategoryById(id).then((category) => {
-      if (isCancelled) {
-        return;
-      }
-
-      if (category) {
-        setForm(category);
-      }
-
-      setIsLoading(false);
-    });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [id, isEditMode]);
+    if (!existing.data) return;
+    const { name, slug, parentId, sortOrder, status } = existing.data;
+    setForm({ name, slug, parentId, sortOrder, status });
+  }, [existing.data]);
 
   function updateField<K extends keyof ArticleCategoryFormValue>(
     field: K,
@@ -93,7 +80,8 @@ export function useArticleCategoryEditor({ id }: UseArticleCategoryEditorParams)
     form,
     updateField,
     parentOptions,
-    isLoading,
+    isLoading: existing.isLoading,
+    loadError: existing.error,
     isEditMode,
     handleSave,
     handleDelete,

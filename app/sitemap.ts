@@ -4,14 +4,13 @@ import { getSiteUrl } from "@/lib/site-url";
 // fetchMenu qua barrel @/features/menu là an toàn cho Site (barrel này không
 // re-export UI admin) — đúng cách app/(site)/thuc-don/page.tsx đang dùng.
 import { fetchMenu } from "@/features/menu";
-// listPublishedArticles import thẳng service (không qua barrel features/articles
-// vì barrel đó re-export cả Explorer/Editor admin) — xem app/(site)/bai-viet/page.tsx.
-import { listPublishedArticles } from "@/features/articles/services/article.service";
+// Bài viết đã xuất bản lấy từ Backend (features/content-public, chỉ chạy phía server).
+import { listPublishedArticles } from "@/features/content-public";
 // Import thẳng service (không qua barrel @/features/seo) — cùng lý do.
 import { listSeoMetadata } from "@/features/seo/services/seo-metadata.service";
 import { seoMetadataRowId } from "@/features/seo/utils/seo-metadata-key";
 
-// Dữ liệu đọc từ mock/localStorage có thể đổi bất kỳ lúc nào qua Admin — không cache tĩnh.
+// Dữ liệu (bài viết, thực đơn) đổi bất kỳ lúc nào qua Admin — không render tĩnh lúc build.
 export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

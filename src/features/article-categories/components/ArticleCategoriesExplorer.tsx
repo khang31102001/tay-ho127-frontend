@@ -18,7 +18,7 @@ const columns: DataExplorerColumn<ArticleCategoryRow>[] = [
 ];
 
 export function ArticleCategoriesExplorer() {
-  const { rows, isLoading, handleDelete } = useArticleCategoriesExplorer();
+  const { rows, isLoading, loadError, handleDelete } = useArticleCategoriesExplorer();
 
   return (
     <DataExplorer<ArticleCategoryRow>
@@ -33,7 +33,7 @@ export function ArticleCategoriesExplorer() {
       createLabel="Thêm danh mục"
       editHref={(row) => `/admin/content/article-categories/${row.id}`}
       onDelete={handleDelete}
-      emptyState="Chưa có danh mục bài viết nào."
+      emptyState={loadError ?? "Chưa có danh mục bài viết nào."}
     />
   );
 }

@@ -1,88 +1,52 @@
+import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/lib/http/admin-api";
+import type { PaginatedResult } from "@/lib/http/api-types";
+
 import type { ManagedArticleTag } from "../types/article-tag.types";
-import { SEED_ARTICLE_TAGS } from "../mocks/article-tag.mock";
 
 /**
- * MOCK CONTRACT: chưa có backend quản lý thẻ bài viết thật. Dữ liệu seed
- * (xem ../mocks/article-tag.mock.ts) + đồng bộ 2 chiều với localStorage.
+ * Admin → Content → Thẻ bài viết, gọi Backend /api/v1/content/article-tags (quyền
+ * article-tags.*). `slug` để trống khi tạo → Backend tự sinh từ tên; để trống khi sửa →
+ * giữ slug cũ. Xóa thẻ chỉ gỡ nó khỏi các bài viết đang gắn. Site đọc thẻ qua
+ * features/content-public.
  */
-const STORAGE_KEY = "tayho-admin-article-tags";
-const MOCK_DELAY_MS = 300;
 
-function delay(ms: number = MOCK_DELAY_MS): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+/** ArticleTagResponse của Backend. */
+type ArticleTagDto = {
+  id: string;
+  name: string;
+  slug: string;
+};
+
+function toManagedArticleTag(dto: ArticleTagDto): ManagedArticleTag {
+  return { id: dto.id, name: dto.name, slug: dto.slug };
 }
 
-function readStore(): ManagedArticleTag[] {
-  if (typeof window === "undefined") {
-    return SEED_ARTICLE_TAGS;
-  }
-
-  try {
-    const saved = window.localStorage.getItem(STORAGE_KEY);
-
-    if (saved) {
-      const parsed: unknown = JSON.parse(saved);
-
-      if (Array.isArray(parsed)) {
-        return parsed as ManagedArticleTag[];
-      }
-    }
-  } catch (error) {
-    console.error("Không thể đọc dữ liệu thẻ bài viết admin:", error);
-  }
-
-  return SEED_ARTICLE_TAGS;
-}
-
-function writeStore(tags: ManagedArticleTag[]): void {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(tags));
-  } catch (error) {
-    console.error("Không thể lưu dữ liệu thẻ bài viết admin:", error);
-  }
+function toRequest(payload: Omit<ManagedArticleTag, "id">) {
+  return { name: payload.name, slug: payload.slug || null };
 }
 
 export async function listArticleTags(): Promise<ManagedArticleTag[]> {
-  await delay();
-  return readStore();
+  const page = await adminApi.get<PaginatedResult<ArticleTagDto>>("/content/article-tags", {
+    params: { pageSize: ADMIN_LIST_PAGE_SIZE },
+  });
+  return page.items.map(toManagedArticleTag);
 }
 
-export async function getArticleTagById(id: string): Promise<ManagedArticleTag | null> {
-  await delay();
-  return readStore().find((tag) => tag.id === id) ?? null;
+export async function getArticleTagById(id: string): Promise<ManagedArticleTag> {
+  return toManagedArticleTag(await adminApi.get<ArticleTagDto>(`/content/article-tags/${id}`));
 }
 
-export async function createArticleTag(
-  payload: Omit<ManagedArticleTag, "id">,
-): Promise<ManagedArticleTag> {
-  await delay();
-
-  const newTag: ManagedArticleTag = { ...payload, id: `arttag-${Date.now()}` };
-
-  writeStore([...readStore(), newTag]);
-
-  return newTag;
+export async function createArticleTag(payload: Omit<ManagedArticleTag, "id">): Promise<ManagedArticleTag> {
+  return toManagedArticleTag(await adminApi.post<ArticleTagDto>("/content/article-tags", toRequest(payload)));
 }
 
 export async function updateArticleTag(
   id: string,
   payload: Omit<ManagedArticleTag, "id">,
 ): Promise<ManagedArticleTag> {
-  await delay();
-
-  const updatedTag: ManagedArticleTag = { ...payload, id };
-
-  writeStore(readStore().map((tag) => (tag.id === id ? updatedTag : tag)));
-
-  return updatedTag;
+  return toManagedArticleTag(await adminApi.put<ArticleTagDto>(`/content/article-tags/${id}`, toRequest(payload)));
 }
 
-export async function deleteArticleTag(id: string): Promise<void> {
-  await delay();
-
-  writeStore(readStore().filter((tag) => tag.id !== id));
+export function deleteArticleTag(id: string): Promise<void> {
+  return adminApi.delete<void>(`/content/article-tags/${id}`);
 }

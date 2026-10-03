@@ -17,4 +17,4 @@ export {
   listRelatedNewsArticles,
 } from "./services/news.service";
 
-export type { NewsArticleView, NewsCategoryOption } from "./types/news.types";
+export type { NewsArticleSummaryView, NewsArticleView, NewsCategoryOption } from "./types/news.types";

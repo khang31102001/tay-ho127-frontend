@@ -6,15 +6,14 @@ import { ChevronLeft } from "lucide-react";
 
 import { Container } from "@/components/ui/Container";
 import { sanitizeHtml } from "@/lib/sanitize-html";
-// Import thẳng service — lý do xem app/(site)/bai-viet/page.tsx.
-import { getArticleBySlug } from "@/features/articles/services/article.service";
+// Bài viết/danh mục/thẻ công khai lấy từ Backend (features/content-public) — lý do import
+// thẳng service media xem app/(site)/bai-viet/page.tsx.
+import { getPublicTaxonomy, getPublishedArticleBySlug } from "@/features/content-public";
 import { listMedia } from "@/features/media/services/public-media.service";
-import { listArticleCategories } from "@/features/article-categories/services/article-category.service";
-import { listArticleTags } from "@/features/article-tags/services/article-tag.service";
 import { buildMetadata } from "@/lib/seo/build-metadata";
 import { resolveSeoPayload } from "@/lib/seo/resolve-seo-payload";
 // Import thẳng service (không qua barrel @/features/seo) — cùng lý do đã áp
-// dụng cho @/features/articles ở trên (barrel re-export cả UI Admin).
+// dụng cho @/features/media ở trên (barrel re-export cả UI Admin).
 import { resolveSeoPayloadForEntity } from "@/features/seo/services/seo-resolver.service";
 import { resolveArticlePageSchemas } from "@/features/seo/services/seo-schema-resolver.service";
 import { JsonLd } from "@/components/shared/JsonLd";
@@ -28,10 +27,11 @@ export async function generateMetadata({ params }: ArticleDetailPageProps): Prom
     // TEMPORARY CONTRACT: endpoint đề xuất cho khi có Backend ASP.NET Core thật.
     endpoint: `/articles/${params.slug}/seo`,
     mockResolver: async () => {
-      const article = await getArticleBySlug(params.slug);
+      // Chỉ bài đã xuất bản (Backend trả 404 cho nháp/lưu trữ).
+      const article = await getPublishedArticleBySlug(params.slug);
       if (!article) return null;
 
-      const payload = await resolveSeoPayloadForEntity({
+      return resolveSeoPayloadForEntity({
         entityType: "article",
         entityId: article.id,
         path: `/bai-viet/${params.slug}`,
@@ -43,14 +43,6 @@ export async function generateMetadata({ params }: ArticleDetailPageProps): Prom
         contentType: "article",
         publishedTime: article.publishedAt,
       });
-
-      return {
-        ...payload,
-        // Bài chưa publish vẫn xem preview được (xem banner "Xem trước" bên
-        // dưới) nhưng không nên lộ ra kết quả tìm kiếm — luôn thắng SEO
-        // Override (đúng hành vi buildMetadata: noindex thắng tuyệt đối).
-        noindex: article.status !== "published",
-      };
     },
   });
 
@@ -67,17 +59,13 @@ export async function generateMetadata({ params }: ArticleDetailPageProps): Prom
 }
 
 export default async function ArticleDetailPage({ params }: ArticleDetailPageProps) {
-  const article = await getArticleBySlug(params.slug);
+  const article = await getPublishedArticleBySlug(params.slug);
 
   if (!article) {
     notFound();
   }
 
-  const [mediaList, categories, tags] = await Promise.all([
-    listMedia(),
-    listArticleCategories(),
-    listArticleTags(),
-  ]);
+  const [mediaList, { categories, tags }] = await Promise.all([listMedia(), getPublicTaxonomy()]);
 
   const media = article.featuredMediaId
     ? mediaList.find((item) => item.id === article.featuredMediaId)
@@ -95,30 +83,25 @@ export default async function ArticleDetailPage({ params }: ArticleDetailPagePro
       })
     : null;
 
-  // PAGE SCHEMA (Task 22): Article + BreadcrumbList — chỉ render khi đã publish
-  // thật (bài draft/preview không nên tự nhận là bài viết đã xuất bản trong
-  // structured data, cùng nguyên tắc với noindex ở generateMetadata() trên).
-  const schemas =
-    article.status === "published"
-      ? await resolveArticlePageSchemas({
-          headline: article.title,
-          description: article.summary,
-          imageUrl: media?.url,
-          path: `/bai-viet/${params.slug}`,
-          publishedAt: article.publishedAt,
-          updatedAt: article.updatedAt,
-          authorName: article.authorName,
-          breadcrumb: [
-            { name: "Trang chủ", path: "/" },
-            { name: "Bài viết", path: "/bai-viet" },
-            { name: article.title, path: `/bai-viet/${params.slug}` },
-          ],
-        })
-      : null;
+  // PAGE SCHEMA (Task 22): Article + BreadcrumbList.
+  const schemas = await resolveArticlePageSchemas({
+    headline: article.title,
+    description: article.summary,
+    imageUrl: media?.url,
+    path: `/bai-viet/${params.slug}`,
+    publishedAt: article.publishedAt,
+    updatedAt: article.updatedAt,
+    authorName: article.authorName,
+    breadcrumb: [
+      { name: "Trang chủ", path: "/" },
+      { name: "Bài viết", path: "/bai-viet" },
+      { name: article.title, path: `/bai-viet/${params.slug}` },
+    ],
+  });
 
   return (
     <section className="section-padding">
-      {schemas && <JsonLd data={schemas} />}
+      <JsonLd data={schemas} />
 
       <Container className="max-w-3xl">
         <Link
@@ -128,12 +111,6 @@ export default async function ArticleDetailPage({ params }: ArticleDetailPagePro
           <ChevronLeft size={18} />
           Quay lại Bài viết
         </Link>
-
-        {article.status !== "published" && (
-          <p className="mt-4 rounded-lg border border-dashed border-brand-red/40 bg-brand-red/5 px-4 py-2 text-sm font-bold text-brand-red">
-            Xem trước — bài viết này chưa được xuất bản công khai.
-          </p>
-        )}
 
         <div className="mt-6">
           {category && (

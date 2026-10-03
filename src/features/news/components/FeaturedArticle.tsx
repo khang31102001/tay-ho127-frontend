@@ -4,11 +4,11 @@ import { ChevronRight } from "lucide-react";
 
 import { Reveal } from "@/components/shared/Reveal";
 
-import type { NewsArticleView } from "../types/news.types";
+import type { NewsArticleSummaryView } from "../types/news.types";
 import { NewsMeta } from "./NewsMeta";
 
 type FeaturedArticleProps = {
-  article: NewsArticleView;
+  article: NewsArticleSummaryView;
 };
 
 /** Desktop: [Large Image] [Content] cạnh nhau; Mobile: ảnh trên, nội dung dưới. */

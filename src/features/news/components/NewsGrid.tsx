@@ -1,10 +1,10 @@
 import { cn } from "@/lib/cn";
 
-import type { NewsArticleView } from "../types/news.types";
+import type { NewsArticleSummaryView } from "../types/news.types";
 import { NewsCard } from "./NewsCard";
 
 type NewsGridProps = {
-  articles: NewsArticleView[];
+  articles: NewsArticleSummaryView[];
   className?: string;
   emptyMessage?: string;
 };

@@ -2,14 +2,14 @@
 
 import { useMemo, useState } from "react";
 
-import type { NewsArticleView, NewsCategoryOption } from "../types/news.types";
+import type { NewsArticleSummaryView, NewsCategoryOption } from "../types/news.types";
 import { ALL_CATEGORY_VALUE, NewsCategoryFilter } from "./NewsCategoryFilter";
 import { NewsGrid } from "./NewsGrid";
 
 const PAGE_SIZE = 9;
 
 type NewsListingSectionProps = {
-  articles: NewsArticleView[];
+  articles: NewsArticleSummaryView[];
   categories: NewsCategoryOption[];
 };
 

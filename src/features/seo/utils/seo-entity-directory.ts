@@ -1,6 +1,6 @@
 import { listProducts, type ManagedProduct } from "@/features/products";
 import { listCategories, type ManagedCategory } from "@/features/categories";
-import { listArticles, type ManagedArticle } from "@/features/articles";
+import { listArticles, type ManagedArticleListItem } from "@/features/articles";
 
 import type { SeoEntityType } from "../types/seo-metadata.types";
 import type { SeoEntityDefaults } from "../utils/resolve-seo-preview";
@@ -52,7 +52,7 @@ function categoryToEntry(category: ManagedCategory): SeoDirectoryEntry {
   };
 }
 
-function articleToEntry(article: ManagedArticle): SeoDirectoryEntry {
+function articleToEntry(article: ManagedArticleListItem): SeoDirectoryEntry {
   return {
     entityType: "article",
     entityId: article.id,

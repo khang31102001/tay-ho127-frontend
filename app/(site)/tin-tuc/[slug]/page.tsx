@@ -12,9 +12,6 @@ import {
   getNewsArticleBySlug,
   listRelatedNewsArticles,
 } from "@/features/news";
-// Import thẳng service (không qua barrel) — cùng lý do đã áp dụng cho
-// @/features/articles ở app/(site)/bai-viet/page.tsx.
-import { getArticleBySlug } from "@/features/articles/services/article.service";
 import { buildMetadata } from "@/lib/seo/build-metadata";
 import { resolveSeoPayload } from "@/lib/seo/resolve-seo-payload";
 import { resolveSeoPayloadForEntity } from "@/features/seo/services/seo-resolver.service";
@@ -30,14 +27,9 @@ export async function generateMetadata({ params }: NewsDetailPageProps): Promise
     // TEMPORARY CONTRACT: endpoint đề xuất cho khi có Backend ASP.NET Core thật.
     endpoint: `/news/${params.slug}/seo`,
     mockResolver: async () => {
-      // getNewsArticleBySlug giữ nguyên gate "chỉ bài đã publish" (khác /bai-viet
-      // cho xem preview draft) — không đổi hành vi cũ.
+      // Chỉ bài đã publish (Backend trả 404 cho nháp/lưu trữ).
       const article = await getNewsArticleBySlug(params.slug);
       if (!article) return null;
-
-      // View NewsArticleView không giữ featuredMediaId (chỉ có coverImageUrl đã
-      // resolve sẵn) — lấy thêm entity gốc để có mediaId thật cho fallback OG image.
-      const rawArticle = await getArticleBySlug(params.slug);
 
       return resolveSeoPayloadForEntity({
         entityType: "article",
@@ -46,7 +38,7 @@ export async function generateMetadata({ params }: NewsDetailPageProps): Promise
         defaults: {
           title: article.title,
           description: article.excerpt,
-          imageMediaId: rawArticle?.featuredMediaId ?? null,
+          imageMediaId: article.featuredMediaId,
         },
         contentType: "article",
         publishedTime: article.publishedAt,
@@ -75,17 +67,14 @@ export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
 
   const relatedArticles = await listRelatedNewsArticles(article);
 
-  // PAGE SCHEMA (Task 22): Article + BreadcrumbList. article.updatedAt không
-  // có trên NewsArticleView (view chỉ giữ field cần cho hiển thị) — lấy thêm
-  // entity gốc, cùng lý do đã áp dụng cho featuredMediaId ở generateMetadata().
-  const rawArticle = await getArticleBySlug(params.slug);
+  // PAGE SCHEMA (Task 22): Article + BreadcrumbList.
   const schemas = await resolveArticlePageSchemas({
     headline: article.title,
     description: article.excerpt,
     imageUrl: article.coverImageUrl ?? undefined,
     path: `/tin-tuc/${params.slug}`,
     publishedAt: article.publishedAt,
-    updatedAt: rawArticle?.updatedAt ?? null,
+    updatedAt: article.updatedAt,
     authorName: article.author,
     breadcrumb: [
       { name: "Trang chủ", path: "/" },
