@@ -1,6 +1,6 @@
 # Proposal: module SEO (nhóm SEO) — BE + tích hợp FE
 
-Trạng thái: **đang triển khai** — bước 1 (SEO Settings + robots.txt) đã làm xong ở nhánh `feat/seo-settings` (BE + FE); bước 2–4 chưa làm.
+Trạng thái: **đang triển khai** — bước 1 (SEO Settings + robots.txt) và bước 2 (SEO Metadata) đã làm xong ở nhánh `feat/seo-settings` (BE + FE); bước 3–4 chưa làm. Quyết định đã áp dụng ở bước 2: khóa override theo Id (Guid), API công khai trả danh sách noindex riêng.
 
 ## 1. Kết luận kiểm tra: module SEO đã đầy đủ chưa?
 

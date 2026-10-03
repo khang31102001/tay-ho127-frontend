@@ -11,7 +11,6 @@ import { sanitizeHtml } from "@/lib/sanitize-html";
 import { getPublicTaxonomy, getPublishedArticleBySlug } from "@/features/content-public";
 import { listMedia } from "@/features/media/services/public-media.service";
 import { buildMetadata } from "@/lib/seo/build-metadata";
-import { resolveSeoPayload } from "@/lib/seo/resolve-seo-payload";
 // Import thẳng service (không qua barrel @/features/seo) — cùng lý do đã áp
 // dụng cho @/features/media ở trên (barrel re-export cả UI Admin).
 import { resolveSeoPayloadForEntity } from "@/features/seo/services/seo-resolver.service";
@@ -23,15 +22,10 @@ type ArticleDetailPageProps = {
 };
 
 export async function generateMetadata({ params }: ArticleDetailPageProps): Promise<Metadata> {
-  const seoPayload = await resolveSeoPayload({
-    // TEMPORARY CONTRACT: endpoint đề xuất cho khi có Backend ASP.NET Core thật.
-    endpoint: `/articles/${params.slug}/seo`,
-    mockResolver: async () => {
-      // Chỉ bài đã xuất bản (Backend trả 404 cho nháp/lưu trữ).
-      const article = await getPublishedArticleBySlug(params.slug);
-      if (!article) return null;
-
-      return resolveSeoPayloadForEntity({
+  // Chỉ bài đã xuất bản (Backend trả 404 cho nháp/lưu trữ).
+  const article = await getPublishedArticleBySlug(params.slug);
+  const seoPayload = article
+    ? await resolveSeoPayloadForEntity({
         entityType: "article",
         entityId: article.id,
         path: `/bai-viet/${params.slug}`,
@@ -42,9 +36,8 @@ export async function generateMetadata({ params }: ArticleDetailPageProps): Prom
         },
         contentType: "article",
         publishedTime: article.publishedAt,
-      });
-    },
-  });
+      })
+    : null;
 
   if (!seoPayload) {
     return buildMetadata({

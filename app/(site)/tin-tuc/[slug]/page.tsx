@@ -13,7 +13,6 @@ import {
   listRelatedNewsArticles,
 } from "@/features/news";
 import { buildMetadata } from "@/lib/seo/build-metadata";
-import { resolveSeoPayload } from "@/lib/seo/resolve-seo-payload";
 import { resolveSeoPayloadForEntity } from "@/features/seo/services/seo-resolver.service";
 import { resolveArticlePageSchemas } from "@/features/seo/services/seo-schema-resolver.service";
 import { JsonLd } from "@/components/shared/JsonLd";
@@ -23,15 +22,10 @@ type NewsDetailPageProps = {
 };
 
 export async function generateMetadata({ params }: NewsDetailPageProps): Promise<Metadata> {
-  const seoPayload = await resolveSeoPayload({
-    // TEMPORARY CONTRACT: endpoint đề xuất cho khi có Backend ASP.NET Core thật.
-    endpoint: `/news/${params.slug}/seo`,
-    mockResolver: async () => {
-      // Chỉ bài đã publish (Backend trả 404 cho nháp/lưu trữ).
-      const article = await getNewsArticleBySlug(params.slug);
-      if (!article) return null;
-
-      return resolveSeoPayloadForEntity({
+  // Chỉ bài đã publish (Backend trả 404 cho nháp/lưu trữ).
+  const article = await getNewsArticleBySlug(params.slug);
+  const seoPayload = article
+    ? await resolveSeoPayloadForEntity({
         entityType: "article",
         entityId: article.id,
         path: `/tin-tuc/${params.slug}`,
@@ -42,9 +36,8 @@ export async function generateMetadata({ params }: NewsDetailPageProps): Promise
         },
         contentType: "article",
         publishedTime: article.publishedAt,
-      });
-    },
-  });
+      })
+    : null;
 
   if (!seoPayload) {
     return buildMetadata({
