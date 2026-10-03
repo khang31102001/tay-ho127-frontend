@@ -7,7 +7,7 @@ import { listMedia } from "@/features/media/services/public-media.service";
 
 import { EMPTY_SEO_METADATA_FORM, type SeoEntityType } from "../types/seo-metadata.types";
 import { getSeoMetadata } from "./seo-metadata.service";
-import { getSeoSettings } from "./seo-settings.service";
+import { getPublicSeoSettings } from "./seo-public.service";
 import { resolveSeoPreview, type SeoEntityDefaults } from "../utils/resolve-seo-preview";
 
 export type SeoEntityContext = {
@@ -40,7 +40,7 @@ export type SeoEntityContext = {
 export async function resolveSeoPayloadForEntity(context: SeoEntityContext): Promise<SeoPayload> {
   const [override, settings, mediaList] = await Promise.all([
     getSeoMetadata(context.entityType, context.entityId),
-    getSeoSettings(),
+    getPublicSeoSettings(),
     listMedia(),
   ]);
 
