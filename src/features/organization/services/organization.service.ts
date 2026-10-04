@@ -2,6 +2,7 @@ import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/lib/http/admin-api";
 import type { PaginatedResult } from "@/lib/http/api-types";
 
 import type {
+  BranchContact,
   CreateBrandInput,
   CreateDepartmentInput,
   CreateOrganizationInput,
@@ -58,20 +59,42 @@ export function updateDepartment(id: string, input: UpdateDepartmentInput): Prom
 
 // ---- Brand: /api/v1/brands ----
 
+const EMPTY_BRANCH_CONTACT: BranchContact = {
+  phone: null,
+  hotline: null,
+  email: null,
+  addressLine: null,
+  ward: null,
+  district: null,
+  province: null,
+  openTime: null,
+  closeTime: null,
+  businessHoursNote: null,
+};
+
+/** Backend cũ (chưa có liên hệ chi nhánh) không trả `contact`/`isPrimary` — điền mặc định để UI không vỡ. */
+function normalizeBrand(brand: ManagedBrand): ManagedBrand {
+  return {
+    ...brand,
+    isPrimary: brand.isPrimary ?? false,
+    contact: { ...EMPTY_BRANCH_CONTACT, ...brand.contact },
+  };
+}
+
 export async function listBrands(): Promise<ManagedBrand[]> {
-  return (await adminApi.get<PaginatedResult<ManagedBrand>>("/brands", listParams)).items;
+  return (await adminApi.get<PaginatedResult<ManagedBrand>>("/brands", listParams)).items.map(normalizeBrand);
 }
 
-export function getBrandById(id: string): Promise<ManagedBrand> {
-  return adminApi.get<ManagedBrand>(`/brands/${id}`);
+export async function getBrandById(id: string): Promise<ManagedBrand> {
+  return normalizeBrand(await adminApi.get<ManagedBrand>(`/brands/${id}`));
 }
 
-export function createBrand(input: CreateBrandInput): Promise<ManagedBrand> {
-  return adminApi.post<ManagedBrand, CreateBrandInput>("/brands", input);
+export async function createBrand(input: CreateBrandInput): Promise<ManagedBrand> {
+  return normalizeBrand(await adminApi.post<ManagedBrand, CreateBrandInput>("/brands", input));
 }
 
-export function updateBrand(id: string, input: UpdateBrandInput): Promise<ManagedBrand> {
-  return adminApi.put<ManagedBrand, UpdateBrandInput>(`/brands/${id}`, input);
+export async function updateBrand(id: string, input: UpdateBrandInput): Promise<ManagedBrand> {
+  return normalizeBrand(await adminApi.put<ManagedBrand, UpdateBrandInput>(`/brands/${id}`, input));
 }
 
 // ---- Phạm vi người dùng: /api/v1/users/{userId}/departments|brands ----
