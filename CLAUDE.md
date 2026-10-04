@@ -44,13 +44,13 @@ Current features:
 | `features/checkout` | Checkout page | Sends only ids/quantities/discount code — the Backend prices everything. COD → `createOrder`, QR/wallet → `createPaymentSession` |
 | `features/cart` | Cart + fly-to-cart animation | Owns `context/cart-context.tsx`, `context/fly-to-cart-context.tsx` |
 | `features/admin-auth` | Admin login/session (real Backend via BFF) | Separate from `features/auth` (Site customers) **by design** — never merge them. Calls `app/api/admin/auth/{login,logout,session}`; `useAdminAuth().hasPermission(code)` gates UI by Backend permission codes (`users.view`...). No demo creds — accounts live in the Backend (Migrator `seed`/`seed-demo`) |
-| `features/permissions` | Admin: permission CRUD (Backend AccessControl) | — |
+| `features/permissions` | Admin: permission tree CRUD (Backend AccessControl) | Tree = Module → Resource group → leaf via `parentId`/`isGroup`. Groups (`group:*` codes) only organise; **never** assign a group to a menu/JWT — only leaf codes are checked. Exports `PermissionTree`, `getPermissionTree` (`GET /permissions/tree`) |
 | `features/admin-menus` | Admin sidebar + "Menu quản trị" CRUD (Backend Navigation) | NOT `features/navigation` (that one is the Site header/footer menus, still mock) |
 | `features/organization` | Admin: organizations / departments (tree) / brands (Backend Organization) | Exports `OrganizationSelect`, user-scope services used by `features/users` |
 | `features/platform` | Admin: fiscal years, system settings, audit logs (Backend Platform) | — |
 | `features/menu-items` | Admin: simple menu-item CRUD (legacy/first Admin CRUD) | Reuses `MenuItem` type + seed array from global `src/data/menu-items.ts` (shared with `features/menu`) — no local `mocks/` |
 | `features/users` | Admin: user accounts (Backend Identity) | Assigns roles (`features/roles`) and department/brand scopes (`features/organization`) |
-| `features/roles` | Admin: roles + their permissions (Backend AccessControl) | Permission checklist from `features/permissions` |
+| `features/roles` | Admin: roles + their permissions (Backend AccessControl) | Permission picker = `PermissionTree` from `features/permissions` (ticking a group ticks every leaf below it; only leaf ids are saved) |
 | `features/categories` | Admin Catalog: category CRUD (Backend Catalog) | Parent-category tree, max 3 levels |
 | `features/media` | Admin media library (Backend Media) + `listMedia()` for Site/MediaPicker | `listMedia()` = mock seed (ids referenced by still-mock content) + active Backend media (`GET /media/public`); images from hosts not in `NEXT_PUBLIC_IMAGE_REMOTE_HOSTS` are excluded |
 | `features/products` | Admin Catalog: product CRUD + CSV import/export (Backend Catalog) | `slug` = public URL `/thuc-don/{slug}`; depends on `features/categories` + `features/media` + `features/modifier-groups` |

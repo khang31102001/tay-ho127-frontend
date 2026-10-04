@@ -78,7 +78,11 @@ export function useAdminMenuEditor({ id, canManagePermissions }: UseAdminMenuEdi
 
   // Chỉ menu gốc làm cha được (sidebar hiển thị 2 cấp), và không chọn chính nó.
   const parentOptions = (options.data?.[0] ?? []).filter((menu) => !menu.parentId && menu.id !== id);
-  const permissionCodeOptions = (options.data?.[1] ?? []).map((permission) => permission.code).sort();
+  // Nhóm quyền ("group:...") chỉ để gom hiển thị, không nằm trong JWT nên không dùng để ẩn/hiện menu.
+  const permissionCodeOptions = (options.data?.[1] ?? [])
+    .filter((permission) => !permission.isGroup)
+    .map((permission) => permission.code)
+    .sort();
 
   function updateField<K extends keyof AdminMenuFormValue>(field: K, value: AdminMenuFormValue[K]) {
     setForm((previous) => ({ ...previous, [field]: value }));

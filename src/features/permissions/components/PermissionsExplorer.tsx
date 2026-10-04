@@ -4,12 +4,30 @@ import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templa
 import { StatusBadge, statusFromIsActive } from "@/components/admin/templates/StatusBadge";
 import { useAdminAuth } from "@/features/admin-auth";
 
-import type { ManagedPermission } from "../types/permission.types";
 import { usePermissionsExplorer } from "../hooks/usePermissionsExplorer";
+import type { PermissionRow } from "../utils/permission-tree";
 
-const columns: DataExplorerColumn<ManagedPermission>[] = [
-  { key: "code", header: "Mã quyền", className: "font-mono text-[13px]" },
-  { key: "name", header: "Mô tả" },
+const INDENT_PX_PER_LEVEL = 20;
+
+const columns: DataExplorerColumn<PermissionRow>[] = [
+  {
+    key: "name",
+    header: "Nhóm / Quyền",
+    render: (row) => (
+      <span
+        style={{ paddingLeft: row.depth * INDENT_PX_PER_LEVEL }}
+        className={row.isGroup ? "font-bold text-brand-greenDark" : undefined}
+      >
+        {row.name}
+      </span>
+    ),
+  },
+  { key: "code", header: "Mã", className: "font-mono text-[13px]" },
+  {
+    key: "isGroup",
+    header: "Loại",
+    render: (row) => (row.isGroup ? "Nhóm" : "Quyền"),
+  },
   {
     key: "isActive",
     header: "Trạng thái",
@@ -22,16 +40,16 @@ export function PermissionsExplorer() {
   const { hasPermission } = useAdminAuth();
 
   return (
-    <DataExplorer<ManagedPermission>
+    <DataExplorer<PermissionRow>
       title="Quản lý quyền"
       columns={columns}
       rows={permissions}
       isLoading={isLoading}
       getRowId={(row) => row.id}
-      getSearchableText={(row) => `${row.code} ${row.name}`}
-      searchPlaceholder="Tìm theo mã hoặc mô tả..."
+      getSearchableText={(row) => `${row.code} ${row.name} ${row.parentName ?? ""}`}
+      searchPlaceholder="Tìm theo mã, tên hoặc nhóm..."
       createHref={hasPermission("permissions.create") ? "/admin/permissions/new" : undefined}
-      createLabel="Thêm quyền"
+      createLabel="Thêm quyền / nhóm"
       editHref={(row) => `/admin/permissions/${row.id}`}
       onDelete={hasPermission("permissions.delete") ? handleDelete : undefined}
       emptyState={loadError ?? "Chưa có quyền nào."}
