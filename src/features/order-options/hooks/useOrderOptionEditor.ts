@@ -5,7 +5,13 @@ import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
 import type { ModifierOption, ModifierSelectionType } from "@/features/modifier-groups/types/modifier-group.types";
 
-import { orderOptionApi } from "../api/order-option-api";
+import {
+  NEW_OPTION_ID_PREFIX,
+  createOrderOptionGroup,
+  deleteOrderOptionGroup,
+  getOrderOptionGroupById,
+  updateOrderOptionGroup,
+} from "../services/order-option.service";
 
 export type OrderOptionGroupFormValue = {
   name: string;
@@ -23,7 +29,7 @@ const EMPTY_FORM: OrderOptionGroupFormValue = {
 
 function createEmptyOption(): ModifierOption {
   return {
-    id: `orderopt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    id: `${NEW_OPTION_ID_PREFIX}${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     label: "",
     priceAdjustment: 0,
     isDefault: false,
@@ -46,7 +52,7 @@ export function useOrderOptionEditor({ id }: UseOrderOptionEditorParams) {
 
     let isCancelled = false;
 
-    orderOptionApi.getById(id).then((group) => {
+    getOrderOptionGroupById(id).then((group) => {
       if (isCancelled || !group) return;
 
       setForm({
@@ -109,15 +115,15 @@ export function useOrderOptionEditor({ id }: UseOrderOptionEditorParams) {
     };
 
     if (isEditMode) {
-      await orderOptionApi.update(id, payload);
+      await updateOrderOptionGroup(id, payload);
     } else {
-      await orderOptionApi.create(payload);
+      await createOrderOptionGroup(payload);
     }
   }
 
   async function handleDelete() {
     if (isEditMode) {
-      await orderOptionApi.delete(id);
+      await deleteOrderOptionGroup(id);
     }
   }
 

@@ -18,6 +18,8 @@ export type ManagedPayment = {
   transactionId?: string;
   gateway?: string;
   gatewayReference?: string;
+  /** Trạng thái kế tiếp hợp lệ do Backend quyết định — Admin chỉ hiện các nút này. */
+  nextStatuses: PaymentStatus[];
   paidAt: string | null;
   failedAt: string | null;
   createdAt: string;

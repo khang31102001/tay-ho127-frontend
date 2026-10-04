@@ -18,14 +18,12 @@ type PaymentPageProps = {
  * (Apple Pay/Google Pay/...), render theo session.paymentMethod, không tách
  * page riêng cho từng provider (xem QRPaymentView/DigitalWalletPaymentView).
  * Order/Payment thật CHƯA tồn tại ở trang này — chỉ có PaymentSession (xem
- * features/payment/services/payment-session.service.ts). Khách xác nhận
- * thanh toán thành công mới thật sự tạo Order (điều hướng sang
- * /don-hang/[orderCode] — trang Order Success/Tracking sẵn có, không tạo
- * trang mới).
+ * features/payment/services/payment-session.service.ts). Nhân viên xác nhận đã
+ * nhận tiền thì Backend mới tạo Order; trang tự kiểm tra trạng thái rồi điều
+ * hướng sang /don-hang/[orderCode] (trang Order Success/Tracking sẵn có).
  */
 export function PaymentPage({ sessionId }: PaymentPageProps) {
-  const { session, isProcessing, actionError, handleConfirmPayment, handleReportFailure, handleRetry, handleCancel } =
-    usePaymentPage(sessionId);
+  const { session, isProcessing, actionError, handleRetry, handleCancel } = usePaymentPage(sessionId);
 
   return (
     <div className="relative isolate w-full min-h-screen bg-[#ff9418] px-5 py-28 md:px-0">
@@ -46,7 +44,12 @@ export function PaymentPage({ sessionId }: PaymentPageProps) {
         ) : session.status === "cancelled" ? (
           <section className="rounded-lg border border-red-300 bg-red-50 p-7 text-center shadow-soft">
             <p className="text-[15px] font-black text-red-600">Phiên thanh toán đã hết hạn hoặc đã bị hủy</p>
-            <p className="mt-1 text-[13px] text-red-500">Vui lòng quay lại giỏ hàng để đặt lại đơn hàng.</p>
+            <p className="mt-1 text-[13px] text-red-500">
+              {session.resolutionNote ?? "Vui lòng quay lại giỏ hàng để đặt lại đơn hàng."}
+            </p>
+            <p className="mt-1 text-[12px] text-red-500">
+              Nếu bạn đã chuyển khoản, vui lòng liên hệ cửa hàng với mã tham chiếu {session.referenceCode}.
+            </p>
             <Link
               href="/gio-hang"
               className="mt-4 inline-block rounded-md bg-brand-red px-8 py-3 text-[14px] font-black text-white transition hover:opacity-90"
@@ -65,8 +68,6 @@ export function PaymentPage({ sessionId }: PaymentPageProps) {
               session={session}
               isProcessing={isProcessing}
               actionError={actionError}
-              onConfirm={handleConfirmPayment}
-              onReportFailure={handleReportFailure}
               onRetry={handleRetry}
             />
 
@@ -74,7 +75,7 @@ export function PaymentPage({ sessionId }: PaymentPageProps) {
               <button
                 type="button"
                 onClick={handleCancel}
-                disabled={isProcessing || session.status === "processing"}
+                disabled={isProcessing}
                 className="text-[13px] font-bold text-white underline disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Hủy và quay lại giỏ hàng

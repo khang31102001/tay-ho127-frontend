@@ -7,7 +7,7 @@ import type { Gender, ManagedCustomer } from "../types/customer.types";
 /**
  * Admin → Khách hàng, gọi Backend /api/v1/customers (module Customer, quyền
  * customers.*). Không có API xóa — khóa khách hàng bằng trạng thái.
- * (Cầu nối đăng nhập Site vẫn là mock: site-customer-bridge.service.ts.)
+ * (Khách đăng nhập/đăng ký trên Site đi qua BFF app/api/customer/*, xem features/auth.)
  */
 
 /** CustomerProfileResponse của Backend — gender/status là tên enum viết hoa ("Female", "Active"). */

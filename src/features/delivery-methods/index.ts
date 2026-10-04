@@ -4,7 +4,6 @@ export { DeliveryMethodEditor } from "./components/DeliveryMethodEditor";
 export {
   listDeliveryMethods,
   getDeliveryMethodById,
-  getDeliveryMethodByCode,
   listAvailableDeliveryMethods,
   createDeliveryMethod,
   updateDeliveryMethod,

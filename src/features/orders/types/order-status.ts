@@ -1,9 +1,8 @@
 /**
  * Registry trạng thái Order — centralized, không hard-code text rải rác ở
  * component (giống SECTION_TYPE_OPTIONS/BANNER_PLACEMENT_OPTIONS đã dùng ở
- * Content). Kèm state machine ORDER_STATUS_TRANSITIONS để Order Detail chỉ
- * hiện action hợp lệ VÀ order.service.ts validate lại trước khi ghi —
- * không chỉ ẩn ở UI.
+ * Content). State machine (trạng thái kế tiếp hợp lệ) nằm ở Backend và được trả
+ * kèm mỗi đơn (ManagedOrder.nextStatuses) — UI không tự giữ bản sao.
  */
 export const ORDER_STATUS_OPTIONS = [
   { value: "pending", label: "Chờ xác nhận" },
@@ -20,21 +19,6 @@ export type OrderStatus = (typeof ORDER_STATUS_OPTIONS)[number]["value"];
 export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = Object.fromEntries(
   ORDER_STATUS_OPTIONS.map((option) => [option.value, option.label]),
 ) as Record<OrderStatus, string>;
-
-/**
- * Trạng thái kế tiếp hợp lệ cho từng trạng thái hiện tại. COMPLETED/CANCELLED
- * là trạng thái cuối — mảng rỗng, không thể chuyển đi đâu nữa (không được
- * quay ngược lại PENDING).
- */
-export const ORDER_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
-  pending: ["confirmed", "cancelled"],
-  confirmed: ["preparing", "cancelled"],
-  preparing: ["ready", "cancelled"],
-  ready: ["delivering", "cancelled"],
-  delivering: ["completed", "cancelled"],
-  completed: [],
-  cancelled: [],
-};
 
 export const ORDER_STATUS_TONE: Record<OrderStatus, "neutral" | "info" | "warning" | "success" | "danger"> = {
   pending: "neutral",

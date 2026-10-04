@@ -12,8 +12,6 @@ import type { OrderStatusHistoryEntry } from "./order-status-history.types";
 export type ManagedOrder = {
   id: string;
   orderCode: string;
-  /** Chống double-submit (double click, mất mạng rồi bấm lại...) — cùng 1 idempotencyKey chỉ tạo 1 Order duy nhất, các lần gọi sau trả lại chính Order đã tạo. Không có ở Order cũ trước khi field này tồn tại. */
-  idempotencyKey?: string;
   customerId: string | null;
   customerName: string;
   phone: string;
@@ -49,6 +47,10 @@ export type ManagedOrder = {
    * không thuộc từng OrderItem — đã cộng vào `subtotal` (xem order.service.ts).
    */
   orderOptionSelections: OrderItemModifierSnapshot[];
+  /** Trạng thái kế tiếp hợp lệ do Backend quyết định (đã tính nhánh "tự đến lấy" bỏ bước "Đang giao") — Admin chỉ hiện các nút này. */
+  nextStatuses: OrderStatus[];
+  /** Id bản ghi thanh toán của đơn (màn Admin → Thanh toán) — null chỉ với dữ liệu cũ. */
+  paymentId: string | null;
   createdAt: string;
   updatedAt: string;
   completedAt: string | null;

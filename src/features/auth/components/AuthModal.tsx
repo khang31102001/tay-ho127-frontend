@@ -48,6 +48,8 @@ export default function AuthModal({
     setRegisterFullName,
     registerPhone,
     setRegisterPhone,
+    registerEmail,
+    setRegisterEmail,
     registerPassword,
     setRegisterPassword,
     registerConfirmPassword,
@@ -162,7 +164,7 @@ export default function AuthModal({
               <span className={styles.googleIcon} aria-hidden="true">
                 G
               </span>
-              {loading === "google" ? "Đang kết nối Google..." : "Tiếp tục với Google"}
+              Tiếp tục với Google
             </button>
 
             <p className={styles.footerText}>
@@ -177,11 +179,6 @@ export default function AuthModal({
               </button>
             </p>
 
-            <div className={styles.demoBox}>
-              <strong>Tài khoản test</strong>
-              <span>Email: demo@tayho127.vn</span>
-              <span>Mật khẩu: 123456</span>
-            </div>
           </>
         ) : null}
 
@@ -215,12 +212,25 @@ export default function AuthModal({
               </label>
 
               <label className={styles.field}>
+                <span>Email</span>
+                <input
+                  type="email"
+                  value={registerEmail}
+                  onChange={(event) => setRegisterEmail(event.target.value)}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  required
+                  disabled={registerLoading}
+                />
+              </label>
+
+              <label className={styles.field}>
                 <span>Mật khẩu</span>
                 <input
                   type="password"
                   value={registerPassword}
                   onChange={(event) => setRegisterPassword(event.target.value)}
-                  placeholder="Nhập mật khẩu"
+                  placeholder="Tối thiểu 8 ký tự"
                   autoComplete="new-password"
                   required
                   disabled={registerLoading}

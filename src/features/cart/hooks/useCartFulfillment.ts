@@ -27,15 +27,20 @@ export function useCartFulfillment() {
   const [isLoadingDeliveryMethods, setIsLoadingDeliveryMethods] = useState(true);
 
   useEffect(() => {
-    listAvailableDeliveryMethods().then((availableDeliveryMethods) => {
-      setDeliveryMethods(availableDeliveryMethods);
-      setIsLoadingDeliveryMethods(false);
-    });
+    listAvailableDeliveryMethods()
+      .then(setDeliveryMethods)
+      .catch((error) => {
+        // Không tải được: giỏ hàng vẫn hiển thị, chỉ chưa có phương thức giao để chọn (Checkout sẽ báo thiếu).
+        console.error("Không thể tải phương thức giao hàng:", error);
+      })
+      .finally(() => setIsLoadingDeliveryMethods(false));
   }, []);
 
-  // Chỉ tự chọn mặc định khi khách chưa từng chọn — không ghi đè lựa chọn cũ khi quay lại Cart.
+  // Tự chọn mặc định khi khách chưa từng chọn, hoặc khi lựa chọn đã lưu không còn khả dụng (Admin tắt/xóa, hoặc id cũ từ trước
+  // khi chuyển sang Backend) — còn khả dụng thì giữ nguyên, không ghi đè lựa chọn của khách khi quay lại Cart.
   useEffect(() => {
-    if (isLoadingDeliveryMethods || deliveryMethodId) return;
+    if (isLoadingDeliveryMethods) return;
+    if (deliveryMethods.some((method) => method.id === deliveryMethodId)) return;
 
     const defaultMethod = pickDefaultDeliveryMethod(deliveryMethods);
     if (defaultMethod) setDeliveryMethodId(defaultMethod.id);

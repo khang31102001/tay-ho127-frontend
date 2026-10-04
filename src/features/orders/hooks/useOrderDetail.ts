@@ -5,8 +5,6 @@ import { getOrderById, updateOrderStatus } from "../services/order.service";
 import type { OrderStatus } from "../types/order-status";
 import type { ManagedOrder } from "../types/order.types";
 
-const ADMIN_ACTOR = "Admin";
-
 export function useOrderDetail(orderId: string) {
   const [order, setOrder] = useState<ManagedOrder | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -28,7 +26,7 @@ export function useOrderDetail(orderId: string) {
     async (toStatus: OrderStatus, note?: string) => {
       setIsUpdating(true);
       try {
-        const updated = await updateOrderStatus(orderId, toStatus, ADMIN_ACTOR, note);
+        const updated = await updateOrderStatus(orderId, toStatus, note);
         setOrder(updated);
       } catch (error) {
         setErrorMessage(error instanceof Error ? error.message : "Không thể cập nhật trạng thái đơn hàng.");

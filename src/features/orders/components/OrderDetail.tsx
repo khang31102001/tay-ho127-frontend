@@ -168,7 +168,7 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
 
         <div className="space-y-4">
           <OrderSummary order={order} />
-          <OrderActions orderStatus={order.orderStatus} isUpdating={isUpdating} onTransition={handleTransition} />
+          <OrderActions nextStatuses={order.nextStatuses} isUpdating={isUpdating} onTransition={handleTransition} />
         </div>
       </div>
 

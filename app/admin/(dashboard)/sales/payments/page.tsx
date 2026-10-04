@@ -1,5 +1,10 @@
-import { PaymentsExplorer } from "@/features/payments";
+import { PaymentSessionsPanel, PaymentsExplorer } from "@/features/payments";
 
 export default function AdminPaymentsPage() {
-  return <PaymentsExplorer />;
+  return (
+    <>
+      <PaymentSessionsPanel />
+      <PaymentsExplorer />
+    </>
+  );
 }

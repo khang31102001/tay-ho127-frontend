@@ -2,10 +2,9 @@
 
 import { PAYMENT_STATUS_LABEL, type PaymentStatus } from "@/features/orders";
 
-import { PAYMENT_TRANSITIONS } from "../types/payment-transitions";
-
 type PaymentActionsProps = {
-  status: PaymentStatus;
+  /** Trạng thái kế tiếp hợp lệ do Backend quyết định (ManagedPayment.nextStatuses). */
+  nextStatuses: PaymentStatus[];
   isUpdating: boolean;
   onTransition: (toStatus: PaymentStatus) => void;
 };
@@ -19,14 +18,12 @@ const BUTTON_LABEL: Partial<Record<PaymentStatus, string>> = {
 };
 
 /**
- * Chỉ render nút cho bước chuyển hợp lệ theo PAYMENT_TRANSITIONS — refunded
+ * Chỉ render nút cho bước chuyển hợp lệ do Backend trả về (nextStatuses) — refunded
  * và cancelled là terminal state, không có nút tiếp theo. Không có thao tác
  * "sửa" trực tiếp field của Payment đã paid — mọi thay đổi đều phải qua một
  * transition được ghi audit log (PaymentTransaction).
  */
-export function PaymentActions({ status, isUpdating, onTransition }: PaymentActionsProps) {
-  const nextStatuses = PAYMENT_TRANSITIONS[status];
-
+export function PaymentActions({ nextStatuses, isUpdating, onTransition }: PaymentActionsProps) {
   return (
     <div className="rounded-lg border border-brand-line bg-white p-6">
       <h2 className="text-[15px] font-black text-brand-greenDark">Thao tác</h2>

@@ -8,8 +8,6 @@ import { listTransactionsByPaymentId } from "../services/payment-transaction.ser
 import type { ManagedPaymentTransaction } from "../types/payment-transaction.types";
 import type { ManagedPayment } from "../types/payment.types";
 
-const ADMIN_ACTOR = "Admin";
-
 export function usePaymentDetail(paymentId: string) {
   const [payment, setPayment] = useState<ManagedPayment | null>(null);
   const [transactions, setTransactions] = useState<ManagedPaymentTransaction[]>([]);
@@ -35,7 +33,7 @@ export function usePaymentDetail(paymentId: string) {
     async (toStatus: PaymentStatus, note?: string) => {
       setIsUpdating(true);
       try {
-        const updated = await transitionPayment(paymentId, toStatus, ADMIN_ACTOR, note);
+        const updated = await transitionPayment(paymentId, toStatus, note);
         setPayment(updated);
         setTransactions(await listTransactionsByPaymentId(paymentId));
       } catch (error) {

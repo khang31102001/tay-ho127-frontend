@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-import { orderOptionApi } from "../api/order-option-api";
+import { deleteOrderOptionGroup, listOrderOptionGroups } from "../services/order-option.service";
 import type { ManagedOrderOptionGroup } from "../types/order-option.types";
 
 export function useOrderOptionsExplorer() {
@@ -12,7 +12,7 @@ export function useOrderOptionsExplorer() {
   const loadGroups = useCallback(async () => {
     setIsLoading(true);
     try {
-      const data = await orderOptionApi.list();
+      const data = await listOrderOptionGroups();
       setGroups(data);
     } finally {
       setIsLoading(false);
@@ -24,7 +24,7 @@ export function useOrderOptionsExplorer() {
   }, [loadGroups]);
 
   async function handleDelete(group: ManagedOrderOptionGroup) {
-    await orderOptionApi.delete(group.id);
+    await deleteOrderOptionGroup(group.id);
     await loadGroups();
   }
 

@@ -9,7 +9,7 @@ import MenuBackgroundDecoration from "@/components/ui/MenuBackgroundDecoration";
 // barrel này re-export UI admin/AuthModal, lý do đầy đủ xem
 // features/menu/services/menu.service.ts.
 import { useAuth } from "@/features/auth/context/auth-context";
-import { listCustomerOrders } from "../services/order.service";
+import { listCustomerOrders } from "../services/site-order.service";
 import { resolveCustomerOrderStatusLabel } from "../utils/customer-order-status-label";
 import { PAYMENT_STATUS_LABEL } from "../types/payment-status";
 import { useReorder } from "../hooks/useReorder";
@@ -17,8 +17,8 @@ import type { ManagedOrder } from "../types/order.types";
 
 /**
  * #19 ORDER HISTORY (/tai-khoan/don-hang) — chỉ hiển thị khi đã đăng nhập,
- * lọc theo AuthUser.customerId (bridge Auth↔Customer, xem
- * features/customers/services/site-customer-bridge.service.ts#findOrCreateCustomerByContact).
+ * Backend chỉ trả đơn của khách đang đăng nhập (GET /sales/customer/orders, theo cookie phiên) — đơn đặt khi chưa đăng nhập
+ * (khách vãng lai) không nằm trong lịch sử, theo dõi bằng mã đơn + SĐT.
  */
 export function OrderHistoryPage() {
   const { user, isAuthLoaded, logout } = useAuth();
@@ -28,13 +28,19 @@ export function OrderHistoryPage() {
   const [reorderNotice, setReorderNotice] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user?.customerId) {
+    if (!user) {
       setOrders([]);
       return;
     }
 
-    listCustomerOrders(user.customerId).then(setOrders);
-  }, [user?.customerId]);
+    // Backend chỉ trả đơn của chính khách đang đăng nhập (theo cookie phiên).
+    listCustomerOrders()
+      .then(setOrders)
+      .catch((error) => {
+        console.error("Không thể tải lịch sử đơn hàng:", error);
+        setOrders([]);
+      });
+  }, [user]);
 
   async function handleReorder(order: ManagedOrder) {
     setReorderNotice(null);
