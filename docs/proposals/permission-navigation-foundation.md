@@ -250,3 +250,26 @@ Mỗi bước 1 PR nhỏ, `tsc` + lint + build (FE) và `dotnet build/test` (BE)
 4. **Độ sâu menu Site**: giới hạn bao nhiêu cấp (đề xuất 3 với Header/Footer, Mobile tùy FE hiển thị)? --> 3 cấp
 5. **Nhóm quyền mặc định 2 cấp (Module → Tài nguyên)** theo sidebar — đồng ý, hay muốn cấu trúc khác? --> 3 => 1 module tưng ứng với nghiệp vụ gì --> sử dụng tài nguyên nhóm nghiệp vụ nào --> chi tiết lá có thể bỏ chọn or click thì đc quyền làm
 6. **Backup & cửa sổ migrate trên Render**: đồng ý backup trước khi áp migration Navigation (đổi tên bảng). --> ko cần backup mày chỉ cần soạn dữ liệu theo nghiệp vụ liên quan ghi vào docs nào đó để khi hoàn thành design --. thì dựa vào nó để chạy migtaion seed lại toàn bộ data mẫu đễ test tránh bị lỗi
+
+---
+
+## 7. Ghi chú triển khai (điểm khác bản thiết kế)
+
+Đã triển khai ở PR Bước A (Permission) và Bước B (Navigation). Các điểm khác thiết kế ban đầu:
+
+**Permission**
+- Cây 3 cấp (Module → Nhóm tài nguyên → Quyền) theo quyết định chốt; độ sâu tối đa Backend là 5. Seed: 43 nhóm, 123 quyền lá.
+- Quyền lá **bắt buộc có nhóm cha** (cập nhật không có `parentId` bị từ chối 400, không âm thầm bỏ nhóm). Nhóm có `code` dạng `group:*`.
+- Form sửa ở FE khóa ô "Loại"; Backend vẫn cho đổi lá ↔ nhóm khi đủ điều kiện.
+- Chọn nhóm = snapshot các lá đang hoạt động; lá thêm sau không tự cấp.
+
+**Navigation**
+- Cột nhãn vẫn tên `name` (API trả `label`), không đổi thành `label`.
+- Container (`navigation_menus`) là fixture do seed tạo; API chỉ cho **sửa tên và bật/tắt** (không tạo/xóa), vì mỗi `(scope, location)` đúng một menu.
+- Một mục dạng link **có thể có mục con** (vd. Thực đơn → Bánh cuốn); `is_group` chỉ nghĩa là tiêu đề không có link (`url` NULL). Quy tắc "cha phải là nhóm" chỉ áp dụng cho cây quyền, không áp dụng cho menu.
+- Giới hạn 3 cấp áp dụng cho mọi menu (kể cả Admin sidebar).
+- Mục footer "Liên hệ" (`/lien-he`) **không seed**: Site chưa có route đó (cũng chưa có route hiển thị Page CMS).
+- Gán quyền cho mục Website tắt bằng `Navigation:AllowSitePermissions=false`; endpoint công khai luôn ẩn mục có dòng quyền.
+- `GET /navigation/menus` (sidebar) giữ làm alias của `/navigation/me`; CRUD cũ `/api/v1/menus*` **đã bỏ** — deploy BE và FE cùng nhau.
+- Seed menu Website chỉ vào menu **rỗng**; sidebar Admin thì đồng bộ cấu trúc mỗi lần deploy.
+- Nếu Backend không phản hồi, Header/Footer Site không có link điều hướng (trước đây có mock dự phòng).
