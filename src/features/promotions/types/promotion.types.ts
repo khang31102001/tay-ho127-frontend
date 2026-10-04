@@ -30,9 +30,8 @@ export const PROMOTION_STATUS_TONE: Record<PromotionStatus, "neutral" | "success
 };
 
 /**
- * MOCK CONTRACT — chưa có Backend Promotion thật. Model tương ứng
- * `GET/POST/PUT /api/promotions` dự kiến ở ASP.NET Core sau này (xem
- * promotion.service.ts) — id/code/... giữ nguyên khi map sang DTO thật.
+ * Model Admin của mã giảm giá — map từ PromotionResponse của Backend
+ * (xem promotion.service.ts). `usageCount` chỉ đọc, do Backend giữ.
  */
 export type ManagedPromotion = {
   id: string;
@@ -71,8 +70,7 @@ export type PromotionValidateRequestItem = {
 };
 
 /**
- * Request contract tương ứng `POST /api/promotions/validate` dự kiến ở Backend
- * thật. `items` (thay vì chỉ `productIds` phẳng) để Promotion Service tính
+ * Request của `POST /api/v1/catalog/promotions/validate` (Backend). `items` (thay vì chỉ `productIds` phẳng) để Promotion Service tính
  * đúng discount cho type "product_discount" khi giỏ hàng có nhiều dòng khác
  * đơn giá — không thể tính "10% các sản phẩm thuộc category X" nếu không biết
  * lineTotal từng dòng.

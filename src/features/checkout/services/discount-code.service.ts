@@ -1,8 +1,10 @@
-// Đi thẳng vào service/type của Promotion thay vì qua index.ts (barrel) — barrel
+// Đi thẳng vào api/type của Promotion thay vì qua index.ts (barrel) — barrel
 // còn re-export "use client" PromotionsExplorer/PromotionEditor (Admin UI), import
 // qua đó sẽ kéo thêm UI Admin vào bundle JS của Checkout (site công khai), giống lý
 // do order.service.ts đi thẳng vào product.service.ts thay vì barrel features/products.
-import { validatePromotion } from "@/features/promotions/services/site-promotion.service";
+// validatePromotion gọi Backend (POST /catalog/promotions/validate) qua Route Handler
+// công khai — Backend là nơi duy nhất tính giảm giá.
+import { validatePromotion } from "@/features/promotions/services/promotion-validation.service";
 import type { PromotionValidateRequestItem } from "@/features/promotions/types/promotion.types";
 
 /** Kết quả áp dụng mã thành công — Checkout State giữ nguyên object này để gửi lên `createOrder()`/`createPaymentSession()`. */

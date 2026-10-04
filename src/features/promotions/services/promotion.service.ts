@@ -1,16 +1,17 @@
 import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/lib/http/admin-api";
-import { isApiError } from "@/lib/http/api-error";
 import type { PaginatedResult } from "@/lib/http/api-types";
 
-import type { ManagedPromotion } from "../types/promotion.types";
+import type { ManagedPromotion, PromotionStatus, PromotionType } from "../types/promotion.types";
 
 /**
- * Admin → Catalog → Mã giảm giá, gọi Backend /api/v1/catalog/promotions (quyền promotions.*).
+ * Admin → Catalog → Mã giảm giá, gọi Backend /api/v1/catalog/promotions (quyền
+ * promotions.*). Checkout (Site) kiểm tra mã qua promotion-validation.service.ts,
+ * không qua file này.
  *
- * - `code` được Backend chuẩn hóa IN HOA, duy nhất (409 nếu trùng); "product_discount" bắt buộc có sản phẩm/danh mục áp dụng.
- * - `usageCount` do Backend tăng khi một đơn dùng mã (nguyên tử, chặn vượt `usageLimit` khi nhiều đơn cùng lúc) và giảm lại khi
- *   đơn bị hủy — Admin không sửa tay.
- * - Khách nhập mã ở Checkout: xem site-promotion.service.ts. Số tiền giảm của đơn hàng LUÔN do Backend tính lại khi đặt đơn.
+ * - `code` luôn được Backend chuẩn hóa IN HOA và phải duy nhất (409 nếu trùng).
+ * - `applicableProductIds`/`applicableCategoryIds` chỉ dùng cho loại
+ *   "product_discount" (bắt buộc có ít nhất 1); loại khác Backend bỏ qua.
+ * - `usageCount` chỉ đọc: do module Orders (Backend) tăng khi có đơn hàng thật.
  */
 
 /** PromotionResponse của Backend. */
@@ -19,7 +20,7 @@ type PromotionDto = {
   code: string;
   name: string;
   description: string | null;
-  type: ManagedPromotion["type"];
+  type: PromotionType;
   value: number;
   maxDiscountAmount: number | null;
   minimumOrderAmount: number | null;
@@ -29,10 +30,12 @@ type PromotionDto = {
   usageCount: number;
   applicableProductIds: string[];
   applicableCategoryIds: string[];
-  status: Exclude<ManagedPromotion["status"], "expired">;
+  status: Exclude<PromotionStatus, "expired">;
   createdAtUtc: string;
   updatedAtUtc: string | null;
 };
+
+export type PromotionFormValue = Omit<ManagedPromotion, "id" | "usageCount" | "createdAt" | "updatedAt">;
 
 function toManagedPromotion(dto: PromotionDto): ManagedPromotion {
   return {
@@ -56,23 +59,39 @@ function toManagedPromotion(dto: PromotionDto): ManagedPromotion {
   };
 }
 
-export type PromotionFormValue = Omit<ManagedPromotion, "id" | "usageCount" | "createdAt" | "updatedAt">;
+/** Bỏ các field chỉ đọc (id, usageCount, mốc thời gian) để dùng làm giá trị ban đầu của form sửa. */
+export function toPromotionFormValue(promotion: ManagedPromotion): PromotionFormValue {
+  return {
+    code: promotion.code,
+    name: promotion.name,
+    description: promotion.description,
+    type: promotion.type,
+    value: promotion.value,
+    maxDiscountAmount: promotion.maxDiscountAmount,
+    minimumOrderAmount: promotion.minimumOrderAmount,
+    startAt: promotion.startAt,
+    endAt: promotion.endAt,
+    usageLimit: promotion.usageLimit,
+    applicableProductIds: promotion.applicableProductIds,
+    applicableCategoryIds: promotion.applicableCategoryIds,
+    status: promotion.status,
+  };
+}
 
-/** Body gửi Backend — chỉ các field Admin được sửa (không gửi id/usageCount/dấu thời gian). */
 function toRequest(payload: PromotionFormValue) {
   return {
     code: payload.code,
     name: payload.name,
-    description: payload.description,
+    description: payload.description || null,
     type: payload.type,
     value: payload.value,
-    maxDiscountAmount: payload.maxDiscountAmount,
-    minimumOrderAmount: payload.minimumOrderAmount,
-    startAt: payload.startAt,
-    endAt: payload.endAt,
-    usageLimit: payload.usageLimit,
-    applicableProductIds: payload.applicableProductIds,
-    applicableCategoryIds: payload.applicableCategoryIds,
+    maxDiscountAmount: payload.maxDiscountAmount ?? null,
+    minimumOrderAmount: payload.minimumOrderAmount ?? null,
+    startAt: payload.startAt ?? null,
+    endAt: payload.endAt ?? null,
+    usageLimit: payload.usageLimit ?? null,
+    applicableProductIds: payload.applicableProductIds ?? [],
+    applicableCategoryIds: payload.applicableCategoryIds ?? [],
     status: payload.status,
   };
 }
@@ -84,16 +103,8 @@ export async function listPromotions(): Promise<ManagedPromotion[]> {
   return page.items.map(toManagedPromotion);
 }
 
-/** null khi không tồn tại (Backend 404). */
-export async function getPromotionById(id: string): Promise<ManagedPromotion | null> {
-  try {
-    return toManagedPromotion(await adminApi.get<PromotionDto>(`/catalog/promotions/${id}`));
-  } catch (error) {
-    if (isApiError(error) && error.kind === "not_found") {
-      return null;
-    }
-    throw error;
-  }
+export async function getPromotionById(id: string): Promise<ManagedPromotion> {
+  return toManagedPromotion(await adminApi.get<PromotionDto>(`/catalog/promotions/${id}`));
 }
 
 export async function createPromotion(payload: PromotionFormValue): Promise<ManagedPromotion> {
@@ -104,13 +115,13 @@ export async function updatePromotion(id: string, payload: PromotionFormValue): 
   return toManagedPromotion(await adminApi.put<PromotionDto>(`/catalog/promotions/${id}`, toRequest(payload)));
 }
 
-export async function deletePromotion(id: string): Promise<void> {
-  await adminApi.delete(`/catalog/promotions/${id}`);
+export function deletePromotion(id: string): Promise<void> {
+  return adminApi.delete<void>(`/catalog/promotions/${id}`);
 }
 
 /**
- * "expired" không phải field Admin tự set tay — suy ra từ `endAt` tại thời điểm đọc, để danh sách Explorer luôn phản ánh đúng
- * thực tế dù Admin quên cập nhật status thủ công. (Backend cũng tự coi mã quá hạn là không dùng được khi kiểm tra.)
+ * "expired" không lưu ở Backend — suy ra từ `endAt` tại thời điểm đọc, để
+ * danh sách luôn phản ánh đúng thực tế dù Admin quên đổi trạng thái.
  */
 export function resolvePromotionEffectiveStatus(
   promotion: ManagedPromotion,

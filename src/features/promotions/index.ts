@@ -2,15 +2,16 @@ export { PromotionsExplorer } from "./components/PromotionsExplorer";
 export { PromotionEditor } from "./components/PromotionEditor";
 export { PromotionStatusBadge } from "./components/PromotionStatusBadge";
 
+// Service Admin (CRUD) gọi Backend; resolvePromotionEffectiveStatus là hàm thuần dùng để hiển thị.
+// Checkout KHÔNG dùng barrel này: nó gọi thẳng services/promotion-validation.service.ts.
 export {
   listPromotions,
   getPromotionById,
   createPromotion,
   updatePromotion,
   deletePromotion,
-  resolvePromotionEffectiveStatus,
 } from "./services/promotion.service";
-export { validatePromotion } from "./services/site-promotion.service";
+export { resolvePromotionEffectiveStatus } from "./services/promotion.service";
 export type { PromotionFormValue } from "./services/promotion.service";
 
 export {

@@ -1,6 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
+
+import { useAsyncData } from "@/hooks/useAsyncData";
 
 import type { ManagedPromotion } from "../types/promotion.types";
 import { deletePromotion, listPromotions, resolvePromotionEffectiveStatus } from "../services/promotion.service";
@@ -8,37 +10,28 @@ import { deletePromotion, listPromotions, resolvePromotionEffectiveStatus } from
 export type PromotionRow = ManagedPromotion & { effectiveStatus: ManagedPromotion["status"] };
 
 export function usePromotionsExplorer() {
-  const [promotions, setPromotions] = useState<ManagedPromotion[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const loadPromotions = useCallback(async () => {
-    setIsLoading(true);
-
-    try {
-      const data = await listPromotions();
-      setPromotions(data);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadPromotions();
-  }, [loadPromotions]);
+  const { data, isLoading, error, reload } = useAsyncData(listPromotions, [], {
+    fallbackError: "Không thể tải danh sách mã giảm giá.",
+  });
 
   const rows = useMemo<PromotionRow[]>(
-    () => promotions.map((promotion) => ({ ...promotion, effectiveStatus: resolvePromotionEffectiveStatus(promotion) })),
-    [promotions],
+    () =>
+      (data ?? []).map((promotion) => ({
+        ...promotion,
+        effectiveStatus: resolvePromotionEffectiveStatus(promotion),
+      })),
+    [data],
   );
 
   async function handleDelete(promotion: ManagedPromotion) {
     await deletePromotion(promotion.id);
-    await loadPromotions();
+    await reload();
   }
 
   return {
     rows,
     isLoading,
+    loadError: error,
     handleDelete,
   };
 }

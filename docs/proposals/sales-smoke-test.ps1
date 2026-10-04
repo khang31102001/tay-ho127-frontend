@@ -68,7 +68,7 @@ $optionValue = $group.options[1].id
 "== Mã giảm giá (Admin tạo, khách kiểm tra)"
 $code = "SMOKE$($suffix.ToUpper())"
 $promotion = Invoke-Step "promotion create" POST "/api/admin/backend/catalog/promotions" @{ code = $code; name = "Smoke 10%"; type = "percentage"; value = 10; usageLimit = 5; status = "active" } $admin -Expect 201
-$validated = Invoke-Step "promotion validate (site)" POST "/api/catalog/promotions/validate" @{ code = $code; subtotal = 105000; shippingFee = 15000; items = @(@{ productId = $product.id; lineTotal = 100000 }) } $guest -Expect 200
+$validated = Invoke-Step "promotion validate (site)" POST "/api/promotions/validate" @{ code = $code; subtotal = 105000; shippingFee = 15000; items = @(@{ productId = $product.id; lineTotal = 100000 }) } $guest -Expect 200
 if (-not $validated.isValid) { "FAIL promotion validate isValid=false"; $script:Failures++ }
 
 $items = @(@{ productId = $product.id; quantity = 2 })
@@ -132,3 +132,4 @@ $null = Invoke-Step "delivery-methods delete" DELETE "/api/admin/backend/sales/d
 
 ""
 if ($script:Failures -eq 0) { "TẤT CẢ BƯỚC ĐỀU ĐÚNG MÃ HTTP." } else { "$script:Failures BƯỚC SAI." ; exit 1 }
+

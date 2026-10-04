@@ -8,10 +8,13 @@ import type { ManagedProduct } from "@/features/products";
 import { listCategories } from "@/features/categories";
 import { listProducts } from "@/features/products";
 
+import { useAsyncData } from "@/hooks/useAsyncData";
+
 import {
   createPromotion,
   deletePromotion,
   getPromotionById,
+  toPromotionFormValue,
   updatePromotion,
   type PromotionFormValue,
 } from "../services/promotion.service";
@@ -43,7 +46,10 @@ export function usePromotionEditor({ id }: UsePromotionEditorParams) {
   const [form, setForm] = useState<PromotionFormValue>(EMPTY_FORM);
   const [productOptions, setProductOptions] = useState<ManagedProduct[]>([]);
   const [categoryOptions, setCategoryOptions] = useState<ManagedCategory[]>([]);
-  const [isLoading, setIsLoading] = useState(isEditMode);
+  const existing = useAsyncData(() => getPromotionById(id ?? ""), [id], {
+    enabled: isEditMode,
+    fallbackError: "Không thể tải mã giảm giá.",
+  });
 
   useEffect(() => {
     listProducts().then(setProductOptions);
@@ -51,28 +57,10 @@ export function usePromotionEditor({ id }: UsePromotionEditorParams) {
   }, []);
 
   useEffect(() => {
-    if (!isEditMode) {
-      return;
-    }
+    if (!existing.data) return;
 
-    let isCancelled = false;
-
-    getPromotionById(id).then((promotion) => {
-      if (isCancelled) {
-        return;
-      }
-
-      if (promotion) {
-        setForm(promotion);
-      }
-
-      setIsLoading(false);
-    });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [id, isEditMode]);
+    setForm(toPromotionFormValue(existing.data));
+  }, [existing.data]);
 
   function updateField<K extends keyof PromotionFormValue>(field: K, value: PromotionFormValue[K]) {
     setForm((previous) => ({ ...previous, [field]: value }));
@@ -135,7 +123,8 @@ export function usePromotionEditor({ id }: UsePromotionEditorParams) {
     toggleApplicableCategory,
     productOptions,
     categoryOptions,
-    isLoading,
+    isLoading: existing.isLoading,
+    loadError: existing.error,
     isEditMode,
     handleSave,
     handleDelete,
