@@ -52,7 +52,7 @@ export type BrandRow = ManagedBrand & { organizationName: string };
 
 export function useBrandsExplorer() {
   const { data, isLoading, error } = useAsyncData(() => Promise.all([listBrands(), listOrganizations()]), [], {
-    fallbackError: "Không thể tải danh sách brand.",
+    fallbackError: "Không thể tải danh sách chi nhánh.",
   });
 
   const rows = useMemo<BrandRow[]>(() => {

@@ -196,7 +196,7 @@ export function UserEditor({ id }: UserEditorProps) {
           onToggle={(departmentId) => toggleScope("departmentIds", departmentId)}
         />
         <ScopeChecklist
-          title="Brand được làm việc"
+          title="Chi nhánh được làm việc"
           options={brandOptions}
           selectedIds={form.brandIds}
           disabled={!permissions.canManageBrands}

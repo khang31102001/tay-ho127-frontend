@@ -85,9 +85,16 @@ export function DepartmentsExplorer() {
 }
 
 const brandColumns: DataExplorerColumn<BrandRow>[] = [
-  { key: "name", header: "Brand" },
+  { key: "name", header: "Chi nhánh" },
   codeColumn,
   { key: "organizationName", header: "Tổ chức" },
+  { key: "addressLine", header: "Địa chỉ", render: (row) => row.contact.addressLine ?? "—" },
+  { key: "phone", header: "Điện thoại", render: (row) => row.contact.phone ?? "—" },
+  {
+    key: "isPrimary",
+    header: "Hiển thị trên website",
+    render: (row) => (row.isPrimary ? "Chi nhánh chính" : "—"),
+  },
   statusColumn,
 ];
 
@@ -97,17 +104,17 @@ export function BrandsExplorer() {
 
   return (
     <DataExplorer<BrandRow>
-      title="Chi nhánh / Brand"
+      title="Chi nhánh"
       columns={brandColumns}
       rows={rows}
       isLoading={isLoading}
       getRowId={(row) => row.id}
       getSearchableText={(row) => `${row.name} ${row.code} ${row.organizationName}`}
-      searchPlaceholder="Tìm brand..."
+      searchPlaceholder="Tìm chi nhánh..."
       createHref={hasPermission("brands.create") ? "/admin/organization/brands/new" : undefined}
-      createLabel="Thêm brand"
+      createLabel="Thêm chi nhánh"
       editHref={(row) => `/admin/organization/brands/${row.id}`}
-      emptyState={loadError ?? "Chưa có brand nào."}
+      emptyState={loadError ?? "Chưa có chi nhánh nào."}
     />
   );
 }

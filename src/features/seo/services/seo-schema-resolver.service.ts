@@ -1,7 +1,7 @@
-// Import thẳng service (không qua barrel @/features/brand, @/features/media)
+// Import thẳng service (không qua barrel @/features/brand-profile, @/features/media)
 // — file này được gọi trực tiếp từ app/(site)/**, 2 barrel đó re-export cả UI
-// Admin (BrandSettingsEditor, MediaExplorer/MediaEditor).
-import { getBrandSettings } from "@/features/brand/services/brand-settings.service";
+// Admin (BrandProfileEditor, MediaExplorer/MediaEditor).
+import { getSiteBrand } from "@/features/brand-profile/services/brand-public.service";
 import { listMedia } from "@/features/media/services/public-media.service";
 import { getSiteUrl } from "@/lib/site-url";
 
@@ -19,12 +19,12 @@ import {
 
 /**
  * GLOBAL SCHEMA (Task 9): Organization + Restaurant + WebSite, derive 100% từ
- * brand_settings (features/brand) — KHÔNG qua seo_schema, vì Brand Settings
+ * Thông tin thương hiệu + Chi nhánh chính (features/brand-profile) — KHÔNG qua seo_schema, vì Thông tin thương hiệu
  * đã có màn Admin riêng để chỉnh các field này (Task 8: không lưu lại bản sao
  * dữ liệu đã có chỗ quản lý). Render 1 lần duy nhất ở app/(site)/layout.tsx.
  */
 export async function resolveGlobalSchemas(): Promise<JsonLdObject[]> {
-  const [brand, mediaList] = await Promise.all([getBrandSettings(), listMedia()]);
+  const [brand, mediaList] = await Promise.all([getSiteBrand(), listMedia()]);
   const siteUrl = getSiteUrl();
   const mediaById = new Map(mediaList.map((media) => [media.id, media]));
   const logoUrl = brand.logoMediaId ? mediaById.get(brand.logoMediaId)?.url : undefined;
@@ -124,7 +124,7 @@ export type ArticlePageSchemaInput = {
  * (publisher). Có thể bổ sung override sau theo đúng pattern Product ở trên.
  */
 export async function resolveArticlePageSchemas(input: ArticlePageSchemaInput): Promise<JsonLdObject[]> {
-  const [brand, mediaList] = await Promise.all([getBrandSettings(), listMedia()]);
+  const [brand, mediaList] = await Promise.all([getSiteBrand(), listMedia()]);
   const siteUrl = getSiteUrl();
   const mediaById = new Map(mediaList.map((media) => [media.id, media]));
   const logoUrl = brand.logoMediaId ? mediaById.get(brand.logoMediaId)?.url : undefined;

@@ -7,6 +7,7 @@ import {
   adminFieldLabelClassName,
 } from "@/components/admin/templates/formFieldClassName";
 
+import { BranchContactFields } from "./BranchContactFields";
 import { OrganizationSelect } from "./OrganizationSelect";
 import { useBrandEditor, useDepartmentEditor, useOrganizationEditor } from "../hooks/useOrganizationEditors";
 
@@ -118,7 +119,7 @@ export function BrandEditor({ id }: { id?: string }) {
 
   return (
     <DataEditor
-      title={isEditMode ? "Sửa brand" : "Thêm brand"}
+      title={isEditMode ? "Sửa chi nhánh" : "Thêm chi nhánh"}
       backHref="/admin/organization/brands"
       isLoading={isLoading}
       loadError={loadError}
@@ -129,7 +130,7 @@ export function BrandEditor({ id }: { id?: string }) {
         code={form.code}
         name={form.name}
         isEditMode={isEditMode}
-        nameLabel="Tên brand"
+        nameLabel="Tên chi nhánh"
         onCodeChange={(value) => updateField("code", value)}
         onNameChange={(value) => updateField("name", value)}
       />
@@ -139,7 +140,29 @@ export function BrandEditor({ id }: { id?: string }) {
         disabled={isEditMode}
         onChange={(value) => updateField("organizationId", value)}
       />
-      {isEditMode && <ActiveStatusField isActive={form.isActive} onChange={(value) => updateField("isActive", value)} />}
+      {isEditMode && (
+        <>
+          <BranchContactFields contact={form.contact} onChange={(contact) => updateField("contact", contact)} />
+
+          <label className="flex items-start gap-2 text-[13px] font-medium text-brand-ink">
+            <input
+              type="checkbox"
+              checked={form.isPrimary}
+              disabled={!form.isActive}
+              onChange={(event) => updateField("isPrimary", event.target.checked)}
+              className="mt-0.5 size-4 accent-brand-green"
+            />
+            <span>
+              Chi nhánh chính — website hiển thị địa chỉ, số điện thoại và giờ mở cửa của chi nhánh này.
+              <span className="block text-[12px] font-normal text-brand-muted">
+                Chỉ một chi nhánh được chọn: chọn chi nhánh này sẽ bỏ chọn chi nhánh chính cũ. Chi nhánh ngừng hoạt động không thể là chi nhánh chính.
+              </span>
+            </span>
+          </label>
+
+          <ActiveStatusField isActive={form.isActive} onChange={(value) => updateField("isActive", value)} />
+        </>
+      )}
     </DataEditor>
   );
 }

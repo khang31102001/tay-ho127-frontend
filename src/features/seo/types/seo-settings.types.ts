@@ -1,9 +1,9 @@
 /**
  * Global SEO fallback — CHỈ chứa field thực sự SEO-specific. KHÔNG chứa
  * site_name/organization_name/logo/phone/email/address/social vì các field
- * đó đã tồn tại 1:1 trên `features/brand` (ManagedBrandSettings/SocialLink) —
+ * đó đã tồn tại 1:1 trên `features/brand-profile` (ManagedBrandProfile/SocialLink) —
  * Organization/LocalBusiness/Restaurant schema (khi triển khai Phase Schema)
- * phải đọc thẳng từ brand_settings, không lưu bản sao ở đây. Xem
+ * phải đọc thẳng từ Thông tin thương hiệu + Chi nhánh chính, không lưu bản sao ở đây. Xem
  * seo-architecture-analysis.md mục 8.1 (đã được xác nhận thu gọn).
  */
 export type ManagedSeoSettings = {
