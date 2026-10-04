@@ -1,235 +1,84 @@
-import { createMockStore } from "@/mocks/create-mock-store";
-// Navigation CHỈ đọc đường dẫn của page ĐÃ XUẤT BẢN (features/content-public, chạy được cả server lẫn
-// trình duyệt) — không copy title/content/SEO của Page sang Navigation (xem types.ts), và không
-// dùng service Admin của features/pages (cần phiên đăng nhập admin).
-import { listPublishedPages } from "@/features/content-public";
+import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/lib/http/admin-api";
+import type { PaginatedResult } from "@/lib/http/api-types";
 
-import { SEED_NAVIGATION_ITEMS, SEED_NAVIGATION_MENUS } from "../mocks/navigation.mock";
 import type {
+  AdminMenuTreeNode,
+  CreateNavigationItemInput,
   ManagedNavigationItem,
   ManagedNavigationMenu,
-  NavigationItem,
-  NavigationLocation,
-  NavigationMenu,
+  NavigationScope,
+  ReorderNavigationItemsInput,
+  UpdateNavigationItemInput,
 } from "../types/navigation.types";
-import { buildNavigationTree, filterVisibleTree, sortNavigationTree } from "../utils/navigation-tree";
 
 /**
- * MOCK CONTRACT — mô phỏng response Backend ASP.NET Core (xem
- * ../mocks/navigation.mock.ts cho response mẫu). Đồng bộ 2 chiều với
- * localStorage, delay 350ms mô phỏng network — khớp khoảng 200-500ms yêu cầu.
+ * Backend: /api/v1/navigation/* (module Navigation) — dùng cho Admin qua BFF. Khách xem menu Website qua
+ * public-navigation.service.ts (server-only), không đi qua file này.
  */
-const menuStore = createMockStore<ManagedNavigationMenu>({
-  storageKey: "tayho-admin-navigation-menus",
-  seed: SEED_NAVIGATION_MENUS,
-  delayMs: 350,
-});
 
-const itemStore = createMockStore<ManagedNavigationItem>({
-  storageKey: "tayho-admin-navigation-items",
-  seed: SEED_NAVIGATION_ITEMS,
-  delayMs: 350,
-});
-
-/**
- * targetType="page" thì resolve url thật từ CMS Page (chỉ lấy đường dẫn, không copy nội dung page);
- * page không tồn tại/chưa xuất bản thì dùng url đã lưu trên item.
- */
-function resolveItemUrl(item: ManagedNavigationItem, pathByPageId: Map<string, string>): string | null {
-  if (item.targetType === "page" && item.targetId) {
-    return pathByPageId.get(item.targetId) ?? item.url ?? null;
-  }
-  return item.url ?? null;
-}
-
-async function resolveFlatItems(items: ManagedNavigationItem[]): Promise<ManagedNavigationItem[]> {
-  // Chỉ gọi Backend khi có item trỏ tới page — và đúng 1 lần cho cả menu.
-  const hasPageTarget = items.some((item) => item.targetType === "page" && item.targetId);
-  const pathByPageId = new Map<string, string>();
-
-  if (hasPageTarget) {
-    (await listPublishedPages()).forEach((page) => pathByPageId.set(page.id, page.slug));
-  }
-
-  return items.map((item) => ({ ...item, url: resolveItemUrl(item, pathByPageId) }));
-}
-
-/** Dựng cây hoàn chỉnh (resolve URL + build tree + lọc visible + sort) cho 1 menu. */
-async function assembleMenu(menu: ManagedNavigationMenu): Promise<NavigationMenu> {
-  const flatItems = itemStore.read().filter((item) => item.menuId === menu.id);
-  const resolvedItems = await resolveFlatItems(flatItems);
-  const tree = sortNavigationTree(filterVisibleTree(buildNavigationTree(resolvedItems)));
-
-  return { ...menu, items: tree };
+/** Sidebar của admin đang đăng nhập — Backend đã lọc sẵn theo quyền. */
+export function getMySidebarMenu(): Promise<AdminMenuTreeNode[]> {
+  return adminApi.get<AdminMenuTreeNode[]>("/navigation/me");
 }
 
 // ============================================================
-// PUBLIC — Site (render theo vị trí/code)
+// Containers (admin-sidebar, site-header/footer/mobile)
 // ============================================================
 
-/** Site renderer (Header/Footer/AdminSidebar) chỉ nên gọi 2 hàm này — đã lọc isActive/isVisible/sort/resolve. */
-export async function getAssembledMenuByLocation(location: NavigationLocation): Promise<NavigationMenu | null> {
-  await menuStore.delay();
-  const menu = menuStore.read().find((item) => item.location === location && item.isActive);
-  return menu ? assembleMenu(menu) : null;
+/** Container của mọi scope mà admin có quyền xem; lọc thêm theo `scope` nếu truyền. */
+export async function listMenus(scope?: NavigationScope): Promise<ManagedNavigationMenu[]> {
+  const menus = await adminApi.get<ManagedNavigationMenu[]>("/navigation/containers");
+  return scope ? menus.filter((menu) => menu.scope === scope) : menus;
 }
 
-export async function getAssembledMenuByCode(code: string): Promise<NavigationMenu | null> {
-  await menuStore.delay();
-  const menu = menuStore.read().find((item) => item.code === code);
-  return menu ? assembleMenu(menu) : null;
+export function getMenuById(id: string): Promise<ManagedNavigationMenu> {
+  return adminApi.get<ManagedNavigationMenu>(`/navigation/containers/${id}`);
 }
 
-// ============================================================
-// ADMIN — Menu CRUD
-// ============================================================
-
-export async function listMenus(): Promise<ManagedNavigationMenu[]> {
-  await menuStore.delay();
-  return menuStore.read();
-}
-
-export async function getMenuById(id: string): Promise<ManagedNavigationMenu | undefined> {
-  await menuStore.delay();
-  return menuStore.read().find((menu) => menu.id === id);
-}
-
-export type NavigationMenuUpsertInput = Omit<ManagedNavigationMenu, "id">;
-
-export async function createMenu(payload: NavigationMenuUpsertInput): Promise<ManagedNavigationMenu> {
-  await menuStore.delay();
-  const menu: ManagedNavigationMenu = { ...payload, id: `nav-menu-${Date.now()}` };
-  menuStore.write([...menuStore.read(), menu]);
-  return menu;
-}
-
-export async function updateMenu(id: string, payload: NavigationMenuUpsertInput): Promise<ManagedNavigationMenu> {
-  await menuStore.delay();
-  const updated: ManagedNavigationMenu = { ...payload, id };
-  menuStore.write(menuStore.read().map((menu) => (menu.id === id ? updated : menu)));
-  return updated;
-}
-
-/** Xóa menu kèm toàn bộ item thuộc menu đó (tránh item mồ côi). */
-export async function deleteMenu(id: string): Promise<void> {
-  await menuStore.delay();
-  menuStore.write(menuStore.read().filter((menu) => menu.id !== id));
-  itemStore.write(itemStore.read().filter((item) => item.menuId !== id));
+/** Container cố định (seed): chỉ đổi được tên và bật/tắt. */
+export function updateMenu(id: string, input: { name: string; isActive: boolean }): Promise<ManagedNavigationMenu> {
+  return adminApi.put<ManagedNavigationMenu, { name: string; isActive: boolean }>(`/navigation/containers/${id}`, input);
 }
 
 // ============================================================
-// ADMIN — Item CRUD
+// Items
 // ============================================================
 
+/** Mọi item của một menu (cả item đang tắt), theo thứ tự hiển thị. */
 export async function listItemsByMenuId(menuId: string): Promise<ManagedNavigationItem[]> {
-  await itemStore.delay();
-  return itemStore
-    .read()
-    .filter((item) => item.menuId === menuId)
-    .sort((a, b) => a.sortOrder - b.sortOrder);
-}
-
-export async function getItemById(itemId: string): Promise<ManagedNavigationItem | undefined> {
-  await itemStore.delay();
-  return itemStore.read().find((item) => item.id === itemId);
-}
-
-export type NavigationItemUpsertInput = Omit<ManagedNavigationItem, "id">;
-
-// Khi Admin nhập sortOrder trùng với một item cùng cha đã tồn tại, "nhường
-// chỗ" bằng cách đẩy các item có sortOrder >= giá trị mới lên +1 — để nhập
-// sortOrder = 3 có nghĩa là "chèn vào vị trí 3", không phải "gắn nhãn 3 và
-// xếp sau các item cùng nhãn theo thứ tự chèn" (stable sort).
-function makeRoomForSortOrder(
-  items: ManagedNavigationItem[],
-  menuId: string,
-  parentId: string | null,
-  sortOrder: number,
-  excludeId?: string,
-): ManagedNavigationItem[] {
-  return items.map((item) => {
-    if (item.id === excludeId) return item;
-    if (item.menuId === menuId && item.parentId === parentId && item.sortOrder >= sortOrder) {
-      return { ...item, sortOrder: item.sortOrder + 1 };
-    }
-    return item;
+  const page = await adminApi.get<PaginatedResult<ManagedNavigationItem>>("/navigation/items", {
+    params: { menuId, pageSize: ADMIN_LIST_PAGE_SIZE },
   });
+  return page.items;
 }
 
-export async function createItem(payload: NavigationItemUpsertInput): Promise<ManagedNavigationItem> {
-  await itemStore.delay();
-  const existing = itemStore.read();
-  const shifted = makeRoomForSortOrder(existing, payload.menuId, payload.parentId, payload.sortOrder);
-  const item: ManagedNavigationItem = { ...payload, id: `nav-item-${Date.now()}` };
-  itemStore.write([...shifted, item]);
-  return item;
+export function getItemById(id: string): Promise<ManagedNavigationItem> {
+  return adminApi.get<ManagedNavigationItem>(`/navigation/items/${id}`);
 }
 
-export async function updateItem(itemId: string, payload: NavigationItemUpsertInput): Promise<ManagedNavigationItem> {
-  await itemStore.delay();
-  const existing = itemStore.read();
-  const shifted = makeRoomForSortOrder(existing, payload.menuId, payload.parentId, payload.sortOrder, itemId);
-  const updated: ManagedNavigationItem = { ...payload, id: itemId };
-  itemStore.write(shifted.map((item) => (item.id === itemId ? updated : item)));
-  return updated;
+export function createItem(input: CreateNavigationItemInput): Promise<ManagedNavigationItem> {
+  return adminApi.post<ManagedNavigationItem, CreateNavigationItemInput>("/navigation/items", input);
 }
 
-export async function toggleItemVisibility(itemId: string): Promise<ManagedNavigationItem> {
-  await itemStore.delay();
-  const all = itemStore.read();
-  const current = all.find((item) => item.id === itemId);
-  if (!current) {
-    throw new Error(`Không tìm thấy mục navigation: ${itemId}`);
-  }
-
-  const updated: ManagedNavigationItem = { ...current, isVisible: !current.isVisible };
-  itemStore.write(all.map((item) => (item.id === itemId ? updated : item)));
-  return updated;
+export function updateItem(id: string, input: UpdateNavigationItemInput): Promise<ManagedNavigationItem> {
+  return adminApi.put<ManagedNavigationItem, UpdateNavigationItemInput>(`/navigation/items/${id}`, input);
 }
 
-export type ReorderNavigationItemsInput = {
-  /** Cha mới của toàn bộ item trong orderedItemIds — null = mục gốc. */
-  parentId: string | null;
-  /** Id các item, ĐÚNG theo thứ tự mong muốn — service tự gán lại sortOrder 1..N. */
-  orderedItemIds: string[];
-};
-
-/**
- * Sắp xếp lại / đổi cha 1 nhóm anh em cùng lúc — nhận danh sách id đã đúng
- * thứ tự (giống hợp đồng 1 endpoint reorder thật của backend hay có), tự
- * gán lại sortOrder tuần tự. Dùng chung cho cả 2 kiểu thao tác UI: đổi thứ
- * tự trong cùng 1 cha (Move Up/Down) và kéo-thả sang cha khác (đổi
- * `parentId` của item được kéo trước khi gọi hàm này).
- */
-export async function reorderItems({ parentId, orderedItemIds }: ReorderNavigationItemsInput): Promise<void> {
-  await itemStore.delay();
-  const all = itemStore.read();
-  const orderIndexById = new Map(orderedItemIds.map((id, index) => [id, index]));
-
-  const updated = all.map((item) => {
-    const index = orderIndexById.get(item.id);
-    if (index === undefined) return item;
-    return { ...item, parentId, sortOrder: index + 1 };
-  });
-
-  itemStore.write(updated);
+/** Backend trả 409 nếu item còn mục con. */
+export function deleteItem(id: string): Promise<void> {
+  return adminApi.delete<void>(`/navigation/items/${id}`);
 }
 
-/** Xóa item kèm toàn bộ item con cháu (tránh nhánh con mồ côi trỏ tới parentId không còn tồn tại). */
-export async function deleteItem(itemId: string): Promise<void> {
-  await itemStore.delay();
-  const all = itemStore.read();
+/** Đặt các item — đúng thứ tự — dưới một cha và đánh số lại sortOrder (kéo-thả / lên-xuống). */
+export function reorderItems(menuId: string, input: ReorderNavigationItemsInput): Promise<void> {
+  return adminApi.put<void, ReorderNavigationItemsInput & { menuId: string }>("/navigation/items/reorder", { menuId, ...input });
+}
 
-  const idsToDelete = new Set<string>([itemId]);
-  let previousSize = 0;
-  while (idsToDelete.size !== previousSize) {
-    previousSize = idsToDelete.size;
-    all.forEach((item) => {
-      if (item.parentId && idsToDelete.has(item.parentId)) {
-        idsToDelete.add(item.id);
-      }
-    });
-  }
+/** Mã quyền (lá) gate item — cần ÍT NHẤT 1 quyền trong danh sách mới thấy item; rỗng = ai cũng thấy. */
+export function getItemPermissionCodes(id: string): Promise<string[]> {
+  return adminApi.get<string[]>(`/navigation/items/${id}/permissions`);
+}
 
-  itemStore.write(all.filter((item) => !idsToDelete.has(item.id)));
+export function setItemPermissionCodes(id: string, permissionCodes: string[]): Promise<void> {
+  return adminApi.put<void, { permissionCodes: string[] }>(`/navigation/items/${id}/permissions`, { permissionCodes });
 }

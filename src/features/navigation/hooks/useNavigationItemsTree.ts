@@ -1,102 +1,98 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 
 import type { TreeMoveEvent } from "@/components/shared/tree";
+import { useAsyncData } from "@/hooks/useAsyncData";
 
-import { navigationApi } from "../api/navigation.api";
+import { deleteItem, listItemsByMenuId, reorderItems, updateItem } from "../services/navigation.service";
+import type { ManagedNavigationItem, NavigationScope, NavigationTreeItem } from "../types/navigation.types";
 import { buildNavigationTree, sortNavigationTree } from "../utils/navigation-tree";
-import type { ManagedNavigationItem, NavigationItem } from "../types/navigation.types";
+import { useNavigationMenu } from "./useNavigationMenu";
 
-export function useNavigationItemsTree(menuId: string) {
-  const [flatItems, setFlatItems] = useState<ManagedNavigationItem[]>([]);
-  const [menuName, setMenuName] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+export function useNavigationItemsTree(scope: NavigationScope, menuIdParam?: string) {
+  const menu = useNavigationMenu(scope, menuIdParam);
+  const menuId = menu.data?.id;
 
-  const load = useCallback(async () => {
-    setIsLoading(true);
+  const items = useAsyncData(() => listItemsByMenuId(menuId ?? ""), [menuId], {
+    enabled: menuId !== undefined,
+    fallbackError: "Không thể tải cấu trúc menu.",
+  });
+  const flatItems = useMemo(() => items.data ?? [], [items.data]);
+
+  // Cây chỉ dùng để HIỂN THỊ trong Admin: gồm cả mục đang tắt (Admin phải thấy để bật lại).
+  const tree = useMemo(() => sortNavigationTree(buildNavigationTree(flatItems)), [flatItems]);
+
+  // Lỗi từ Backend (vd. 409 xóa mục còn con, 400 vượt độ sâu) hiện cho Admin thay vì ném ra ngoài.
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  async function runAction(action: () => Promise<void>) {
+    setActionError(null);
     try {
-      const [items, menu] = await Promise.all([
-        navigationApi.getItemsByMenuId(menuId),
-        navigationApi.getById(menuId),
-      ]);
-      setFlatItems(items);
-      setMenuName(menu?.name ?? "");
+      await action();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Không thể thực hiện thao tác.");
     } finally {
-      setIsLoading(false);
+      await items.reload();
     }
-  }, [menuId]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
-
-  // Cây chỉ dùng để HIỂN THỊ trong Admin (chưa lọc isVisible — Admin phải
-  // nhìn thấy cả mục đang ẩn để bật lại) — khác getAssembledMenuByLocation
-  // dùng cho Site (đã lọc + resolve URL).
-  const tree = sortNavigationTree(buildNavigationTree(flatItems));
-
-  async function handleDelete(item: NavigationItem) {
-    await navigationApi.deleteItem(item.id);
-    await load();
   }
 
-  async function handleToggleVisible(item: NavigationItem) {
-    await navigationApi.toggleItemVisibility(item.id);
-    await load();
-  }
+  const handleDelete = (item: NavigationTreeItem) => runAction(() => deleteItem(item.id));
 
-  async function handleMove(item: NavigationItem, direction: "up" | "down") {
-    const siblingIds = flatItems
-      .filter((flat) => flat.parentId === item.parentId)
-      .sort((a, b) => a.sortOrder - b.sortOrder)
-      .map((flat) => flat.id);
-
-    const index = siblingIds.indexOf(item.id);
-    const swapIndex = direction === "up" ? index - 1 : index + 1;
-    if (index === -1 || swapIndex < 0 || swapIndex >= siblingIds.length) return;
-
-    // Đổi chỗ 2 phần tử trong mảng id rồi gửi cả danh sách — service tự gán lại sortOrder tuần tự.
-    [siblingIds[index], siblingIds[swapIndex]] = [siblingIds[swapIndex], siblingIds[index]];
-
-    await navigationApi.reorderItems(menuId, { parentId: item.parentId ?? null, orderedItemIds: siblingIds });
-    await load();
-  }
+  /** Bật/tắt hiển thị: Backend nhận cả payload của item nên gửi lại nguyên các field khác. */
+  const handleToggleActive = (item: ManagedNavigationItem) =>
+    runAction(() =>
+      updateItem(item.id, {
+        label: item.label,
+        isActive: !item.isActive,
+        parentId: item.parentId,
+        isGroup: item.isGroup,
+        url: item.url,
+        icon: item.icon,
+        sortOrder: item.sortOrder,
+        site: item.site,
+      }).then(() => undefined),
+    );
 
   /**
-   * Xử lý sự kiện kéo-thả từ TreeView (generic, chỉ emit { nodeId,
-   * fromParentId, toParentId, newIndex }) — Navigation tự dựng lại danh sách
-   * id đúng thứ tự cho cha mới (chèn tại newIndex) và, nếu đổi cha, cho cả
-   * cha cũ (để dồn lại sortOrder không có khoảng trống), rồi gọi
-   * reorderItems — service là nơi DUY NHẤT gán số sortOrder thật. TreeView
-   * đã tự chặn 2 trường hợp cấu trúc luôn sai (tự làm cha chính mình / thả
-   * vào hậu duệ của mình) trước khi gọi tới đây — Navigation hiện chưa có
-   * thêm business rule riêng nào cần chặn bổ sung ở bước này.
+   * Xử lý sự kiện kéo-thả từ TreeView (generic, chỉ emit { nodeId, fromParentId, toParentId, newIndex }) —
+   * Navigation tự dựng lại danh sách id đúng thứ tự cho cha mới (chèn tại newIndex) và, nếu đổi cha, cho cả cha
+   * cũ (để dồn lại sortOrder không có khoảng trống), rồi gọi reorderItems — Backend là nơi DUY NHẤT gán số
+   * sortOrder thật và kiểm tra vòng lặp/độ sâu.
    */
-  async function handleMoveNode(event: TreeMoveEvent) {
-    const { nodeId, fromParentId, toParentId, newIndex } = event;
-    const moving = flatItems.find((item) => item.id === nodeId);
-    if (!moving) return;
+  function handleMoveNode(event: TreeMoveEvent) {
+    if (menuId === undefined) return Promise.resolve();
 
-    const targetSiblingIds = flatItems
-      .filter((item) => item.parentId === toParentId && item.id !== nodeId)
-      .sort((a, b) => a.sortOrder - b.sortOrder)
-      .map((item) => item.id);
-    targetSiblingIds.splice(newIndex, 0, nodeId);
+    return runAction(async () => {
+      const { nodeId, fromParentId, toParentId, newIndex } = event;
+      const siblingIds = (parentId: string | null) =>
+        flatItems
+          .filter((item) => item.parentId === parentId && item.id !== nodeId)
+          .sort((a, b) => a.sortOrder - b.sortOrder)
+          .map((item) => item.id);
 
-    const reorderCalls = [navigationApi.reorderItems(menuId, { parentId: toParentId, orderedItemIds: targetSiblingIds })];
+      const targetSiblingIds = siblingIds(toParentId);
+      targetSiblingIds.splice(newIndex, 0, nodeId);
+      await reorderItems(menuId, { parentId: toParentId, orderedItemIds: targetSiblingIds });
 
-    if (fromParentId !== toParentId) {
-      const sourceSiblingIds = flatItems
-        .filter((item) => item.parentId === fromParentId && item.id !== nodeId)
-        .sort((a, b) => a.sortOrder - b.sortOrder)
-        .map((item) => item.id);
-      reorderCalls.push(navigationApi.reorderItems(menuId, { parentId: fromParentId, orderedItemIds: sourceSiblingIds }));
-    }
-
-    await Promise.all(reorderCalls);
-    await load();
+      if (fromParentId !== toParentId) {
+        const sourceSiblingIds = siblingIds(fromParentId);
+        if (sourceSiblingIds.length > 0) {
+          await reorderItems(menuId, { parentId: fromParentId, orderedItemIds: sourceSiblingIds });
+        }
+      }
+    });
   }
 
-  return { tree, menuName, isLoading, handleDelete, handleToggleVisible, handleMove, handleMoveNode };
+  return {
+    tree,
+    menu: menu.data,
+    isLoading: menu.isLoading || items.isLoading,
+    loadError: menu.error ?? items.error,
+    actionError,
+    clearActionError: () => setActionError(null),
+    handleDelete,
+    handleToggleActive,
+    handleMoveNode,
+  };
 }

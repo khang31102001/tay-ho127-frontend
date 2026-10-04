@@ -6,36 +6,46 @@ import { useMemo, useRef, useState } from "react";
 
 import { StatusPopup } from "@/components/shared/StatusPopup";
 import { TreeView, filterTree, collectExpandableIds, type TreeItem, type TreeViewHandle } from "@/components/shared/tree";
+import { useAdminAuth } from "@/features/admin-auth";
 
 import { useNavigationItemsTree } from "../hooks/useNavigationItemsTree";
 import { mapNavigationToTree } from "../utils/map-navigation-to-tree";
 import { resolveNavigationIcon } from "../utils/icon-registry";
-import type { NavigationItem } from "../types/navigation.types";
+import { getNavigationPaths, getNavigationPermission, SITE_NAVIGATION_CONTAINERS_PATH } from "../utils/navigation-scope";
+import type { NavigationScope, NavigationTreeItem } from "../types/navigation.types";
 
 type NavigationTreeProps = {
-  menuId: string;
+  /** "admin" = sidebar của Admin (`/admin/system/menus`); "site" = một menu Website (header/footer/mobile). */
+  scope: NavigationScope;
+  /** Bắt buộc với scope "site"; scope "admin" tự tìm container sidebar. */
+  menuId?: string;
 };
 
 /**
- * Feature-level: lấy Navigation data → map sang TreeItem<NavigationItem>
+ * Feature-level: lấy Navigation data → map sang TreeItem<NavigationTreeItem>
  * (mapNavigationToTree) → truyền vào <TreeView /> → định nghĩa
- * renderLabel/renderIcon/renderActions + xử lý business logic (visibility
- * toggle, xóa, kéo-thả đổi sortOrder). KHÔNG import gì từ
- * @/components/shared/tree ngoài public API (TreeView/types/utils) — mọi
- * field nghiệp vụ (url/targetType/isVisible/icon) đọc qua `node.metadata`.
+ * renderLabel/renderIcon/renderActions + xử lý business logic (bật/tắt, xóa,
+ * kéo-thả đổi thứ tự). KHÔNG import gì từ @/components/shared/tree ngoài
+ * public API (TreeView/types/utils) — mọi field nghiệp vụ đọc qua `node.metadata`.
  */
-export function NavigationTree({ menuId }: NavigationTreeProps) {
-  const { tree, menuName, isLoading, handleDelete, handleToggleVisible, handleMoveNode } =
-    useNavigationItemsTree(menuId);
-  const [pendingDelete, setPendingDelete] = useState<NavigationItem | null>(null);
+export function NavigationTree({ scope, menuId }: NavigationTreeProps) {
+  const { tree, menu, isLoading, loadError, actionError, clearActionError, handleDelete, handleToggleActive, handleMoveNode } =
+    useNavigationItemsTree(scope, menuId);
+  const { hasPermission } = useAdminAuth();
+  const [pendingDelete, setPendingDelete] = useState<NavigationTreeItem | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const treeRef = useRef<TreeViewHandle>(null);
+
+  const paths = getNavigationPaths(scope, menu?.id ?? menuId);
+  const canCreate = hasPermission(getNavigationPermission(scope, "create"));
+  const canUpdate = hasPermission(getNavigationPermission(scope, "update"));
+  const canDelete = hasPermission(getNavigationPermission(scope, "delete"));
 
   const treeItems = useMemo(() => mapNavigationToTree(tree), [tree]);
 
   // Navigation tự quyết định phần nào được tìm (label + url) — filterTree
   // (shared/tree) không đoán field nghiệp vụ.
-  const getSearchText = (node: TreeItem<NavigationItem>) => `${node.label} ${node.metadata?.url ?? ""}`;
+  const getSearchText = (node: TreeItem<NavigationTreeItem>) => `${node.label} ${node.metadata?.url ?? ""}`;
 
   const visibleItems = useMemo(
     () => (searchTerm.trim() ? filterTree(treeItems, searchTerm, getSearchText) : treeItems),
@@ -51,20 +61,20 @@ export function NavigationTree({ menuId }: NavigationTreeProps) {
     }
   }
 
-  function renderIcon(node: TreeItem<NavigationItem>) {
+  function renderIcon(node: TreeItem<NavigationTreeItem>) {
     const Icon = resolveNavigationIcon(node.metadata?.icon);
     return Icon ? <Icon className="size-4 shrink-0 text-brand-muted" /> : null;
   }
 
-  function renderLabel(node: TreeItem<NavigationItem>) {
+  function renderLabel(node: TreeItem<NavigationTreeItem>) {
     const item = node.metadata;
-    const targetLabel = item?.targetType === "page" ? "CMS Page" : item?.url || "—";
+    const targetLabel = item?.isGroup ? "Tiêu đề nhóm" : item?.site?.targetType === "page" ? "CMS Page" : item?.url || "—";
 
     return (
       <div className="flex min-w-0 flex-1 items-center gap-2">
         <span
           className={`truncate text-[14px] font-bold ${
-            item?.isVisible === false ? "text-brand-muted line-through" : "text-brand-ink"
+            item?.isActive === false ? "text-brand-muted line-through" : "text-brand-ink"
           }`}
         >
           {node.label}
@@ -74,51 +84,57 @@ export function NavigationTree({ menuId }: NavigationTreeProps) {
     );
   }
 
-  function renderActions(node: TreeItem<NavigationItem>) {
+  function renderActions(node: TreeItem<NavigationTreeItem>) {
     const item = node.metadata;
     if (!item) return null;
 
     return (
       <>
-        <button
-          type="button"
-          onClick={() => handleToggleVisible(item)}
-          aria-label={item.isVisible ? "Ẩn mục" : "Hiện mục"}
-          className="flex size-7 items-center justify-center rounded text-brand-muted transition hover:bg-brand-green/10"
-        >
-          {item.isVisible ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
-        </button>
+        {canUpdate && (
+          <button
+            type="button"
+            onClick={() => handleToggleActive(item)}
+            aria-label={item.isActive ? "Ẩn mục" : "Hiện mục"}
+            className="flex size-7 items-center justify-center rounded text-brand-muted transition hover:bg-brand-green/10"
+          >
+            {item.isActive ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
+          </button>
+        )}
 
-        <Link
-          href={`/admin/settings/navigation/${menuId}/items/${item.id}`}
-          aria-label="Sửa"
-          className="flex size-7 items-center justify-center rounded text-brand-muted transition hover:bg-brand-green/10 hover:text-brand-greenDark"
-        >
-          <Pencil className="size-4" />
-        </Link>
+        {canUpdate && (
+          <Link
+            href={paths.editItem(item.id)}
+            aria-label="Sửa"
+            className="flex size-7 items-center justify-center rounded text-brand-muted transition hover:bg-brand-green/10 hover:text-brand-greenDark"
+          >
+            <Pencil className="size-4" />
+          </Link>
+        )}
 
-        <button
-          type="button"
-          onClick={() => setPendingDelete(item)}
-          aria-label="Xóa"
-          className="flex size-7 items-center justify-center rounded text-brand-muted transition hover:bg-red-50 hover:text-red-600"
-        >
-          <Trash2 className="size-4" />
-        </button>
+        {canDelete && (
+          <button
+            type="button"
+            onClick={() => setPendingDelete(item)}
+            aria-label="Xóa"
+            className="flex size-7 items-center justify-center rounded text-brand-muted transition hover:bg-red-50 hover:text-red-600"
+          >
+            <Trash2 className="size-4" />
+          </button>
+        )}
       </>
     );
   }
+
+  const backHref = scope === "admin" ? "/admin" : SITE_NAVIGATION_CONTAINERS_PATH;
+  const backLabel = scope === "admin" ? "← Quay lại Dashboard" : "← Quay lại danh sách menu";
 
   return (
     <div>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-[20px] font-black text-brand-greenDark">Cấu trúc menu — {menuName}</h1>
-          <Link
-            href="/admin/settings/navigation"
-            className="text-[13px] font-bold text-brand-muted transition hover:text-brand-greenDark"
-          >
-            ← Quay lại danh sách menu
+          <h1 className="text-[20px] font-black text-brand-greenDark">Cấu trúc menu — {menu?.name ?? ""}</h1>
+          <Link href={backHref} className="text-[13px] font-bold text-brand-muted transition hover:text-brand-greenDark">
+            {backLabel}
           </Link>
         </div>
 
@@ -137,13 +153,15 @@ export function NavigationTree({ menuId }: NavigationTreeProps) {
           >
             Thu gọn tất cả
           </button>
-          <Link
-            href={`/admin/settings/navigation/${menuId}/items/new`}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-brand-red px-4 py-2.5 text-[14px] font-bold text-white transition hover:bg-brand-redDark"
-          >
-            <Plus className="size-4" />
-            Thêm mục
-          </Link>
+          {canCreate && (
+            <Link
+              href={paths.newItem}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-brand-red px-4 py-2.5 text-[14px] font-bold text-white transition hover:bg-brand-redDark"
+            >
+              <Plus className="size-4" />
+              Thêm mục
+            </Link>
+          )}
         </div>
       </div>
 
@@ -160,14 +178,16 @@ export function NavigationTree({ menuId }: NavigationTreeProps) {
       <div className="mt-4 rounded-lg border border-brand-line bg-white p-4">
         {isLoading ? (
           <p className="py-6 text-center text-brand-muted">Đang tải dữ liệu...</p>
+        ) : loadError ? (
+          <p className="py-6 text-center text-red-600">{loadError}</p>
         ) : (
-          <TreeView<NavigationItem>
+          <TreeView<NavigationTreeItem>
             ref={treeRef}
             items={visibleItems}
             renderIcon={renderIcon}
             renderLabel={renderLabel}
             renderActions={renderActions}
-            onMove={handleMoveNode}
+            onMove={canUpdate ? handleMoveNode : undefined}
             emptyState={
               <p className="py-6 text-center text-brand-muted">
                 {searchTerm ? "Không tìm thấy mục nào phù hợp." : "Chưa có mục nào trong menu này."}
@@ -178,12 +198,23 @@ export function NavigationTree({ menuId }: NavigationTreeProps) {
       </div>
 
       <StatusPopup
+        open={actionError !== null}
+        status="error"
+        title="Không thực hiện được"
+        description={actionError ?? ""}
+        onOpenChange={(open) => {
+          if (!open) clearActionError();
+        }}
+        actions={[{ id: "close", label: "Đóng", variant: "secondary" }]}
+      />
+
+      <StatusPopup
         open={pendingDelete !== null}
         status="warning"
         title="Xác nhận xóa?"
         description={
           pendingDelete?.children?.length
-            ? "Mục này có mục con — xóa sẽ xóa toàn bộ nhánh con bên dưới."
+            ? "Mục này còn mục con — hãy xóa hoặc chuyển các mục con trước."
             : "Hành động này không thể hoàn tác."
         }
         onOpenChange={(open) => {

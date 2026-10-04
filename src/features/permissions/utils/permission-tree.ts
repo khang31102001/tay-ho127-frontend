@@ -6,6 +6,24 @@ export function collectLeafIds(node: PermissionTreeNode): string[] {
   return node.children.flatMap(collectLeafIds);
 }
 
+/** Tra cứu hai chiều id ↔ mã của mọi quyền LÁ trong cây — cho nơi lưu quyền theo mã (vd. gắn quyền cho menu). */
+export function indexLeafCodes(nodes: PermissionTreeNode[]): { idByCode: Map<string, string>; codeById: Map<string, string> } {
+  const idByCode = new Map<string, string>();
+  const codeById = new Map<string, string>();
+
+  function visit(node: PermissionTreeNode) {
+    if (node.isGroup) {
+      node.children.forEach(visit);
+      return;
+    }
+    idByCode.set(node.code, node.id);
+    codeById.set(node.id, node.code);
+  }
+
+  nodes.forEach(visit);
+  return { idByCode, codeById };
+}
+
 export type GroupSelectionState = "none" | "some" | "all";
 
 /** Trạng thái tick của một node so với tập quyền lá đang chọn (nhóm rỗng luôn là "none"). */

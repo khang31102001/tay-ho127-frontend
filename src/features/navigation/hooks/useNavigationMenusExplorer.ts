@@ -1,31 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useAsyncData } from "@/hooks/useAsyncData";
 
-import { navigationApi } from "../api/navigation.api";
-import type { ManagedNavigationMenu } from "../types/navigation.types";
+import { listMenus } from "../services/navigation.service";
 
+/** Các menu Website (header / footer / mobile) — container cố định, không thêm/xóa. */
 export function useNavigationMenusExplorer() {
-  const [menus, setMenus] = useState<ManagedNavigationMenu[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data, isLoading, error } = useAsyncData(() => listMenus("site"), [], {
+    fallbackError: "Không thể tải danh sách menu.",
+  });
 
-  const loadMenus = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      setMenus(await navigationApi.getAll());
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadMenus();
-  }, [loadMenus]);
-
-  async function handleDelete(menu: ManagedNavigationMenu) {
-    await navigationApi.deleteMenu(menu.id);
-    await loadMenus();
-  }
-
-  return { rows: menus, isLoading, handleDelete };
+  return { rows: data ?? [], isLoading, loadError: error };
 }

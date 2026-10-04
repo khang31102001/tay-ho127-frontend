@@ -1,5 +1,5 @@
-import { AdminMenuEditor } from "@/features/admin-menus";
+import { NavigationItemEditor } from "@/features/navigation";
 
 export default function AdminSystemMenuCreatePage() {
-  return <AdminMenuEditor />;
+  return <NavigationItemEditor scope="admin" />;
 }

@@ -5,5 +5,5 @@ interface AdminNavigationItemsPageProps {
 }
 
 export default function AdminNavigationItemsPage({ params }: AdminNavigationItemsPageProps) {
-  return <NavigationTree menuId={params.id} />;
+  return <NavigationTree scope="site" menuId={params.id} />;
 }
