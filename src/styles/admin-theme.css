@@ -1,0 +1,42 @@
+/*
+ * Giao diện Admin Portal: bảng màu trung tính kiểu "hệ thống quản trị" (slate + xanh dương) thay cho màu thương hiệu
+ * (xanh lá / đỏ / kem) của User Site — dễ đọc, tương phản tốt, ít gây mỏi mắt khi làm việc lâu.
+ *
+ * Cách hoạt động: toàn bộ Admin dùng class Tailwind `brand-*` (đọc các CSS variable ở tokens.css). Thay vì sửa hàng trăm
+ * component, file này chỉ GHI ĐÈ giá trị các variable đó khi trang có `[data-admin-theme]` (đặt ở app/admin/layout.tsx).
+ * Đặt trên `body` (chứ không trên wrapper) để popup/dialog render qua portal ra ngoài layout vẫn ăn cùng màu.
+ * Trình duyệt chưa hỗ trợ :has() thì Admin giữ màu thương hiệu (vẫn dùng được).
+ *
+ * Vai trò các token ở Admin:
+ *   red / redDark  → hành động chính (nút "Thêm mới", "Lưu") và hover của nó: xanh dương
+ *   green          → điểm nhấn: mục đang chọn, viền focus, checkbox: xanh dương
+ *   greenDark      → tiêu đề và chữ nhấn mạnh: slate đậm
+ *   cream          → nền trang / hàng hover / header bảng: slate rất nhạt
+ *   ink / muted    → chữ chính / chữ phụ (muted đủ đậm để đọc rõ trên nền nhạt)
+ * Màu nguy hiểm/lỗi (xóa, báo lỗi) dùng red-* của Tailwind chứ không dùng brand nên không bị ảnh hưởng.
+ * Đổi màu Admin tại đây — không cần sửa component.
+ */
+body:has([data-admin-theme]) {
+  --brand-red: #2563eb;
+  --brand-red-rgb: 37 99 235;
+  --brand-red-dark: #1d4ed8;
+  --brand-red-dark-rgb: 29 78 216;
+
+  --brand-green: #2563eb;
+  --brand-green-rgb: 37 99 235;
+  --brand-green-dark: #1e293b;
+  --brand-green-dark-rgb: 30 41 59;
+
+  --brand-cream: #f1f5f9;
+  --brand-cream-rgb: 241 245 249;
+  --brand-wheat: #e2e8f0;
+  --brand-wheat-rgb: 226 232 240;
+  --brand-wood: #64748b;
+  --brand-wood-rgb: 100 116 139;
+
+  --brand-ink: #0f172a;
+  --brand-ink-rgb: 15 23 42;
+  --brand-muted: #475569;
+  --brand-muted-rgb: 71 85 105;
+  --brand-line: rgba(15, 23, 42, 0.14);
+}
