@@ -1,10 +1,10 @@
 import { adminFieldInputClassName, adminFieldLabelClassName } from "@/components/admin/templates/formFieldClassName";
 
-import type { BrandSettingsFormValue } from "../hooks/useBrandSettingsEditor";
+import type { BrandProfileFormValue } from "../hooks/useBrandProfileEditor";
 
 type BrandGeneralFormProps = {
-  form: BrandSettingsFormValue;
-  updateField: <K extends keyof BrandSettingsFormValue>(field: K, value: BrandSettingsFormValue[K]) => void;
+  form: BrandProfileFormValue;
+  updateField: <K extends keyof BrandProfileFormValue>(field: K, value: BrandProfileFormValue[K]) => void;
 };
 
 export function BrandGeneralForm({ form, updateField }: BrandGeneralFormProps) {

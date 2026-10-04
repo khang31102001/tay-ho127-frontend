@@ -18,6 +18,7 @@ import {
   updateDepartment,
   updateOrganization,
 } from "../services/organization.service";
+import type { BranchContact } from "../types/organization.types";
 
 type CodeNameStatusForm = { code: string; name: string; isActive: boolean };
 
@@ -118,27 +119,56 @@ export function useDepartmentEditor({ id }: { id?: string }) {
   };
 }
 
-type BrandForm = CodeNameStatusForm & { organizationId: string };
+const EMPTY_CONTACT: BranchContact = {
+  phone: null,
+  hotline: null,
+  email: null,
+  addressLine: null,
+  ward: null,
+  district: null,
+  province: null,
+  openTime: null,
+  closeTime: null,
+  businessHoursNote: null,
+};
+
+type BrandForm = CodeNameStatusForm & { organizationId: string; isPrimary: boolean; contact: BranchContact };
 
 export function useBrandEditor({ id }: { id?: string }) {
   const router = useNavigationRouter();
   const isEditMode = id !== undefined;
-  const [form, setForm] = useState<BrandForm>({ code: "", name: "", isActive: true, organizationId: "" });
+  const [form, setForm] = useState<BrandForm>({
+    code: "",
+    name: "",
+    isActive: true,
+    organizationId: "",
+    isPrimary: false,
+    contact: EMPTY_CONTACT,
+  });
 
   const organizations = useAsyncData(listOrganizations, [], { fallbackError: "Không thể tải danh sách tổ chức." });
   const existing = useAsyncData(() => getBrandById(id ?? ""), [id], {
     enabled: isEditMode,
-    fallbackError: "Không thể tải brand.",
+    fallbackError: "Không thể tải chi nhánh.",
   });
 
   useEffect(() => {
     const brand = existing.data;
-    if (brand) setForm({ code: brand.code, name: brand.name, isActive: brand.isActive, organizationId: brand.organizationId });
+    if (brand) {
+      setForm({
+        code: brand.code,
+        name: brand.name,
+        isActive: brand.isActive,
+        organizationId: brand.organizationId,
+        isPrimary: brand.isPrimary,
+        contact: brand.contact,
+      });
+    }
   }, [existing.data]);
 
   async function handleSave() {
     if (isEditMode) {
-      await updateBrand(id, { name: form.name, isActive: form.isActive });
+      await updateBrand(id, { name: form.name, isActive: form.isActive, contact: form.contact, isPrimary: form.isPrimary });
     } else {
       await createBrand({ organizationId: form.organizationId, code: form.code, name: form.name });
     }

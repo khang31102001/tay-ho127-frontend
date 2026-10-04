@@ -1,12 +1,12 @@
 import { MediaPicker } from "@/components/shared/MediaPicker";
 import type { ManagedMedia } from "@/features/media";
 
-import type { BrandSettingsFormValue } from "../hooks/useBrandSettingsEditor";
+import type { BrandProfileFormValue } from "../hooks/useBrandProfileEditor";
 
 type BrandBrandingFormProps = {
-  form: BrandSettingsFormValue;
+  form: BrandProfileFormValue;
   mediaOptions: ManagedMedia[];
-  updateField: <K extends keyof BrandSettingsFormValue>(field: K, value: BrandSettingsFormValue[K]) => void;
+  updateField: <K extends keyof BrandProfileFormValue>(field: K, value: BrandProfileFormValue[K]) => void;
 };
 
 /**

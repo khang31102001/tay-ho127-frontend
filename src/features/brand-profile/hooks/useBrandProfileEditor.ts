@@ -5,31 +5,31 @@ import { useEffect, useState } from "react";
 import type { ManagedMedia } from "@/features/media";
 import { listMedia } from "@/features/media";
 
-import { getBrandSettings, updateBrandSettings } from "../services/brand-settings.service";
-import type { ManagedBrandSettings } from "../types/brand-settings.types";
+import { getBrandProfile, updateBrandProfile } from "../services/brand-profile.service";
+import type { ManagedBrandProfile } from "../types/brand-profile.types";
 import type { SocialLink } from "../types/social-link.types";
 
-export type BrandSettingsFormValue = Omit<ManagedBrandSettings, "id" | "updatedAt">;
+export type BrandProfileFormValue = Omit<ManagedBrandProfile, "updatedAt">;
 
-function toFormValue(settings: ManagedBrandSettings): BrandSettingsFormValue {
-  const { id, updatedAt, ...rest } = settings;
+function toFormValue(profile: ManagedBrandProfile): BrandProfileFormValue {
+  const { updatedAt, ...rest } = profile;
   return rest;
 }
 
-export function useBrandSettingsEditor() {
-  const [form, setForm] = useState<BrandSettingsFormValue | null>(null);
+export function useBrandProfileEditor() {
+  const [form, setForm] = useState<BrandProfileFormValue | null>(null);
   const [mediaOptions, setMediaOptions] = useState<ManagedMedia[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     listMedia().then(setMediaOptions);
-    getBrandSettings().then((settings) => {
-      setForm(toFormValue(settings));
+    getBrandProfile().then((profile) => {
+      setForm(toFormValue(profile));
       setIsLoading(false);
     });
   }, []);
 
-  function updateField<K extends keyof BrandSettingsFormValue>(field: K, value: BrandSettingsFormValue[K]) {
+  function updateField<K extends keyof BrandProfileFormValue>(field: K, value: BrandProfileFormValue[K]) {
     setForm((previous) => (previous ? { ...previous, [field]: value } : previous));
   }
 
@@ -70,18 +70,12 @@ export function useBrandSettingsEditor() {
     if (!form.name.trim()) {
       throw new Error("Tên thương hiệu không được để trống.");
     }
-    if (!form.phone.trim()) {
-      throw new Error("Số điện thoại không được để trống.");
-    }
-    if (!form.addressLine.trim()) {
-      throw new Error("Địa chỉ không được để trống.");
-    }
     const invalidSocialLink = form.socialLinks.find((link) => !link.url.trim());
     if (invalidSocialLink) {
       throw new Error("Vui lòng nhập URL cho tất cả liên kết mạng xã hội hoặc xóa liên kết trống.");
     }
 
-    const updated = await updateBrandSettings(form);
+    const updated = await updateBrandProfile(form);
     setForm(toFormValue(updated));
   }
 
