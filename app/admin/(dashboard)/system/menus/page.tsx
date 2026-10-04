@@ -1,5 +1,5 @@
-import { AdminMenusExplorer } from "@/features/admin-menus";
+import { NavigationTree } from "@/features/navigation";
 
 export default function AdminSystemMenusPage() {
-  return <AdminMenusExplorer />;
+  return <NavigationTree scope="admin" />;
 }

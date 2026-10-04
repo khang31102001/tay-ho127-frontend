@@ -19,11 +19,12 @@ type NavigationRendererProps = {
 /**
  * Renderer TÁI SỬ DỤNG cho mọi vị trí navigation của User Site (Header,
  * Footer, Mobile Navigation, và bất kỳ vị trí nào thêm sau này) — nhận
- * `items` (đã lọc isVisible + sort sẵn từ navigationApi.getByLocation/
- * getByCode, xem navigation.service.ts) và tự đệ quy render, không giới hạn
+ * `items` (Backend đã lọc mục tắt/không công khai và sắp theo thứ tự, xem
+ * services/public-navigation.service.ts) và tự đệ quy render, không giới hạn
  * cứng số cấp. Component thuần hiển thị — không tự fetch, không biết
  * "header"/"footer" nghĩa là gì ngoài 1 chuỗi gắn vào data-attribute cho
  * CSS/test hook, style hoàn toàn do nơi gọi truyền vào qua className.
+ * Tiêu đề nhóm (không có liên kết) hiện dạng chữ, không phải link.
  */
 export function NavigationRenderer({
   items,
@@ -40,10 +41,13 @@ export function NavigationRenderer({
       {items.map((item) => {
         const { href, isExternal, target, rel } = resolveNavigationLinkProps(item);
         const hasChildren = Boolean(item.children && item.children.length > 0);
+        const isHeading = item.targetType === null;
 
         return (
           <li key={item.id}>
-            {isExternal ? (
+            {isHeading ? (
+              <span className={itemClassName}>{item.label}</span>
+            ) : isExternal ? (
               <a href={href} target={target} rel={rel} className={itemClassName}>
                 {item.label}
               </a>

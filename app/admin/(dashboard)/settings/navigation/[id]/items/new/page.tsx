@@ -5,5 +5,5 @@ interface AdminNavigationItemNewPageProps {
 }
 
 export default function AdminNavigationItemNewPage({ params }: AdminNavigationItemNewPageProps) {
-  return <NavigationItemEditor menuId={params.id} />;
+  return <NavigationItemEditor scope="site" menuId={params.id} />;
 }

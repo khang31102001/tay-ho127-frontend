@@ -2,7 +2,7 @@
 
 import { useAsyncData } from "@/hooks/useAsyncData";
 
-import { getMySidebarMenu } from "../services/admin-menu.service";
+import { getMySidebarMenu } from "../services/navigation.service";
 
 /** Sidebar của admin đang đăng nhập — gọi sau khi AdminGuard xác nhận có phiên. */
 export function useAdminSidebarMenu() {

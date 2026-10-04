@@ -5,8 +5,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { ChevronDown, ChevronsLeft, ChevronsRight } from "lucide-react";
 
-import { useAdminSidebarMenu, type AdminMenuTreeNode } from "@/features/admin-menus";
-import { resolveNavigationIcon } from "@/features/navigation";
+import { resolveNavigationIcon, useAdminSidebarMenu, type AdminMenuTreeNode } from "@/features/navigation";
 
 type SidebarSection = {
   /** Để trống nếu không cần hiển thị heading. */
@@ -56,7 +55,7 @@ type AdminSidebarProps = {
 };
 
 /**
- * Sidebar Admin — cây menu lấy từ Backend (GET /navigation/menus), đã lọc sẵn
+ * Sidebar Admin — cây menu lấy từ Backend (GET /navigation/me), đã lọc sẵn
  * theo quyền của admin đang đăng nhập. Thêm/sửa mục menu ở Admin → Hệ thống →
  * Menu quản trị, không sửa code. Nằm trong AdminGuard nên chỉ tải khi đã có phiên.
  */

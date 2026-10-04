@@ -4,9 +4,11 @@ import Link from "next/link";
 
 import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templates/DataExplorer/DataExplorer";
 import { StatusBadge } from "@/components/admin/templates/StatusBadge";
+import { useAdminAuth } from "@/features/admin-auth";
 
 import { useNavigationMenusExplorer } from "../hooks/useNavigationMenusExplorer";
 import { NAVIGATION_LOCATION_OPTIONS, type ManagedNavigationMenu } from "../types/navigation.types";
+import { SITE_NAVIGATION_CONTAINERS_PATH } from "../utils/navigation-scope";
 
 const LOCATION_LABEL = Object.fromEntries(
   NAVIGATION_LOCATION_OPTIONS.map((option) => [option.value, option.label]),
@@ -32,7 +34,7 @@ const columns: DataExplorerColumn<ManagedNavigationMenu>[] = [
     header: "Cấu trúc menu",
     render: (row) => (
       <Link
-        href={`/admin/settings/navigation/${row.id}/items`}
+        href={`${SITE_NAVIGATION_CONTAINERS_PATH}/${row.id}/items`}
         className="text-[13px] font-bold text-brand-greenDark hover:underline"
       >
         Quản lý mục →
@@ -41,23 +43,22 @@ const columns: DataExplorerColumn<ManagedNavigationMenu>[] = [
   },
 ];
 
+/** Menu Website (header/footer/mobile) — cố định theo vị trí, chỉ sửa tên/bật-tắt và cấu trúc mục bên trong. */
 export function NavigationMenusExplorer() {
-  const { rows, isLoading, handleDelete } = useNavigationMenusExplorer();
+  const { rows, isLoading, loadError } = useNavigationMenusExplorer();
+  const { hasPermission } = useAdminAuth();
 
   return (
     <DataExplorer<ManagedNavigationMenu>
-      title="Navigation"
+      title="Navigation website"
       columns={columns}
       rows={rows}
       isLoading={isLoading}
       getRowId={(row) => row.id}
       getSearchableText={(row) => `${row.name} ${row.code}`}
       searchPlaceholder="Tìm theo tên, code..."
-      createHref="/admin/settings/navigation/new"
-      createLabel="Thêm menu"
-      editHref={(row) => `/admin/settings/navigation/${row.id}`}
-      onDelete={handleDelete}
-      emptyState="Chưa có menu nào."
+      editHref={hasPermission("site-navigation.update") ? (row) => `${SITE_NAVIGATION_CONTAINERS_PATH}/${row.id}` : undefined}
+      emptyState={loadError ?? "Chưa có menu nào."}
     />
   );
 }

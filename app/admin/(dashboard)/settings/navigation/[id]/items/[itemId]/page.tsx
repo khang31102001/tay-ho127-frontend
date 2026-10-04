@@ -5,5 +5,5 @@ interface AdminNavigationItemEditPageProps {
 }
 
 export default function AdminNavigationItemEditPage({ params }: AdminNavigationItemEditPageProps) {
-  return <NavigationItemEditor menuId={params.id} itemId={params.itemId} />;
+  return <NavigationItemEditor scope="site" menuId={params.id} itemId={params.itemId} />;
 }

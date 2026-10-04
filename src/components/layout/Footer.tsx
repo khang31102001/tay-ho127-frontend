@@ -25,7 +25,6 @@ import { Reveal } from "@/components/shared/Reveal";
 // qua barrel ở Footer (Site) sẽ kéo UI admin vào bundle Site. Lý do đầy đủ
 // xem app/(site)/layout.tsx.
 import { NavigationRenderer } from "@/features/navigation/components/NavigationRenderer";
-import { useLiveNavigation } from "@/features/navigation/hooks/useLiveNavigation";
 import type { NavigationItem } from "@/features/navigation/types/navigation.types";
 
 /* =================================================
@@ -41,13 +40,10 @@ type SocialItem = {
 
 type FooterProps = {
   /**
-   * Lấy động từ Navigation module (features/navigation) — do
-   * app/(site)/layout.tsx (Server Component) fetch qua
-   * navigationApi.getByLocation("footer") rồi truyền xuống làm giá trị khởi
-   * tạo (SSR); Footer tự refetch lại 1 lần khi mount (useLiveNavigation) để
-   * đồng bộ thay đổi Admin vừa lưu trong cùng session. Không truyền = cột
-   * "Điều hướng" tự ẩn — Footer vẫn hoạt động bình thường như trước khi có
-   * Navigation.
+   * Lấy động từ Backend (module Navigation, menu Website "footer") — do
+   * app/(site)/layout.tsx (Server Component) fetch qua getPublicNavigation
+   * rồi truyền xuống. Không truyền/rỗng = cột "Điều hướng" tự ẩn — Footer vẫn
+   * hoạt động bình thường.
    */
   navItems?: NavigationItem[];
 };
@@ -82,9 +78,7 @@ const socialItems: SocialItem[] = [
  * =============================================== */
 
 // Footer chứa thông tin liên hệ và menu phụ.
-export function Footer({ navItems: initialNavItems = [] }: FooterProps) {
-  const navItems = useLiveNavigation("footer", initialNavItems);
-
+export function Footer({ navItems = [] }: FooterProps) {
   return (
     <footer
       id="lien-he"
