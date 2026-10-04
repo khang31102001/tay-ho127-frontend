@@ -9,6 +9,8 @@ import {
   TestimonialsSection,
 } from "@/features/home";
 import { fetchFeaturedMenu } from "@/features/menu";
+// Import thẳng service server-only (không qua barrel — barrel re-export cả UI Admin "use client").
+import { getSiteBrand } from "@/features/brand-profile/services/brand-public.service";
 import { buildMetadata } from "@/lib/seo/build-metadata";
 // Import thẳng service (không qua barrel @/features/seo) — barrel đó re-export
 // cả UI Admin (SeoDashboard/SeoEditor/...), cùng lý do đã áp dụng cho
@@ -36,11 +38,11 @@ export async function generateMetadata(): Promise<Metadata> {
 // Server Component nên fetch dữ liệu "Món yêu thích" trước khi render, tránh
 // FavoriteSection (Client Component) phải tự fetch và gây giật hình lúc mount.
 export default async function HomePage() {
-  const favoriteItems = await fetchFeaturedMenu();
+  const [favoriteItems, brand] = await Promise.all([fetchFeaturedMenu(), getSiteBrand()]);
 
   return (
     <>
-      <TopHero />
+      <TopHero brand={brand} />
       <StorySection />
       <PromotionZone />
       <FavoriteSection items={favoriteItems} />

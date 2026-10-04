@@ -57,20 +57,17 @@ export function buildRestaurantSchema(input: RestaurantInput): JsonLdObject {
       addressRegion: input.addressRegion || undefined,
       addressCountry: "VN",
     },
-    openingHoursSpecification: {
-      "@type": "OpeningHoursSpecification",
-      dayOfWeek: [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-      ],
-      opens: input.openTime,
-      closes: input.closeTime,
-    },
+    // Chỉ khai báo giờ mở cửa khi Admin đã nhập — không bịa giờ mặc định vào dữ liệu có cấu trúc.
+    ...(input.openTime && input.closeTime
+      ? {
+          openingHoursSpecification: {
+            "@type": "OpeningHoursSpecification",
+            dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+            opens: input.openTime,
+            closes: input.closeTime,
+          },
+        }
+      : {}),
   };
 }
 

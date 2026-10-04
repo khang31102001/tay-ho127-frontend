@@ -22,7 +22,7 @@ There is no test runner configured in this repo. Type-checking runs via `tsc` th
 
 ### Data flow: centralized content, not hard-coded in JSX
 
-Nearly all display copy (brand info, nav items, dishes, testimonials, story text) lives in [src/data/site.ts](src/data/site.ts) and [src/data/menu-items.ts](src/data/menu-items.ts)/[src/data/testimonials.ts](src/data/testimonials.ts). Components import from there rather than embedding strings. When asked to change copy, prices, or images, edit the data file, not the component.
+Content shown on the Site comes from the Backend where a module exists (catalog, menus, banners, articles, SEO, **brand identity + contact**, navigation). Brand/contact (address, phone, opening hours, social links) is managed by Admin at Tổ chức → Thông tin thương hiệu / Chi nhánh and read through `getSiteBrand()` (`features/brand-profile/services/brand-public.service.ts`, server-only) — pass the `SiteBrand` down as a prop and format it with `features/brand-profile/utils/site-contact.ts`; never hard-code contact strings in components (an empty value means "hide that block"). [src/data/site.ts](src/data/site.ts) now only holds the display name, default tagline and static image paths. What still has no Backend (story text, stats, testimonials) stays in components/mocks until its phase in `docs/proposals/dynamic-content-completion-plan.md`.
 
 Theme tokens are defined in two synchronized places:
 - [src/styles/tokens.css](src/styles/tokens.css) — CSS custom properties (`--brand-red-rgb`, etc.)
