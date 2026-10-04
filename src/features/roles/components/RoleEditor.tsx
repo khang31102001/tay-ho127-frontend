@@ -7,6 +7,7 @@ import {
   adminFieldLabelClassName,
 } from "@/components/admin/templates/formFieldClassName";
 import { useAdminAuth } from "@/features/admin-auth";
+import { PermissionTree } from "@/features/permissions";
 
 import { useRoleEditor } from "../hooks/useRoleEditor";
 
@@ -20,8 +21,8 @@ export function RoleEditor({ id }: RoleEditorProps) {
   const {
     form,
     updateField,
-    togglePermission,
-    permissionGroups,
+    toggleLeaves,
+    permissionTree,
     isLoading,
     loadError,
     isEditMode,
@@ -74,29 +75,18 @@ export function RoleEditor({ id }: RoleEditorProps) {
           <p className="mt-1 text-[12px] text-brand-muted">Bạn không có quyền thay đổi quyền hạn của vai trò.</p>
         )}
 
-        <div className="mt-2 space-y-3">
-          {permissionGroups.map((group) => (
-            <fieldset key={group.domain} className="rounded-lg border border-brand-line px-3 py-2">
-              <legend className="px-1 font-mono text-[12px] font-bold text-brand-muted">{group.domain}</legend>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {group.permissions.map((permission) => (
-                  <label key={permission.id} className="flex items-center gap-2 text-[13px] font-medium text-brand-ink">
-                    <input
-                      type="checkbox"
-                      disabled={!canManagePermissions}
-                      checked={form.permissionIds.includes(permission.id)}
-                      onChange={() => togglePermission(permission.id)}
-                      className="size-4 accent-brand-green"
-                    />
-                    <span>
-                      {permission.name}
-                      <span className="ml-1 font-mono text-[11px] text-brand-muted">{permission.code}</span>
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-          ))}
+        <p className="mt-1 text-[12px] text-brand-muted">
+          Tick một nhóm để chọn mọi quyền bên trong; vẫn có thể bỏ tick từng quyền. Quyền mới thêm vào nhóm sau này
+          không tự được cấp.
+        </p>
+
+        <div className="mt-2">
+          <PermissionTree
+            nodes={permissionTree}
+            selectedIds={form.permissionIds}
+            onToggleLeaves={toggleLeaves}
+            disabled={!canManagePermissions}
+          />
         </div>
       </div>
 

@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigationRouter } from "@/provider/navigation-loading-provider";
 
-import { listPermissions, type ManagedPermission } from "@/features/permissions";
+import { applyLeafSelection, getPermissionTree } from "@/features/permissions";
 import { useAsyncData } from "@/hooks/useAsyncData";
 
 import {
@@ -24,21 +24,6 @@ export type RoleFormValue = {
 
 const EMPTY_FORM: RoleFormValue = { code: "", name: "", isActive: true, permissionIds: [] };
 
-/** Quyền gom theo domain = phần trước dấu "." cuối của mã (vd. "users.roles.manage" → "users.roles"). */
-export type PermissionGroup = { domain: string; permissions: ManagedPermission[] };
-
-function groupPermissionsByDomain(permissions: ManagedPermission[]): PermissionGroup[] {
-  const groups = new Map<string, ManagedPermission[]>();
-  [...permissions]
-    .sort((a, b) => a.code.localeCompare(b.code))
-    .forEach((permission) => {
-      const separatorIndex = permission.code.lastIndexOf(".");
-      const domain = separatorIndex > 0 ? permission.code.slice(0, separatorIndex) : permission.code;
-      groups.set(domain, [...(groups.get(domain) ?? []), permission]);
-    });
-  return [...groups].map(([domain, items]) => ({ domain, permissions: items }));
-}
-
 type UseRoleEditorParams = {
   id?: string;
   /** Admin có quyền "roles.permissions.manage" — không có thì lưu vai trò nhưng giữ nguyên quyền hạn. */
@@ -53,7 +38,7 @@ export function useRoleEditor({ id, canManagePermissions }: UseRoleEditorParams)
   const loaded = useAsyncData(
     () =>
       Promise.all([
-        listPermissions(),
+        getPermissionTree(),
         id !== undefined ? Promise.all([getRoleById(id), getRolePermissionIds(id)]) : Promise.resolve(null),
       ]),
     [id],
@@ -68,18 +53,17 @@ export function useRoleEditor({ id, canManagePermissions }: UseRoleEditorParams)
     }
   }, [loaded.data]);
 
-  const permissionGroups = useMemo(() => groupPermissionsByDomain(loaded.data?.[0] ?? []), [loaded.data]);
+  const permissionTree = loaded.data?.[0] ?? [];
 
   function updateField<K extends keyof RoleFormValue>(field: K, value: RoleFormValue[K]) {
     setForm((previous) => ({ ...previous, [field]: value }));
   }
 
-  function togglePermission(permissionId: string) {
+  /** Tick/bỏ tick một quyền lá, hoặc cả nhóm (mọi quyền lá con cháu). Chỉ id quyền lá được lưu. */
+  function toggleLeaves(leafIds: string[], checked: boolean) {
     setForm((previous) => ({
       ...previous,
-      permissionIds: previous.permissionIds.includes(permissionId)
-        ? previous.permissionIds.filter((item) => item !== permissionId)
-        : [...previous.permissionIds, permissionId],
+      permissionIds: applyLeafSelection(previous.permissionIds, leafIds, checked),
     }));
   }
 
@@ -104,8 +88,8 @@ export function useRoleEditor({ id, canManagePermissions }: UseRoleEditorParams)
   return {
     form,
     updateField,
-    togglePermission,
-    permissionGroups,
+    toggleLeaves,
+    permissionTree,
     isLoading: loaded.isLoading,
     loadError: loaded.error,
     isEditMode,
