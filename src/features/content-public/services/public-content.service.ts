@@ -7,6 +7,7 @@ import type {
   PublicPage,
   PublicTaxonomy,
 } from "../types/public-content.types";
+import { parsePublicArticle, parsePublicArticleList, parsePublicTaxonomy } from "../utils/parse-public-content";
 
 /**
  * Nội dung đang công khai cho Customer Site — Backend GET /api/v1/content/public/*
@@ -18,13 +19,15 @@ import type {
  * Backend lỗi/không kết nối được → danh sách rỗng / null (Site hiện "chưa có bài
  * viết"/404, không vỡ trang); lỗi được log. Bài nháp/lưu trữ KHÔNG xem được qua
  * URL công khai (trả null) — chỉ Admin thấy trong Editor.
+ *
+ * Response bài viết/taxonomy được kiểm tra hình dạng (utils/parse-public-content.ts) trước khi
+ * dùng: JSON sai định dạng bị coi như Backend lỗi (cùng nhánh log + fallback ở trên) thay vì
+ * vỡ lúc render.
  */
 const PUBLIC_CONTENT_REVALIDATE_SECONDS = 60;
 
 /** Backend giới hạn pageSize tối đa 200 (PagedRequest). */
 const PUBLIC_ARTICLES_PAGE_SIZE = 200;
-
-type PagedDto<T> = { items: T[] };
 
 const EMPTY_TAXONOMY: PublicTaxonomy = { categories: [], tags: [] };
 
@@ -45,10 +48,8 @@ async function getJson<T>(path: string): Promise<T | null> {
 /** Bài đã xuất bản, mới nhất trước (không kèm nội dung HTML). */
 export async function listPublishedArticles(): Promise<PublicArticleSummary[]> {
   try {
-    const page = await getJson<PagedDto<PublicArticleSummary>>(
-      `/content/public/articles?pageSize=${PUBLIC_ARTICLES_PAGE_SIZE}`,
-    );
-    return page?.items ?? [];
+    const page = await getJson<unknown>(`/content/public/articles?pageSize=${PUBLIC_ARTICLES_PAGE_SIZE}`);
+    return page === null ? [] : parsePublicArticleList(page);
   } catch (error) {
     console.error("Không tải được danh sách bài viết từ Backend:", error);
     return [];
@@ -58,7 +59,8 @@ export async function listPublishedArticles(): Promise<PublicArticleSummary[]> {
 /** Bài đã xuất bản theo slug; null nếu không có hoặc chưa xuất bản. */
 export async function getPublishedArticleBySlug(slug: string): Promise<PublicArticle | null> {
   try {
-    return await getJson<PublicArticle>(`/content/public/articles/${encodeURIComponent(slug)}`);
+    const article = await getJson<unknown>(`/content/public/articles/${encodeURIComponent(slug)}`);
+    return article === null ? null : parsePublicArticle(article);
   } catch (error) {
     console.error("Không tải được bài viết từ Backend:", error);
     return null;
@@ -68,7 +70,8 @@ export async function getPublishedArticleBySlug(slug: string): Promise<PublicArt
 /** Danh mục đang hoạt động (theo thứ tự) và toàn bộ thẻ — bộ lọc của trang bài viết. */
 export async function getPublicTaxonomy(): Promise<PublicTaxonomy> {
   try {
-    return (await getJson<PublicTaxonomy>("/content/public/taxonomy")) ?? EMPTY_TAXONOMY;
+    const taxonomy = await getJson<unknown>("/content/public/taxonomy");
+    return taxonomy === null ? EMPTY_TAXONOMY : parsePublicTaxonomy(taxonomy);
   } catch (error) {
     console.error("Không tải được danh mục/thẻ bài viết từ Backend:", error);
     return EMPTY_TAXONOMY;
