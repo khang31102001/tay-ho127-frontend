@@ -4,6 +4,7 @@ import { useState } from "react";
 import { GripVertical, Search, X } from "lucide-react";
 
 import { cn } from "@/lib/cn";
+import { formatCurrency } from "@/lib/format-currency";
 
 import { useMenuProductsPicker } from "../hooks/useMenuProductsPicker";
 
@@ -55,6 +56,7 @@ export function MenuProductsPicker({ menuId }: MenuProductsPickerProps) {
     saveError,
     toggleProduct,
     removeProduct,
+    updateEntry,
     moveProduct,
     discardChanges,
     save,
@@ -62,6 +64,7 @@ export function MenuProductsPicker({ menuId }: MenuProductsPickerProps) {
 
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
+  const [armedIndex, setArmedIndex] = useState<number | null>(null);
 
   const isDirty = changeCount > 0;
   // Kéo-thả chỉ đúng nghĩa khi đang thấy toàn bộ danh sách (không lọc).
@@ -151,55 +154,98 @@ export function MenuProductsPicker({ menuId }: MenuProductsPickerProps) {
               </li>
             )}
 
-            {selectedProducts.map(({ id, index, product }) => (
-              <li
-                key={id}
-                draggable={canReorder}
-                onDragStart={() => setDraggingIndex(index)}
-                onDragOver={(event) => {
-                  if (draggingIndex === null) return;
-                  event.preventDefault();
-                  setDropIndex(index);
-                }}
-                onDrop={(event) => {
-                  event.preventDefault();
-                  if (draggingIndex !== null) moveProduct(draggingIndex, index);
-                  setDraggingIndex(null);
-                  setDropIndex(null);
-                }}
-                onDragEnd={() => {
-                  setDraggingIndex(null);
-                  setDropIndex(null);
-                }}
-                className={cn(
-                  "flex items-center gap-2 rounded-lg border border-brand-line bg-white px-2 py-2",
-                  draggingIndex === index && "opacity-40",
-                  dropIndex === index && draggingIndex !== index && "border-brand-green ring-1 ring-brand-green",
-                )}
-              >
-                {canReorder && (
-                  <GripVertical className="size-4 shrink-0 cursor-grab text-brand-muted" aria-hidden="true" />
-                )}
+            {selectedProducts.map(({ entry, index, product }) => {
+              const id = entry.productId;
 
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[14px] font-bold text-brand-ink">
-                    {product?.name ?? "Sản phẩm không còn tồn tại"}
-                  </span>
-                  <span className="block truncate text-[12px] text-brand-muted">
-                    {product ? `${product.slug} · ${product.categoryName}` : id}
-                  </span>
-                </span>
-
-                <button
-                  type="button"
-                  onClick={() => removeProduct(id)}
-                  aria-label={`Xóa ${product?.name ?? "sản phẩm"} khỏi thực đơn`}
-                  className="shrink-0 rounded-full p-1.5 text-brand-muted transition hover:bg-red-50 hover:text-red-600"
+              return (
+                <li
+                  key={id}
+                  draggable={canReorder && armedIndex === index}
+                  onDragStart={() => setDraggingIndex(index)}
+                  onDragOver={(event) => {
+                    if (draggingIndex === null) return;
+                    event.preventDefault();
+                    setDropIndex(index);
+                  }}
+                  onDrop={(event) => {
+                    event.preventDefault();
+                    if (draggingIndex !== null) moveProduct(draggingIndex, index);
+                    setDraggingIndex(null);
+                    setDropIndex(null);
+                  }}
+                  onDragEnd={() => {
+                    setDraggingIndex(null);
+                    setDropIndex(null);
+                    setArmedIndex(null);
+                  }}
+                  className={cn(
+                    "rounded-lg border border-brand-line bg-white px-2 py-2",
+                    draggingIndex === index && "opacity-40",
+                    dropIndex === index && draggingIndex !== index && "border-brand-green ring-1 ring-brand-green",
+                  )}
                 >
-                  <X className="size-4" aria-hidden="true" />
-                </button>
-              </li>
-            ))}
+                  <div className="flex items-center gap-2">
+                    {canReorder && (
+                      // Chỉ tay nắm mới bật kéo-thả để chọn/gõ trong ô giá không bị kéo nhầm cả dòng.
+                      <span
+                        onMouseDown={() => setArmedIndex(index)}
+                        onMouseUp={() => setArmedIndex(null)}
+                        className="shrink-0 cursor-grab"
+                        aria-hidden="true"
+                      >
+                        <GripVertical className="size-4 text-brand-muted" />
+                      </span>
+                    )}
+
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[14px] font-bold text-brand-ink">
+                        {product?.name ?? "Sản phẩm không còn tồn tại"}
+                      </span>
+                      <span className="block truncate text-[12px] text-brand-muted">
+                        {product ? `${product.slug} · ${product.categoryName}` : id}
+                      </span>
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() => removeProduct(id)}
+                      aria-label={`Xóa ${product?.name ?? "sản phẩm"} khỏi thực đơn`}
+                      className="shrink-0 rounded-full p-1.5 text-brand-muted transition hover:bg-red-50 hover:text-red-600"
+                    >
+                      <X className="size-4" aria-hidden="true" />
+                    </button>
+                  </div>
+
+                  <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 pl-6">
+                    <label className="flex items-center gap-2 text-[12px] font-bold text-brand-greenDark">
+                      Giá riêng
+                      <input
+                        type="number"
+                        min={0}
+                        value={entry.priceOverride ?? ""}
+                        onChange={(event) =>
+                          updateEntry(id, {
+                            priceOverride: event.target.value === "" ? undefined : Number(event.target.value),
+                          })
+                        }
+                        placeholder={product ? `Gốc: ${formatCurrency(product.price)}` : "Giá gốc"}
+                        className="h-8 w-36 rounded-lg border border-brand-line px-2 text-[13px] font-normal outline-none transition focus:border-brand-green focus:ring-2 focus:ring-brand-green/20"
+                      />
+                    </label>
+
+                    <label className="flex items-center gap-2 text-[12px] font-bold text-brand-greenDark">
+                      <input
+                        type="checkbox"
+                        checked={entry.isAvailable}
+                        onChange={(event) => updateEntry(id, { isAvailable: event.target.checked })}
+                        className="size-4 accent-brand-green"
+                      />
+                      Còn hàng
+                    </label>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
 
           {!canReorder && selectedCount > 0 && (

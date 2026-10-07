@@ -22,14 +22,26 @@ function matchesQuery(product: PickerProduct, query: string): boolean {
   return normalizeText(`${product.name} ${product.slug} ${product.categoryName}`).includes(query);
 }
 
+/** Một sản phẩm đang được chọn trong thực đơn, kèm phần riêng của liên kết. */
+export type SelectedEntry = {
+  productId: string;
+  /** Giá riêng trong thực đơn này; undefined = dùng giá gốc của sản phẩm. */
+  priceOverride?: number;
+  isAvailable: boolean;
+};
+
 function isSameOrder(a: string[], b: string[]): boolean {
   return a.length === b.length && a.every((id, index) => id === b[index]);
+}
+
+function toEntry(link: ManagedMenuProduct): SelectedEntry {
+  return { productId: link.productId, priceOverride: link.priceOverride, isAvailable: link.isAvailable };
 }
 
 /**
  * State cho khu vực chọn sản phẩm của 1 thực đơn: danh sách đã chọn (có thứ tự)
  * so với bản đã lưu ở Backend. Lưu = diff theo liên kết Menu-SP (xóa / thêm / đổi
- * sortOrder), giữ nguyên giá riêng và "còn hàng" của các liên kết đã có.
+ * sortOrder, giá riêng, còn hàng).
  */
 export function useMenuProductsPicker(menuId: string) {
   const catalog = useAsyncData(() => Promise.all([listProducts(), listCategories()]), [], {
@@ -41,19 +53,20 @@ export function useMenuProductsPicker(menuId: string) {
     { fallbackError: "Không thể tải sản phẩm của thực đơn." },
   );
 
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [entries, setEntries] = useState<SelectedEntry[]>([]);
   const [availableQuery, setAvailableQuery] = useState("");
   const [selectedQuery, setSelectedQuery] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const savedLinks: ManagedMenuProduct[] | undefined = links.data;
-  const savedIds = useMemo(() => (savedLinks ?? []).map((link) => link.productId), [savedLinks]);
+  const savedEntries = useMemo(() => (savedLinks ?? []).map(toEntry), [savedLinks]);
+  const savedIds = useMemo(() => savedEntries.map((entry) => entry.productId), [savedEntries]);
 
   // Đồng bộ lại với Backend mỗi khi tải xong (lần đầu và sau khi lưu).
   useEffect(() => {
-    setSelectedIds(savedIds);
-  }, [savedIds]);
+    setEntries(savedEntries);
+  }, [savedEntries]);
 
   const products = useMemo<PickerProduct[]>(() => {
     const [productList, categoryList] = catalog.data ?? [[], []];
@@ -65,6 +78,7 @@ export function useMenuProductsPicker(menuId: string) {
   }, [catalog.data]);
 
   const productById = useMemo(() => new Map(products.map((product) => [product.id, product])), [products]);
+  const selectedIds = useMemo(() => entries.map((entry) => entry.productId), [entries]);
   const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds]);
 
   const availableProducts = useMemo(() => {
@@ -75,31 +89,45 @@ export function useMenuProductsPicker(menuId: string) {
   // Giữ index gốc để kéo-thả vẫn đúng khi đang lọc theo search.
   const selectedProducts = useMemo(() => {
     const query = normalizeText(selectedQuery);
-    return selectedIds
-      .map((id, index) => ({ id, index, product: productById.get(id) }))
+    return entries
+      .map((entry, index) => ({ entry, index, product: productById.get(entry.productId) }))
       .filter(({ product }) => (product ? matchesQuery(product, query) : !query));
-  }, [selectedIds, selectedQuery, productById]);
+  }, [entries, selectedQuery, productById]);
 
   const addedCount = selectedIds.filter((id) => !savedIds.includes(id)).length;
   const removedCount = savedIds.filter((id) => !selectedIdSet.has(id)).length;
   const keptSelected = selectedIds.filter((id) => savedIds.includes(id));
   const keptSaved = savedIds.filter((id) => selectedIdSet.has(id));
   const isReordered = !isSameOrder(keptSelected, keptSaved);
-  const changeCount = addedCount + removedCount + (isReordered ? 1 : 0);
+  const savedByProductId = useMemo(() => new Map(savedEntries.map((entry) => [entry.productId, entry])), [savedEntries]);
+  // Món đã có trước đó nhưng đổi giá riêng / còn hàng.
+  const editedCount = entries.filter((entry) => {
+    const saved = savedByProductId.get(entry.productId);
+    return saved !== undefined && (saved.priceOverride !== entry.priceOverride || saved.isAvailable !== entry.isAvailable);
+  }).length;
+  const changeCount = addedCount + removedCount + editedCount + (isReordered ? 1 : 0);
 
   function toggleProduct(productId: string) {
-    setSelectedIds((previous) =>
-      previous.includes(productId) ? previous.filter((id) => id !== productId) : [...previous, productId],
-    );
+    setEntries((previous) => {
+      if (previous.some((entry) => entry.productId === productId)) {
+        return previous.filter((entry) => entry.productId !== productId);
+      }
+      // Chọn lại món đã lưu thì khôi phục giá riêng/còn hàng đã lưu thay vì mặc định.
+      return [...previous, savedByProductId.get(productId) ?? { productId, isAvailable: true }];
+    });
   }
 
   function removeProduct(productId: string) {
-    setSelectedIds((previous) => previous.filter((id) => id !== productId));
+    setEntries((previous) => previous.filter((entry) => entry.productId !== productId));
+  }
+
+  function updateEntry(productId: string, patch: Partial<Omit<SelectedEntry, "productId">>) {
+    setEntries((previous) => previous.map((entry) => (entry.productId === productId ? { ...entry, ...patch } : entry)));
   }
 
   function moveProduct(fromIndex: number, toIndex: number) {
     if (fromIndex === toIndex) return;
-    setSelectedIds((previous) => {
+    setEntries((previous) => {
       const next = [...previous];
       const [moved] = next.splice(fromIndex, 1);
       next.splice(toIndex, 0, moved);
@@ -108,7 +136,7 @@ export function useMenuProductsPicker(menuId: string) {
   }
 
   function discardChanges() {
-    setSelectedIds(savedIds);
+    setEntries(savedEntries);
     setSaveError(null);
   }
 
@@ -124,16 +152,19 @@ export function useMenuProductsPicker(menuId: string) {
         savedLinks.filter((link) => !selectedIdSet.has(link.productId)).map((link) => deleteMenuProduct(link.id)),
       );
       await Promise.all(
-        selectedIds.map((productId, index) => {
+        entries.map(({ productId, priceOverride, isAvailable }, index) => {
           const existing = linkByProductId.get(productId);
 
           if (!existing) {
-            return createMenuProduct({ menuId, productId, sortOrder: index, isAvailable: true });
+            return createMenuProduct({ menuId, productId, priceOverride, sortOrder: index, isAvailable });
           }
-          if (existing.sortOrder === index) return undefined;
+          const isUnchanged =
+            existing.sortOrder === index &&
+            existing.priceOverride === priceOverride &&
+            existing.isAvailable === isAvailable;
+          if (isUnchanged) return undefined;
 
-          const { id, ...rest } = existing;
-          return updateMenuProduct(id, { ...rest, sortOrder: index });
+          return updateMenuProduct(existing.id, { menuId, productId, priceOverride, sortOrder: index, isAvailable });
         }),
       );
 
@@ -153,7 +184,7 @@ export function useMenuProductsPicker(menuId: string) {
     availableProducts,
     selectedProducts,
     selectedIdSet,
-    selectedCount: selectedIds.length,
+    selectedCount: entries.length,
     availableQuery,
     setAvailableQuery,
     selectedQuery,
@@ -163,6 +194,7 @@ export function useMenuProductsPicker(menuId: string) {
     saveError,
     toggleProduct,
     removeProduct,
+    updateEntry,
     moveProduct,
     discardChanges,
     save,

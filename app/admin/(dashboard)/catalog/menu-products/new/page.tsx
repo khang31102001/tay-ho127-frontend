@@ -1,5 +1,5 @@
-import { MenuProductEditor } from "@/features/menu-products";
+import { MenuProductsLinker } from "@/features/menu-products";
 
 export default function AdminMenuProductCreatePage() {
-  return <MenuProductEditor />;
+  return <MenuProductsLinker />;
 }
