@@ -6,7 +6,7 @@ type ArticleContentProps = {
 
 /**
  * Render HTML từ RichTextEditor (Tiptap) — luôn sanitize trước khi render
- * (xem src/lib/sanitize-html.ts). Cùng bộ class prose với bai-viet/[slug]
+ * (xem src/lib/sanitize-html.ts). Typography cho nội dung CMS
  * để 2 route dùng chung 1 ngôn ngữ typography cho nội dung CMS.
  */
 export function ArticleContent({ html }: ArticleContentProps) {

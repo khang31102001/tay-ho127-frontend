@@ -14,7 +14,7 @@ import { getSiteBrand } from "@/features/brand-profile/services/brand-public.ser
 import { buildMetadata } from "@/lib/seo/build-metadata";
 // Import thẳng service (không qua barrel @/features/seo) — barrel đó re-export
 // cả UI Admin (SeoDashboard/SeoEditor/...), cùng lý do đã áp dụng cho
-// @/features/articles ở app/(site)/bai-viet/page.tsx.
+// @/features/articles ở app/(site)/tin-tuc/page.tsx.
 import { resolveSeoPayloadForEntity } from "@/features/seo/services/seo-resolver.service";
 import { site } from "@/data/site";
 

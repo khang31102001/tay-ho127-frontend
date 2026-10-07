@@ -57,7 +57,7 @@ function articleToEntry(article: ManagedArticleListItem): SeoDirectoryEntry {
     entityType: "article",
     entityId: article.id,
     label: article.title,
-    url: `/bai-viet/${article.slug}`,
+    url: `/tin-tuc/${article.slug}`,
     defaults: {
       title: article.title,
       description: article.summary,

@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 import { getSiteUrl } from "@/lib/site-url";
 // Import thẳng service (không qua barrel @/features/seo) — barrel đó
 // re-export cả UI Admin, cùng lý do đã áp dụng cho @/features/articles ở
-// app/(site)/bai-viet/page.tsx.
+// app/(site)/tin-tuc/page.tsx.
 import { getPublicSeoSettings } from "@/features/seo/services/seo-public.service";
 
 // SEO Settings đổi bất kỳ lúc nào qua Admin — không dựng tĩnh lúc build (Backend có thể chưa

@@ -30,7 +30,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const allStaticRoutes: MetadataRoute.Sitemap = [
     { url: `${siteUrl}/`, changeFrequency: "weekly", priority: 1 },
     { url: `${siteUrl}/thuc-don`, changeFrequency: "daily", priority: 0.9 },
-    { url: `${siteUrl}/bai-viet`, changeFrequency: "daily", priority: 0.7 },
     { url: `${siteUrl}/tin-tuc`, changeFrequency: "daily", priority: 0.7 },
   ];
   const staticRoutes = allStaticRoutes.filter(
@@ -48,15 +47,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }));
 
-  // Bài viết hiện có mặt ở cả /bai-viet và /tin-tuc (2 route song song, xem
-  // quyết định ở Phase News) — cả 2 đều là URL thật, đưa cả 2 vào sitemap.
+  // Bài viết chỉ có 1 route công khai: /tin-tuc/[slug].
   const articleRoutes: MetadataRoute.Sitemap = articles
     .filter((article) => !noindexKeys.has(seoMetadataRowId("article", article.id)))
     .flatMap((article) => {
       const lastModified = article.updatedAt ? new Date(article.updatedAt) : undefined;
 
       return [
-        { url: `${siteUrl}/bai-viet/${article.slug}`, lastModified, changeFrequency: "monthly" as const, priority: 0.5 },
         { url: `${siteUrl}/tin-tuc/${article.slug}`, lastModified, changeFrequency: "monthly" as const, priority: 0.5 },
       ];
     });
