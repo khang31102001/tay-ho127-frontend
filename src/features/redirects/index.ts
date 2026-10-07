@@ -8,5 +8,5 @@ export type { ManagedRedirect, RedirectType } from "./types/redirect.types";
  * không kéo UI Admin (RedirectsExplorer/RedirectEditor, "use client") vào
  * Edge Middleware bundle. Cùng lý do đã áp dụng cho @/features/seo,
  * @/features/articles, @/features/media, @/features/brand-profile — xem comment tại
- * app/(site)/bai-viet/page.tsx.
+ * app/(site)/tin-tuc/page.tsx.
  */

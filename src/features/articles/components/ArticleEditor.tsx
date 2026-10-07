@@ -73,7 +73,7 @@ export function ArticleEditor({ id }: ArticleEditorProps) {
                 imageMediaId: form.featuredMediaId,
               }}
               settings={seoSettings}
-              previewUrl={form.slug ? `/bai-viet/${form.slug}` : null}
+              previewUrl={form.slug ? `/tin-tuc/${form.slug}` : null}
             />
           </div>
         )
@@ -93,7 +93,7 @@ export function ArticleEditor({ id }: ArticleEditorProps) {
 
         {previewSlug && (
           <Link
-            href={`/bai-viet/${previewSlug}`}
+            href={`/tin-tuc/${previewSlug}`}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-6 inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-brand-line px-3.5 py-2.5 text-[13px] font-bold text-brand-greenDark transition hover:border-brand-green hover:bg-brand-green/5"

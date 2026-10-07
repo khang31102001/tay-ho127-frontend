@@ -4,6 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { Clock3, MapPin, Phone, type LucideIcon } from "lucide-react";
 
+import type { SiteBrand } from "@/features/brand-profile/types/brand-profile.types";
+import {
+  formatBrandAddress,
+  formatOpeningHours,
+  getContactPhone,
+} from "@/features/brand-profile/utils/site-contact";
 import { useScrollThreshold } from "@/hooks/useScrollThreshold";
 
 /* =================================================
@@ -54,38 +60,28 @@ const heroContent: HeroContentItem[] = [
     actions: [
       {
         label: "Đặt ngay",
-        href: "/menu",
+        href: "/thuc-don",
         variant: "primary",
       },
       {
         label: "Xem thực đơn",
-        href: "/menu",
+        href: "/thuc-don",
         variant: "outline",
       },
     ],
   },
 ];
 
-const contactInformation: ContactInformationItem[] = [
-  {
-    id: "address",
-    title: "Địa chỉ chính",
-    description: "127 Đinh Tiên Hoàng, Phường Đa Kao, TP.HCM",
-    icon: MapPin,
-  },
-  {
-    id: "opening-hours",
-    title: "Mở cửa hằng ngày",
-    description: "06:00 - 22:00",
-    icon: Clock3,
-  },
-  {
-    id: "contact",
-    title: "Liên hệ đặt bàn",
-    description: "090 123 4567",
-    icon: Phone,
-  },
-];
+/** Địa chỉ / giờ mở cửa / SĐT của chi nhánh chính (Backend). Mục nào Admin chưa nhập thì không hiển thị. */
+function buildContactInformation(brand: SiteBrand): ContactInformationItem[] {
+  const items: ContactInformationItem[] = [
+    { id: "address", title: "Địa chỉ chính", description: formatBrandAddress(brand), icon: MapPin },
+    { id: "opening-hours", title: "Mở cửa hằng ngày", description: formatOpeningHours(brand), icon: Clock3 },
+    { id: "contact", title: "Liên hệ đặt bàn", description: getContactPhone(brand), icon: Phone },
+  ];
+
+  return items.filter((item) => item.description);
+}
 
 const heroOrderFields: HeroOrderField[] = [
   {
@@ -112,8 +108,13 @@ const heroOrderFields: HeroOrderField[] = [
  * TOP HERO
  * =============================================== */
 
-export function TopHero() {
+type TopHeroProps = {
+  brand: SiteBrand;
+};
+
+export function TopHero({ brand }: TopHeroProps) {
   const isScrolled = useScrollThreshold();
+  const contactInformation = buildContactInformation(brand);
 
   return (
     <section

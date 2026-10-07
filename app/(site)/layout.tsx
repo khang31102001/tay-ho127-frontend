@@ -14,6 +14,8 @@ import { resolveGlobalSchemas } from "@/features/seo/services/seo-schema-resolve
 // ở đây sẽ kéo UI admin vào bundle Site. Lý do đầy đủ xem
 // src/features/menu/services/menu.service.ts.
 import { getPublicNavigation } from "@/features/navigation/services/public-navigation.service";
+// Thương hiệu + liên hệ chi nhánh chính từ Backend (server-only) — cùng lý do import thẳng service như trên.
+import { getSiteBrand } from "@/features/brand-profile/services/brand-public.service";
 
 interface SiteLayoutProps {
   children: React.ReactNode;
@@ -29,9 +31,11 @@ interface SiteLayoutProps {
 // khai) — fetch ở đây (Server Component, cache 60 giây) rồi truyền xuống qua
 // prop: Admin sửa menu thì Site thấy trong tối đa 60 giây.
 export default async function SiteLayout({ children }: SiteLayoutProps) {
-  const [headerItems, footerItems, globalSchemas] = await Promise.all([
+  const [headerItems, footerItems, brand, globalSchemas] = await Promise.all([
     getPublicNavigation("header"),
     getPublicNavigation("footer"),
+    // Địa chỉ / SĐT / giờ mở cửa / link MXH hiển thị ở Footer và nút nổi — Admin sửa ở Tổ chức → Thông tin thương hiệu / Chi nhánh.
+    getSiteBrand(),
     // GLOBAL SCHEMA (Task 9): Organization + Restaurant + WebSite, render 1 lần
     // duy nhất cho toàn bộ User Site — không lặp lại ở từng page con.
     resolveGlobalSchemas(),
@@ -50,9 +54,9 @@ export default async function SiteLayout({ children }: SiteLayoutProps) {
             <NavigationOverlay />
           </main>
 
-          <Footer navItems={footerItems} />
+          <Footer navItems={footerItems} brand={brand} />
         </div>
-        <FloatingActions />
+        <FloatingActions brand={brand} />
       </AppProviders>
     </LoadingProvider>
   );

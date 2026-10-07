@@ -111,6 +111,14 @@ export function NavigationLoadingProvider({ children }: { children: ReactNode })
       if (anchor.target && anchor.target !== "_self") return;
       if (anchor.hasAttribute("download")) return;
 
+      // Đang chuyển trang: chặn điều hướng thứ hai (Enter trên link đang focus
+      // cũng sinh click). Capture + stopPropagation để next/link không kịp chạy.
+      if (phaseRef.current === "loading") {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+
       start(anchor.href);
     }
 
@@ -119,11 +127,11 @@ export function NavigationLoadingProvider({ children }: { children: ReactNode })
       if (window.location.pathname !== pathnameRef.current) start();
     }
 
-    document.addEventListener("click", handleClick);
+    document.addEventListener("click", handleClick, true);
     window.addEventListener("popstate", handlePopState);
 
     return () => {
-      document.removeEventListener("click", handleClick);
+      document.removeEventListener("click", handleClick, true);
       window.removeEventListener("popstate", handlePopState);
       clearTimers();
     };
@@ -155,20 +163,23 @@ export function useNavigationLoading(): NavigationLoadingContextValue {
  */
 export function useNavigationRouter() {
   const router = useRouter();
-  const { start } = useNavigationLoading();
+  const { phase, start } = useNavigationLoading();
 
+  // Đang chuyển trang thì bỏ qua lệnh điều hướng thứ hai (tránh trigger nhiều navigation).
   return useMemo(
     () => ({
       ...router,
       push: (href: string, options?: Parameters<typeof router.push>[1]) => {
+        if (phase === "loading") return;
         start(href);
         router.push(href, options);
       },
       replace: (href: string, options?: Parameters<typeof router.replace>[1]) => {
+        if (phase === "loading") return;
         start(href);
         router.replace(href, options);
       },
     }),
-    [router, start],
+    [router, start, phase],
   );
 }

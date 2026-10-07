@@ -10,17 +10,13 @@ import {
   useReducedMotion,
 } from "motion/react";
 
+import type { SiteBrand } from "@/features/brand-profile/types/brand-profile.types";
+import { buildGoogleMapsUrl, getSocialUrl } from "@/features/brand-profile/utils/site-contact";
 import { useScrollThreshold } from "@/hooks/useScrollThreshold";
 
 /* =========================================================
  * CONSTANTS
  * ======================================================= */
-
-const FACEBOOK_URL =
-  "https://www.facebook.com/banhcuontayho127";
-
-const GOOGLE_MAP_URL =
-  "https://www.google.com/maps/search/?api=1&query=127+Đinh+Tiên+Hoàng,+Đa+Kao,+TP.HCM";
 
 const CONTACT_SCROLL_THRESHOLD = 300;
 const SCROLL_TOP_THRESHOLD = 400;
@@ -57,7 +53,15 @@ const BASE_BUTTON_CLASS = `
  * FLOATING ACTIONS
  * ======================================================= */
 
-export default function FloatingActions() {
+type FloatingActionsProps = {
+  /** Link Facebook (Thông tin thương hiệu) và địa chỉ chi nhánh chính (cho Google Maps) từ Backend. */
+  brand: SiteBrand;
+};
+
+export default function FloatingActions({ brand }: FloatingActionsProps) {
+  const facebookUrl = getSocialUrl(brand, "facebook");
+  const mapsUrl = buildGoogleMapsUrl(brand);
+
   const showContactActions = useScrollThreshold(
     CONTACT_SCROLL_THRESHOLD,
   );
@@ -169,10 +173,11 @@ export default function FloatingActions() {
        * Scroll > 200 mới xuất hiện
        * =================================================== */}
 
+      {facebookUrl && (
       <motion.button
         type="button"
         onClick={() =>
-          openExternalLink(FACEBOOK_URL)
+          openExternalLink(facebookUrl!)
         }
         aria-label="Liên hệ qua Facebook"
         title="Facebook"
@@ -286,16 +291,18 @@ export default function FloatingActions() {
           strokeWidth={2.5}
         />
       </motion.button>
+      )}
 
       {/* =====================================================
        * GOOGLE MAPS
        * Scroll > 200 mới xuất hiện
        * =================================================== */}
 
+      {mapsUrl && (
       <motion.button
         type="button"
         onClick={() =>
-          openExternalLink(GOOGLE_MAP_URL)
+          openExternalLink(mapsUrl!)
         }
         aria-label="Xem địa chỉ trên Google Maps"
         title="Google Maps"
@@ -407,6 +414,7 @@ export default function FloatingActions() {
           "
         />
       </motion.button>
+      )}
     </div>
   );
 }

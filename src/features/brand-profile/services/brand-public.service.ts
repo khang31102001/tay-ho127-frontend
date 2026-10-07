@@ -43,8 +43,8 @@ const FALLBACK_BRAND: SiteBrand = {
   updatedAt: "",
   phone: "",
   addressLine: "",
-  openTime: "06:00",
-  closeTime: "21:30",
+  openTime: "",
+  closeTime: "",
 };
 
 export async function getSiteBrand(): Promise<SiteBrand> {
@@ -66,8 +66,8 @@ export async function getSiteBrand(): Promise<SiteBrand> {
       ward: contact?.ward ?? undefined,
       district: contact?.district ?? undefined,
       province: contact?.province ?? undefined,
-      openTime: contact?.openTime ?? FALLBACK_BRAND.openTime,
-      closeTime: contact?.closeTime ?? FALLBACK_BRAND.closeTime,
+      openTime: contact?.openTime ?? "",
+      closeTime: contact?.closeTime ?? "",
       businessHoursNote: contact?.businessHoursNote ?? undefined,
     };
   } catch (error) {

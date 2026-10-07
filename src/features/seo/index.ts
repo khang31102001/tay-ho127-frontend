@@ -27,7 +27,7 @@ export { isSeoFormEmpty } from "./utils/is-seo-form-empty";
  * Admin ("use client": SeoDashboard/SeoEditor/...), import qua barrel ở
  * Storefront/Route file sẽ kéo UI Admin vào bundle Site — cùng lý do đã áp
  * dụng cho @/features/articles, @/features/media, @/features/brand-profile (xem
- * comment tại nơi gọi, vd. app/(site)/bai-viet/page.tsx). Import thẳng:
+ * comment tại nơi gọi, vd. app/(site)/tin-tuc/page.tsx). Import thẳng:
  *   @/features/seo/services/seo-resolver.service
  *   @/features/seo/services/seo-schema-resolver.service
  *   @/features/seo/services/seo-metadata.service

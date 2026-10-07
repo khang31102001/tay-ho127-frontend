@@ -4,8 +4,17 @@
 import { Container } from "@/components/ui/Container";
 // Import Logo dùng lại ở footer.
 import { Logo } from "@/components/ui/Logo";
-// Import dữ liệu site tập trung.
-import { site } from "@/data/site";
+// Danh tính + liên hệ do Backend cấp (Admin → Tổ chức); Footer chỉ hiển thị, không giữ dữ liệu.
+import type { SiteBrand } from "@/features/brand-profile/types/brand-profile.types";
+import type { SocialPlatform } from "@/features/brand-profile/types/social-link.types";
+import {
+  buildGoogleMapsUrl,
+  formatBrandAddress,
+  formatOpeningHours,
+  getActiveSocialLinks,
+  getContactPhone,
+  toTelHref,
+} from "@/features/brand-profile/utils/site-contact";
 // Import Link cho các đường dẫn footer.
 import Link from "next/link";
 
@@ -34,7 +43,7 @@ import type { NavigationItem } from "@/features/navigation/types/navigation.type
 type SocialItem = {
   id: string;
   label: string;
-  href?: string;
+  href: string;
   icon: LucideIcon;
 };
 
@@ -46,39 +55,41 @@ type FooterProps = {
    * hoạt động bình thường.
    */
   navItems?: NavigationItem[];
+  /** Thương hiệu + liên hệ chi nhánh chính từ Backend (server fetch ở app/(site)/layout.tsx). */
+  brand: SiteBrand;
 };
 
 /* =================================================
  * DATA
  * =============================================== */
 
-const socialItems: SocialItem[] = [
-  {
-    id: "website",
-    label: site.following?.web ?? "",
-    href: site.following?.web,
-    icon: Globe,
-  },
-  {
-    id: "shopee",
-    label: site.following?.shopee ?? "",
-    href: site.following?.shopee,
-    icon: ShoppingBag,
-  },
-  {
-    id: "facebook",
-    label: site.following?.facebook ?? "",
-    href: site.following?.facebook,
-    icon: Share2,
-  },
-];
+const SOCIAL_ICONS: Partial<Record<SocialPlatform, LucideIcon>> = {
+  website: Globe,
+  shopee: ShoppingBag,
+};
+
+function buildSocialItems(brand: SiteBrand): SocialItem[] {
+  return getActiveSocialLinks(brand).map((link) => ({
+    id: link.id,
+    label: link.url,
+    href: link.url,
+    icon: SOCIAL_ICONS[link.platform] ?? Share2,
+  }));
+}
 
 /* =================================================
  * FOOTER
  * =============================================== */
 
 // Footer chứa thông tin liên hệ và menu phụ.
-export function Footer({ navItems = [] }: FooterProps) {
+export function Footer({ navItems = [], brand }: FooterProps) {
+  const socialItems = buildSocialItems(brand);
+  const address = formatBrandAddress(brand);
+  const mapsUrl = buildGoogleMapsUrl(brand);
+  const phone = getContactPhone(brand);
+  const phoneHref = toTelHref(phone);
+  const openingHours = formatOpeningHours(brand);
+
   return (
     <footer
       id="lien-he"
@@ -342,6 +353,7 @@ export function Footer({ navItems = [] }: FooterProps) {
 
           <div className="mt-5 space-y-3 text-sm leading-6">
             {/* Địa chỉ */}
+            {address && (
             <Reveal
               type="slide-left"
               delay={0.22}
@@ -370,7 +382,7 @@ export function Footer({ navItems = [] }: FooterProps) {
                 />
 
                 <Link
-                  href={site.following?.web ?? "#"}
+                  href={mapsUrl ?? "#"}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="
@@ -382,12 +394,14 @@ export function Footer({ navItems = [] }: FooterProps) {
                     hover:text-white
                   "
                 >
-                  {site.address}
+                  {address}
                 </Link>
               </div>
             </Reveal>
+            )}
 
             {/* Số điện thoại */}
+            {phone && (
             <Reveal
               type="slide-left"
               delay={0.3}
@@ -416,7 +430,7 @@ export function Footer({ navItems = [] }: FooterProps) {
                 />
 
                 <Link
-                  href={`tel:${site.phone}`}
+                  href={phoneHref ?? "#"}
                   className="
                     text-white/70
 
@@ -426,12 +440,14 @@ export function Footer({ navItems = [] }: FooterProps) {
                     hover:text-white
                   "
                 >
-                  {site.phone}
+                  {phone}
                 </Link>
               </div>
             </Reveal>
+            )}
 
             {/* Giờ mở cửa */}
+            {openingHours && (
             <Reveal
               type="slide-left"
               delay={0.38}
@@ -469,10 +485,11 @@ export function Footer({ navItems = [] }: FooterProps) {
                     group-hover:text-white
                   "
                 >
-                  {site.openingHours}
+                  {openingHours}
                 </span>
               </div>
             </Reveal>
+            )}
           </div>
         </div>
       </Container>
