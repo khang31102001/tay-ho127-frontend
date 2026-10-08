@@ -1,2 +1,5 @@
-export { FavoritesProvider, useFavorites } from "./context/favorites-context";
-export type { FavoritesContextType } from "./context/favorites-context";
+"use client";
+
+export * from "./FavoritesContext";
+export * from "./FavoriteButton";
+export * from "./FavoritesPage";
