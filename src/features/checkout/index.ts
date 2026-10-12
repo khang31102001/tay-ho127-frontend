@@ -1,5 +1,1 @@
-"use client";
-
-export * from "./CheckoutForm";
-export * from "./CheckoutSteps";
-export * from "./CheckoutSummary";
+export { CheckoutReview } from "./components/CheckoutReview";
