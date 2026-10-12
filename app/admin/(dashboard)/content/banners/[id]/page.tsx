@@ -1,4 +1,4 @@
-import { BannerEditor } from "@/features/banners";
+import { BannerEditor } from "@/features/content/banners";
 
 interface AdminBannerEditPageProps {
   params: { id: string };

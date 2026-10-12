@@ -1,4 +1,4 @@
-import { OrderSettingsForm } from "@/features/order-settings";
+import { OrderSettingsForm } from "@/features/orders/order-settings";
 
 export default function AdminOrderSettingsPage() {
   return <OrderSettingsForm />;

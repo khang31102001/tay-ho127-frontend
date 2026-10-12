@@ -1,4 +1,4 @@
-import { BannerEditor } from "@/features/banners";
+import { BannerEditor } from "@/features/content/banners";
 
 export default function AdminBannerCreatePage() {
   return <BannerEditor />;

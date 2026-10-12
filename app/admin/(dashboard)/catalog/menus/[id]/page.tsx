@@ -1,5 +1,5 @@
-import { MenuEditor } from "@/features/menus";
-import { MenuProductsPicker } from "@/features/menu-products";
+import { MenuEditor } from "@/features/catalog/menus";
+import { MenuProductsPicker } from "@/features/catalog/menu-products";
 
 interface AdminCatalogMenuEditPageProps {
   params: { id: string };

@@ -1,4 +1,4 @@
-import { UserEditor } from "@/features/users";
+import { UserEditor } from "@/features/access-control/users";
 
 interface AdminUserEditPageProps {
   params: { id: string };

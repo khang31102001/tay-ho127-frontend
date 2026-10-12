@@ -3,9 +3,9 @@ import type { MetadataRoute } from "next";
 import { getSiteUrl } from "@/core/config/site-url";
 // fetchMenu qua barrel @/features/menu là an toàn cho Site (barrel này không
 // re-export UI admin) — đúng cách app/(site)/thuc-don/page.tsx đang dùng.
-import { fetchMenu } from "@/features/menu";
+import { fetchMenu } from "@/features/catalog/menu";
 // Bài viết đã xuất bản lấy từ Backend (features/content-public, chỉ chạy phía server).
-import { listPublishedArticles } from "@/features/content-public";
+import { listPublishedArticles } from "@/features/content/public";
 // Import thẳng service (không qua barrel @/features/seo) — cùng lý do.
 import { listPublicNoIndexEntities } from "@/features/seo/services/seo-public.service";
 import { seoMetadataRowId } from "@/features/seo/utils/seo-metadata-key";

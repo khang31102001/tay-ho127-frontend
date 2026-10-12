@@ -1,4 +1,4 @@
-import { MenuProductEditor } from "@/features/menu-products";
+import { MenuProductEditor } from "@/features/catalog/menu-products";
 
 interface AdminMenuProductEditPageProps {
   params: { id: string };

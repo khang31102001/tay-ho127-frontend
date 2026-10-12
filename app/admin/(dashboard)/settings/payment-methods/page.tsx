@@ -1,4 +1,4 @@
-import { PaymentMethodsExplorer } from "@/features/payment-methods";
+import { PaymentMethodsExplorer } from "@/features/payments/methods";
 
 export default function AdminPaymentMethodsPage() {
   return <PaymentMethodsExplorer />;

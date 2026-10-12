@@ -4,7 +4,7 @@ import {
   MenuGrid,
   fetchMenu,
   type MenuResponse,
-} from "@/features/menu";
+} from "@/features/catalog/menu";
 import { buildMetadata } from "@/features/seo/utils/build-metadata";
 
 // Metadata riêng cho trang thực đơn — dữ liệu tĩnh nên build trực tiếp, không cần generateMetadata.

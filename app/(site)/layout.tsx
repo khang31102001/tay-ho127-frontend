@@ -15,7 +15,7 @@ import { resolveGlobalSchemas } from "@/features/seo/services/seo-schema-resolve
 // src/features/menu/services/menu.service.ts.
 import { getPublicNavigation } from "@/features/navigation/services/public-navigation.service";
 // Thương hiệu + liên hệ chi nhánh chính từ Backend (server-only) — cùng lý do import thẳng service như trên.
-import { getSiteBrand } from "@/features/brand-profile/services/brand-public.service";
+import { getSiteBrand } from "@/features/organization/brand-profile/services/brand-public.service";
 
 interface SiteLayoutProps {
   children: React.ReactNode;

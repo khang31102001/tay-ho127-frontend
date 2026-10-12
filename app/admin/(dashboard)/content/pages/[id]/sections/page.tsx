@@ -1,4 +1,4 @@
-import { PageSectionsExplorer } from "@/features/page-sections";
+import { PageSectionsExplorer } from "@/features/content/page-sections";
 
 interface AdminPageSectionsPageProps {
   params: { id: string };

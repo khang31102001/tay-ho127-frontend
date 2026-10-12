@@ -1,4 +1,4 @@
-import { PaymentPage } from "@/features/payment";
+import { PaymentPage } from "@/features/payments/session";
 
 interface PaymentRouteProps {
   params: { sessionId: string };

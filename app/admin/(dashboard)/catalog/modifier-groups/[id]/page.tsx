@@ -1,4 +1,4 @@
-import { ModifierGroupEditor } from "@/features/modifier-groups";
+import { ModifierGroupEditor } from "@/features/catalog/modifier-groups";
 
 interface AdminModifierGroupEditPageProps {
   params: { id: string };

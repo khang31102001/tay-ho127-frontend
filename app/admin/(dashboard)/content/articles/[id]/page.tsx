@@ -1,4 +1,4 @@
-import { ArticleEditor } from "@/features/articles";
+import { ArticleEditor } from "@/features/content/articles";
 
 interface AdminArticleEditPageProps {
   params: { id: string };

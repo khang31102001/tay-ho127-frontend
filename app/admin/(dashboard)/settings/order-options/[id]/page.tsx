@@ -1,4 +1,4 @@
-import { OrderOptionEditor } from "@/features/order-options";
+import { OrderOptionEditor } from "@/features/orders/order-options";
 
 interface AdminOrderOptionEditPageProps {
   params: { id: string };

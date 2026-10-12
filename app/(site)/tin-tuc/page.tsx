@@ -1,5 +1,5 @@
 import { Container } from "@/shared/ui/Container";
-import { FeaturedArticle, NewsHero, NewsListingSection, listNewsArticles, listNewsCategories } from "@/features/news";
+import { FeaturedArticle, NewsHero, NewsListingSection, listNewsArticles, listNewsCategories } from "@/features/content/news";
 import { buildMetadata } from "@/features/seo/utils/build-metadata";
 
 export const metadata = buildMetadata({

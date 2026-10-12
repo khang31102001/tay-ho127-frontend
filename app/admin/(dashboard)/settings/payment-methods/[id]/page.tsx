@@ -1,4 +1,4 @@
-import { PaymentMethodEditor } from "@/features/payment-methods";
+import { PaymentMethodEditor } from "@/features/payments/methods";
 
 interface AdminPaymentMethodEditPageProps {
   params: { id: string };

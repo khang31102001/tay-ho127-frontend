@@ -8,9 +8,9 @@ import {
   ExperienceSection,
   TestimonialsSection,
 } from "@/features/home";
-import { fetchFeaturedMenu } from "@/features/menu";
+import { fetchFeaturedMenu } from "@/features/catalog/menu";
 // Import thẳng service server-only (không qua barrel — barrel re-export cả UI Admin "use client").
-import { getSiteBrand } from "@/features/brand-profile/services/brand-public.service";
+import { getSiteBrand } from "@/features/organization/brand-profile/services/brand-public.service";
 import { buildMetadata } from "@/features/seo/utils/build-metadata";
 // Import thẳng service (không qua barrel @/features/seo) — barrel đó re-export
 // cả UI Admin (SeoDashboard/SeoEditor/...), cùng lý do đã áp dụng cho

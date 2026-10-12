@@ -1,4 +1,4 @@
-import { ArticleTagEditor } from "@/features/article-tags";
+import { ArticleTagEditor } from "@/features/content/article-tags";
 
 interface AdminArticleTagEditPageProps {
   params: { id: string };

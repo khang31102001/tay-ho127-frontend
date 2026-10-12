@@ -1,4 +1,4 @@
-import { CustomerAddressesExplorer } from "@/features/customers";
+import { CustomerAddressesExplorer } from "@/features/access-control/customers";
 
 interface AdminCustomerAddressesPageProps {
   params: { id: string };

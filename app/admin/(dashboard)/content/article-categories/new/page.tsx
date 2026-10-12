@@ -1,4 +1,4 @@
-import { ArticleCategoryEditor } from "@/features/article-categories";
+import { ArticleCategoryEditor } from "@/features/content/article-categories";
 
 export default function AdminArticleCategoryCreatePage() {
   return <ArticleCategoryEditor />;

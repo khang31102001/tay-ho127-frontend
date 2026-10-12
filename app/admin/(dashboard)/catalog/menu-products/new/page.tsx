@@ -1,4 +1,4 @@
-import { MenuProductsLinker } from "@/features/menu-products";
+import { MenuProductsLinker } from "@/features/catalog/menu-products";
 
 export default function AdminMenuProductCreatePage() {
   return <MenuProductsLinker />;

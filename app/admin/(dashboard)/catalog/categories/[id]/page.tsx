@@ -1,4 +1,4 @@
-import { CategoryEditor } from "@/features/categories";
+import { CategoryEditor } from "@/features/catalog/categories";
 
 interface AdminCategoryEditPageProps {
   params: { id: string };

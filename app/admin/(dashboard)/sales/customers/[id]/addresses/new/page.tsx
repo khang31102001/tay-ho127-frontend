@@ -1,4 +1,4 @@
-import { CustomerAddressEditor } from "@/features/customers";
+import { CustomerAddressEditor } from "@/features/access-control/customers";
 
 interface AdminCustomerAddressCreatePageProps {
   params: { id: string };

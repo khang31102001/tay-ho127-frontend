@@ -1,4 +1,4 @@
-import { RoleEditor } from "@/features/roles";
+import { RoleEditor } from "@/features/access-control/roles";
 
 interface AdminRoleEditPageProps {
   params: { id: string };

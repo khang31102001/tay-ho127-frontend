@@ -11,7 +11,7 @@ import {
   RelatedArticles,
   getNewsArticleBySlug,
   listRelatedNewsArticles,
-} from "@/features/news";
+} from "@/features/content/news";
 import { buildMetadata } from "@/features/seo/utils/build-metadata";
 import { resolveSeoPayloadForEntity } from "@/features/seo/services/seo-resolver.service";
 import { resolveArticlePageSchemas } from "@/features/seo/services/seo-schema-resolver.service";

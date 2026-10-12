@@ -1,4 +1,4 @@
-import { MenusExplorer } from "@/features/menus";
+import { MenusExplorer } from "@/features/catalog/menus";
 
 export default function AdminCatalogMenusPage() {
   return <MenusExplorer />;

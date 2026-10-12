@@ -1,4 +1,4 @@
-import { PageEditor } from "@/features/pages";
+import { PageEditor } from "@/features/content/pages";
 
 interface AdminPageEditPageProps {
   params: { id: string };

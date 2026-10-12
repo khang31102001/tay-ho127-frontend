@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { ProductDetail, getProductDetail } from "@/features/menu";
+import { ProductDetail, getProductDetail } from "@/features/catalog/menu";
 import { buildMetadata } from "@/features/seo/utils/build-metadata";
 import { resolveSeoPayloadForEntity } from "@/features/seo/services/seo-resolver.service";
 import { resolveProductPageSchemas } from "@/features/seo/services/seo-schema-resolver.service";

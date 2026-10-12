@@ -1,4 +1,4 @@
-import { ProductEditor } from "@/features/products";
+import { ProductEditor } from "@/features/catalog/products";
 
 interface AdminProductEditPageProps {
   params: { id: string };
