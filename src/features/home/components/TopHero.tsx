@@ -4,12 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { Clock3, MapPin, Phone, type LucideIcon } from "lucide-react";
 
-import type { SiteBrand } from "@/features/brand-profile/types/brand-profile.types";
+import type { SiteBrand } from "@/features/organization/brand-profile/types/brand-profile.types";
 import {
   formatBrandAddress,
   formatOpeningHours,
   getContactPhone,
-} from "@/features/brand-profile/utils/site-contact";
+} from "@/features/organization/brand-profile/utils/site-contact";
 import { useScrollThreshold } from "@/shared/hooks/useScrollThreshold";
 
 /* =================================================

@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { ManagedPaymentMethod } from "@/features/payment-methods";
-import { PAYMENT_METHOD_OPTIONS, resolvePaymentMethod, type PaymentMethod } from "@/features/payment";
+import type { ManagedPaymentMethod } from "@/features/payments/methods";
+import { PAYMENT_METHOD_OPTIONS, resolvePaymentMethod, type PaymentMethod } from "@/features/payments/session";
 
 type PaymentMethodSelectorProps = {
   methods: ManagedPaymentMethod[];

@@ -5,7 +5,7 @@ import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 
 // Import thẳng (không qua barrel) — lý do đầy đủ xem features/menu/services/menu.service.ts.
 import { useCart, type CartItemModifierSelection, type CartProduct } from "@/features/cart";
-import { getPublicModifierGroupById, getPublicProductById } from "@/features/catalog-public";
+import { getPublicModifierGroupById, getPublicProductById } from "@/features/catalog/public";
 import type { ManagedOrder } from "../types/order.types";
 
 export type ReorderResult = {

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 
 // Import thẳng type (không qua barrel @/features/payment) — barrel đó re-export UI Site, lý do đầy đủ xem
 // features/menu/services/menu.service.ts.
-import type { PaymentSession } from "@/features/payment/types/payment.types";
+import type { PaymentSession } from "@/features/payments/session/types/payment.types";
 
 import {
   confirmPaymentSession,

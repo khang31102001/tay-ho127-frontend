@@ -3,7 +3,7 @@ import { Reveal } from "@/shared/components/Reveal";
 import { ButtonLink } from "@/shared/ui/ButtonLink";
 // Banner đang chạy lấy từ Backend (features/content-public); media import thẳng service
 // (không qua barrel @/features/media — barrel re-export UI Admin, xem menu.service.ts).
-import { listActiveBanners } from "@/features/content-public";
+import { listActiveBanners } from "@/features/content/public";
 import { listMedia } from "@/features/media/services/public-media.service";
 
 /**

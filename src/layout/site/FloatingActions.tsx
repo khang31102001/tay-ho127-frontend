@@ -10,8 +10,8 @@ import {
   useReducedMotion,
 } from "motion/react";
 
-import type { SiteBrand } from "@/features/brand-profile/types/brand-profile.types";
-import { buildGoogleMapsUrl, getSocialUrl } from "@/features/brand-profile/utils/site-contact";
+import type { SiteBrand } from "@/features/organization/brand-profile/types/brand-profile.types";
+import { buildGoogleMapsUrl, getSocialUrl } from "@/features/organization/brand-profile/utils/site-contact";
 import { useScrollThreshold } from "@/shared/hooks/useScrollThreshold";
 
 /* =========================================================

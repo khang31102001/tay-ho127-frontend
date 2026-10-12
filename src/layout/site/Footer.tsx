@@ -5,8 +5,8 @@ import { Container } from "@/shared/ui/Container";
 // Import Logo dùng lại ở footer.
 import { Logo } from "@/shared/ui/Logo";
 // Danh tính + liên hệ do Backend cấp (Admin → Tổ chức); Footer chỉ hiển thị, không giữ dữ liệu.
-import type { SiteBrand } from "@/features/brand-profile/types/brand-profile.types";
-import type { SocialPlatform } from "@/features/brand-profile/types/social-link.types";
+import type { SiteBrand } from "@/features/organization/brand-profile/types/brand-profile.types";
+import type { SocialPlatform } from "@/features/organization/brand-profile/types/social-link.types";
 import {
   buildGoogleMapsUrl,
   formatBrandAddress,
@@ -14,7 +14,7 @@ import {
   getActiveSocialLinks,
   getContactPhone,
   toTelHref,
-} from "@/features/brand-profile/utils/site-contact";
+} from "@/features/organization/brand-profile/utils/site-contact";
 // Import Link cho các đường dẫn footer.
 import Link from "next/link";
 

@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 
-import { getPermissionTree, indexLeafCodes, applyLeafSelection } from "@/features/permissions";
-import { listPages } from "@/features/pages";
+import { getPermissionTree, indexLeafCodes, applyLeafSelection } from "@/features/access-control/permissions";
+import { listPages } from "@/features/content/pages";
 import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import {

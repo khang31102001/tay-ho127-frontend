@@ -67,24 +67,24 @@ Current features:
 | `features/payment` | Site payment page for QR/wallet (Backend Sales) | A payment session reserves the order; staff confirm in Admin, the page polls and redirects. The customer has no way to mark it paid |
 
 **What stays outside `features/`** (page-chrome or genuinely cross-feature, not a business domain):
-- `src/components/ui/` — UI primitives (Button, Container, ...).
-- `src/components/shared/` — cross-feature components (`StatusPopup`, `Reveal`, `LanguageSwitcher`) — renamed from `components/common`.
-- `src/components/layout/` — User Site chrome (`Header`, `Footer`, `FloatingActions`, `MobileHeaderMenu`); composes multiple features (cart, auth) but isn't one itself.
-- `src/components/admin/{layout,dashboard,templates}/` — Admin Portal chrome + the shared `DataExplorer`/`DataEditor` CRUD template shell (see below).
+- `src/shared/ui/` — UI primitives (Button, Container, ...).
+- `src/shared/components/` — cross-feature components (`StatusPopup`, `Reveal`, `LanguageSwitcher`) — renamed from `components/common`.
+- `src/layout/site/` — User Site chrome (`Header`, `Footer`, `FloatingActions`, `MobileHeaderMenu`); composes multiple features (cart, auth) but isn't one itself.
+- `src/layout/admin/ + src/shared/admin/templates/` — Admin Portal chrome + the shared `DataExplorer`/`DataEditor` CRUD template shell (see below).
 - `src/services/api-client.ts` — `readApiResponse()`, used by `features/auth` (Site) for `app/api/auth/*`.
-- `src/lib/http/` — `api-client.ts` (`createHttpClient`, ProblemDetails-aware errors), `admin-api.ts` (`adminApi`: Backend calls from the Admin Portal through the BFF), `backend-fetch.ts` (server-only Backend fetch). `src/lib/auth/` — BFF session (HttpOnly cookies, refresh).
-- `src/hooks/useAsyncData.ts` — shared loading/error/reload state for Admin Explorer/Editor hooks.
-- `src/hooks/useScrollThreshold.ts` — shared by `Header` and `FloatingActions` (both layout, not features).
-- `src/lib/*` — generic utils (`cn`, `normalize-text`, `format-file-size`, `format-currency`).
+- `src/core/api/` — `api-client.ts` (`createHttpClient`, ProblemDetails-aware errors), `admin-api.ts` (`adminApi`: Backend calls from the Admin Portal through the BFF), `backend-fetch.ts` (server-only Backend fetch). `src/core/auth/` — BFF session (HttpOnly cookies, refresh).
+- `src/shared/hooks/useAsyncData.ts` — shared loading/error/reload state for Admin Explorer/Editor hooks.
+- `src/shared/hooks/useScrollThreshold.ts` — shared by `Header` and `FloatingActions` (both layout, not features).
+- `src/core/{utils,config,security}` — generic utils (`cn`, `normalize-text`, `format-file-size`, `format-currency`).
 - `src/data/site.ts`, `src/data/menu-items.ts` — content/data genuinely shared across ≥2 features (site.ts by layout + several features; menu-items.ts by `features/menu` **and** `features/menu-items`).
-- `src/provider/app-providers.tsx` — composition root (wraps `CartProvider`), not a feature itself.
+- `src/providers/app-providers.tsx` — composition root (wraps `CartProvider`), not a feature itself.
 
 ### State, services, and mock backend
 
-- Cart state lives in `features/cart` (`CartProvider`/`useCart`, `localStorage` key `tayho-cart`), wired in at [src/provider/app-providers.tsx](src/provider/app-providers.tsx), which wraps only the User Site in [app/(site)/layout.tsx](app/(site)/layout.tsx) — not `/admin`.
+- Cart state lives in `features/cart` (`CartProvider`/`useCart`, `localStorage` key `tayho-cart`), wired in at [src/providers/app-providers.tsx](src/providers/app-providers.tsx), which wraps only the User Site in [app/(site)/layout.tsx](app/(site)/layout.tsx) — not `/admin`.
 - Menu data: `features/menu`'s `services/menu.service.ts` exports `fetchMenu()`, returning `mocks/menu-api-response.mock.json` after a simulated delay. Mock today, but the "mock-ness" is internal to the service — swapping in a real backend means changing this file only.
-- Customer auth is real: BFF Route Handlers `app/api/customer/*` (login/register/logout/session) talk to Backend `/customer/auth/*` and keep the customer JWTs in HttpOnly cookies (`src/lib/auth/customer-backend-session.ts`, separate from the Admin cookies). Only `app/api/auth/forgot-password` is still a mock.
-- Site ↔ Sales: the browser calls `salesApi` (`src/lib/http/sales-api.ts`) → `app/api/sales/[...path]` which forwards ONLY an allowlist of customer endpoints (`/public/*`, `/customer/orders*`) to Backend `/api/v1/sales/*`, attaching the customer cookie when present (guests still order). Admin Sales endpoints are never reachable from there — Admin uses `adminApi`. The Backend is the only place money is computed.
+- Customer auth is real: BFF Route Handlers `app/api/customer/*` (login/register/logout/session) talk to Backend `/customer/auth/*` and keep the customer JWTs in HttpOnly cookies (`src/core/auth/customer-backend-session.ts`, separate from the Admin cookies). Only `app/api/auth/forgot-password` is still a mock.
+- Site ↔ Sales: the browser calls `salesApi` (`src/core/api/sales-api.ts`) → `app/api/sales/[...path]` which forwards ONLY an allowlist of customer endpoints (`/public/*`, `/customer/orders*`) to Backend `/api/v1/sales/*`, attaching the customer cookie when present (guests still order). Admin Sales endpoints are never reachable from there — Admin uses `adminApi`. The Backend is the only place money is computed.
 - Admin auth is real: BFF Route Handlers `app/api/admin/auth/*` log in against the ASP.NET Core Backend (`BACKEND_API_URL`, server-only) and keep its JWTs in HttpOnly cookies; `app/api/admin/backend/[...path]` proxies every Admin call to Backend `/api/v1/*` (adds Bearer, refreshes on 401). The browser never sees a token and the Backend needs no CORS.
 - Admin features backed by the Backend (users, roles, permissions, navigation (admin sidebar + site menus), organization, platform, customers, media library, catalog: categories/products/menus/menu-products/modifier-groups/promotions, sales: delivery-methods/payment-methods/order-options/order-settings/orders/payments): `services/<name>.service.ts` calls `adminApi` and maps Backend DTOs to the feature's types.
 - The Site reads the catalog it sells from `features/catalog-public` (one anonymous snapshot: Server Components call the Backend directly with a 60 s cache, the browser goes through `app/api/catalog/public`). Admin edits show on the Site within ~60 s. Lists load up to 200 rows (Backend max page size) and `DataExplorer` searches/pages them client-side.
@@ -102,8 +102,8 @@ Current features:
 
 ### Admin Portal
 
-- Routes live under `app/admin/*`, deliberately separate from `app/(site)/*` so the User Site's Header/Footer/CartProvider never leak into admin pages (and vice versa). [app/admin/layout.tsx](app/admin/layout.tsx) only provides `AdminAuthProvider` (from `features/admin-auth`); [app/admin/(auth)/login/page.tsx](app/admin/(auth)/login/page.tsx) renders unstyled by any dashboard chrome, while [app/admin/(dashboard)/layout.tsx](app/admin/(dashboard)/layout.tsx) adds the guarded shell (`AdminGuard` + `AdminSidebar` + `AdminHeader`, in `src/components/admin/layout/`) for every actual admin screen. `AdminSidebar` renders the caller's permission-filtered menu tree from the Backend (`GET /navigation/menus`, seeded by the Backend `NavigationSeeder`); a new admin page needs a menu entry there (seed or Admin → Hệ thống → Menu quản trị), not a code change in the sidebar. `middleware.ts` blocks `/admin/*` without the session cookie.
-- Two reusable screen templates live in [src/components/admin/templates/](src/components/admin/templates/) and are shared across **every** admin CRUD feature (8 of them, listed above):
+- Routes live under `app/admin/*`, deliberately separate from `app/(site)/*` so the User Site's Header/Footer/CartProvider never leak into admin pages (and vice versa). [app/admin/layout.tsx](app/admin/layout.tsx) only provides `AdminAuthProvider` (from `features/admin-auth`); [app/admin/(auth)/login/page.tsx](app/admin/(auth)/login/page.tsx) renders unstyled by any dashboard chrome, while [app/admin/(dashboard)/layout.tsx](app/admin/(dashboard)/layout.tsx) adds the guarded shell (`AdminGuard` + `AdminSidebar` + `AdminHeader`, in `src/layout/admin/`) for every actual admin screen. `AdminSidebar` renders the caller's permission-filtered menu tree from the Backend (`GET /navigation/menus`, seeded by the Backend `NavigationSeeder`); a new admin page needs a menu entry there (seed or Admin → Hệ thống → Menu quản trị), not a code change in the sidebar. `middleware.ts` blocks `/admin/*` without the session cookie.
+- Two reusable screen templates live in [src/shared/admin/templates/](src/shared/admin/templates/) and are shared across **every** admin CRUD feature (8 of them, listed above):
   - **DataExplorer** (`DataExplorer/DataExplorer.tsx` + `useDataExplorer.ts`) — list screen: search, table, delete-with-confirm. Config-driven via props (`columns`, `getSearchableText`, `editHref`, `onDelete`, ...).
   - **DataEditor** (`DataEditor/DataEditor.tsx` + `useDataEditor.ts`) — create/update/delete screen chrome (Save/Delete buttons, confirm-delete + error popups via `StatusPopup`). Form fields are **not** generic — each feature supplies its own field JSX as `children`.
   - `StatusBadge` and `formFieldClassName.ts` (shared input/label Tailwind classes) round out the template layer.
@@ -112,8 +112,8 @@ Current features:
 
 ### Dependency direction and hook placement
 
-- Enforced direction: `Page (app/*) → Feature (features/<domain>, via its index.ts) → Shared Component (components/{ui,shared}, components/{layout,admin/*}) → UI Primitive (components/ui)`, and `Feature → its own services/*.service.ts → Route Handler`. Primitives/shared components never import from a feature, `lib`/`services` never import from `components` or `features`, and a feature never reaches into another feature's internals — only its `index.ts` (verified clean; keep it that way).
-- Hooks: a hook used by exactly **one** component lives in that feature's `hooks/` (e.g. `features/auth/hooks/useAuthModal.ts`). A hook used by **two or more** components that aren't part of the same feature lives in global `src/hooks/` (e.g. `src/hooks/useScrollThreshold.ts`, shared by layout components). Promote a hook to global `src/hooks/` only once it actually gains a cross-feature consumer — don't pre-emptively centralize.
+- Enforced direction: `Page (app/*) → Feature (features/<domain>, via its index.ts) → Shared Component (shared/{ui,components}, layout/{site,admin}) → UI Primitive (shared/ui)`, and `Feature → its own services/*.service.ts → Route Handler`. Primitives/shared components never import from a feature, `core` never imports from `shared`/`layout` or `features`, and a feature never reaches into another feature's internals — only its `index.ts` (verified clean; keep it that way).
+- Hooks: a hook used by exactly **one** component lives in that feature's `hooks/` (e.g. `features/auth/hooks/useAuthModal.ts`). A hook used by **two or more** components that aren't part of the same feature lives in global `src/shared/hooks/` (e.g. `src/shared/hooks/useScrollThreshold.ts`, shared by layout components). Promote a hook to global `src/shared/hooks/` only once it actually gains a cross-feature consumer — don't pre-emptively centralize.
 
 ## Project-specific rules and skills
 

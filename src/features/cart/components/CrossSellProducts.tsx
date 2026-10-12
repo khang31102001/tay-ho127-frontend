@@ -5,9 +5,9 @@ import { useEffect, useState } from "react";
 // Import thẳng service/component/type (không qua barrel @/features/menu) —
 // barrel đó không re-export UI admin, nhưng đi thẳng path vẫn giữ nhất quán
 // với quy ước toàn repo cho code chạy ở Site.
-import { fetchCrossSellProducts } from "@/features/menu/services/menu.service";
-import { CrossSellProductCard } from "@/features/menu/components/CrossSellProductCard";
-import type { UiProduct } from "@/features/menu/types/menu.types";
+import { fetchCrossSellProducts } from "@/features/catalog/menu/services/menu.service";
+import { CrossSellProductCard } from "@/features/catalog/menu/components/CrossSellProductCard";
+import type { UiProduct } from "@/features/catalog/menu/types/menu.types";
 import { SwiperCarousel } from "@/shared/ui/SwiperCarousel";
 import { useCart } from "../context/cart-context";
 

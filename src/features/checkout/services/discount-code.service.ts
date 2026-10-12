@@ -4,8 +4,8 @@
 // do order.service.ts đi thẳng vào product.service.ts thay vì barrel features/products.
 // validatePromotion gọi Backend (POST /catalog/promotions/validate) qua Route Handler
 // công khai — Backend là nơi duy nhất tính giảm giá.
-import { validatePromotion } from "@/features/promotions/services/promotion-validation.service";
-import type { PromotionValidateRequestItem } from "@/features/promotions/types/promotion.types";
+import { validatePromotion } from "@/features/orders/promotions/services/promotion-validation.service";
+import type { PromotionValidateRequestItem } from "@/features/orders/promotions/types/promotion.types";
 
 /** Kết quả áp dụng mã thành công — Checkout State giữ nguyên object này để gửi lên `createOrder()`/`createPaymentSession()`. */
 export interface AppliedDiscount {

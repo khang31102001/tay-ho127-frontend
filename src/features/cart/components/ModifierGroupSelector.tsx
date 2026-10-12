@@ -2,7 +2,7 @@
 
 import { useId } from "react";
 import { formatCurrency } from "@/core/utils/format-currency";
-import type { ManagedModifierGroup } from "@/features/modifier-groups/types/modifier-group.types";
+import type { ManagedModifierGroup } from "@/features/catalog/modifier-groups/types/modifier-group.types";
 
 type ModifierGroupSelectorProps = {
   groups: ManagedModifierGroup[];

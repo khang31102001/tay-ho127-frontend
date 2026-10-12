@@ -1,8 +1,8 @@
 "use client";
 
-import { countProducts } from "@/features/products";
-import { countRoles } from "@/features/roles";
-import { countUsers } from "@/features/users";
+import { countProducts } from "@/features/catalog/products";
+import { countRoles } from "@/features/access-control/roles";
+import { countUsers } from "@/features/access-control/users";
 import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 type DashboardStats = {

@@ -6,7 +6,7 @@ import {
   listAvailableDeliveryMethods,
   resolveDeliveryFee,
   type ManagedDeliveryMethod,
-} from "@/features/delivery-methods";
+} from "@/features/orders/delivery-methods";
 import { useCart } from "../context/cart-context";
 
 function pickDefaultDeliveryMethod(methods: ManagedDeliveryMethod[]): ManagedDeliveryMethod | undefined {

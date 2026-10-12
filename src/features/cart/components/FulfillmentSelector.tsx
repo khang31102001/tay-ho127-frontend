@@ -1,7 +1,7 @@
 import type { ChangeEvent } from "react";
 import { RadioOption } from "@/shared/ui/RadioOption";
 import { formatCurrency } from "@/core/utils/format-currency";
-import type { ManagedDeliveryMethod } from "@/features/delivery-methods";
+import type { ManagedDeliveryMethod } from "@/features/orders/delivery-methods";
 
 type FulfillmentMethod = "pickup" | "delivery";
 

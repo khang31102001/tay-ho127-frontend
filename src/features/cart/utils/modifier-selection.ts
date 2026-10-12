@@ -1,4 +1,4 @@
-import type { ManagedModifierGroup } from "@/features/modifier-groups/types/modifier-group.types";
+import type { ManagedModifierGroup } from "@/features/catalog/modifier-groups/types/modifier-group.types";
 import type { CartItemModifierSelection } from "../types/cart.types";
 
 /**

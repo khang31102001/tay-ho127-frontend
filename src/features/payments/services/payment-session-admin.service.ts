@@ -2,8 +2,8 @@ import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/core/api/admin-api";
 import type { PaginatedResult } from "@/core/api/api-types";
 // Import thẳng mapper/type của phiên thanh toán (không qua barrel @/features/payment) — barrel đó re-export PaymentPage
 // (UI Site "use client"), lý do đầy đủ xem features/menu/services/menu.service.ts.
-import { type PaymentSessionDto, toPaymentSession } from "@/features/payment/services/payment-session-mapper";
-import type { PaymentSession, PaymentStatus } from "@/features/payment/types/payment.types";
+import { type PaymentSessionDto, toPaymentSession } from "@/features/payments/session/services/payment-session-mapper";
+import type { PaymentSession, PaymentStatus } from "@/features/payments/session/types/payment.types";
 
 /**
  * Admin → Sales → Thanh toán → phiên thanh toán QR/ví đang chờ nhân viên xác nhận, gọi Backend

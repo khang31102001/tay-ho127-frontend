@@ -1,6 +1,6 @@
-import { listProducts, type ManagedProduct } from "@/features/products";
-import { listCategories, type ManagedCategory } from "@/features/categories";
-import { listArticles, type ManagedArticleListItem } from "@/features/articles";
+import { listProducts, type ManagedProduct } from "@/features/catalog/products";
+import { listCategories, type ManagedCategory } from "@/features/catalog/categories";
+import { listArticles, type ManagedArticleListItem } from "@/features/content/articles";
 
 import type { SeoEntityType } from "../types/seo-metadata.types";
 import type { SeoEntityDefaults } from "../utils/resolve-seo-preview";

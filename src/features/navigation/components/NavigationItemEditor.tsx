@@ -3,7 +3,7 @@
 import { DataEditor } from "@/shared/admin/templates/DataEditor/DataEditor";
 import { adminFieldInputClassName, adminFieldLabelClassName } from "@/shared/admin/templates/formFieldClassName";
 import { useAdminAuth } from "@/features/admin-auth";
-import { PermissionTree } from "@/features/permissions";
+import { PermissionTree } from "@/features/access-control/permissions";
 
 import { useNavigationItemEditor } from "../hooks/useNavigationItemEditor";
 import { NAVIGATION_TARGET_TYPE_OPTIONS, type NavigationScope, type NavigationTargetType } from "../types/navigation.types";

@@ -1,5 +1,5 @@
 import type { ChangeEvent } from "react";
-import type { ManagedDeliveryMethod } from "@/features/delivery-methods";
+import type { ManagedDeliveryMethod } from "@/features/orders/delivery-methods";
 import type { UtensilsPreference } from "@/features/cart";
 import type { CheckoutFormErrors, CheckoutFormState } from "../types/checkout.types";
 import { CustomerInformationForm } from "./CustomerInformationForm";

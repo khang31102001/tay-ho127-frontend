@@ -1,7 +1,7 @@
 // Import thẳng service (không qua barrel @/features/brand-profile, @/features/media)
 // — file này được gọi trực tiếp từ app/(site)/**, 2 barrel đó re-export cả UI
 // Admin (BrandProfileEditor, MediaExplorer/MediaEditor).
-import { getSiteBrand } from "@/features/brand-profile/services/brand-public.service";
+import { getSiteBrand } from "@/features/organization/brand-profile/services/brand-public.service";
 import { listMedia } from "@/features/media/services/public-media.service";
 import { getSiteUrl } from "@/core/config/site-url";
 

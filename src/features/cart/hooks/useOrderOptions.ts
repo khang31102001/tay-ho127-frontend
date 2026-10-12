@@ -7,8 +7,8 @@ import { useEffect, useState } from "react";
 // kéo thêm UI Admin vào bundle JS của site công khai (Mini Cart/Cart Page/Checkout
 // đều dùng hook này), giống lý do order.service.ts đi thẳng vào product.service.ts
 // thay vì qua barrel features/products.
-import { listGeneralOrderOptions } from "@/features/order-options/services/order-option.service";
-import type { ManagedOrderOptionGroup } from "@/features/order-options/types/order-option.types";
+import { listGeneralOrderOptions } from "@/features/orders/order-options/services/order-option.service";
+import type { ManagedOrderOptionGroup } from "@/features/orders/order-options/types/order-option.types";
 import { useCart } from "../context/cart-context";
 import {
   buildDefaultSelectionMap,

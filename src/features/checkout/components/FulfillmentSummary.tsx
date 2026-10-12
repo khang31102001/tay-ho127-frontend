@@ -1,4 +1,4 @@
-import type { ManagedDeliveryMethod } from "@/features/delivery-methods";
+import type { ManagedDeliveryMethod } from "@/features/orders/delivery-methods";
 
 type FulfillmentSummaryProps = {
   selectedMethod: ManagedDeliveryMethod | undefined;

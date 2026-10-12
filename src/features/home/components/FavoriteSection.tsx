@@ -4,7 +4,7 @@ import { Container } from "@/shared/ui/Container";
 import Link from "next/link";
 import { ChevronRightIcon, MoveLeftIcon } from "lucide-react";
 
-import { ProductCard, type UiProduct } from "@/features/menu";
+import { ProductCard, type UiProduct } from "@/features/catalog/menu";
 import { Reveal } from "@/shared/components/Reveal";
 import { SwiperCarousel } from "@/shared/ui/SwiperCarousel";
 import MenuBackgroundDecoration from "@/shared/ui/MenuBackgroundDecoration";

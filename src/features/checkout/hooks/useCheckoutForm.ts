@@ -13,13 +13,13 @@ import { createOrder, type CreateOrderInput } from "@/features/orders/services/s
 import {
   listAvailablePaymentMethods,
   type ManagedPaymentMethod,
-} from "@/features/payment-methods";
+} from "@/features/payments/methods";
 import {
   listAvailableDeliveryMethods,
   resolveDeliveryFee,
   type ManagedDeliveryMethod,
-} from "@/features/delivery-methods";
-import { createPaymentSession, resolvePaymentMethod } from "@/features/payment";
+} from "@/features/orders/delivery-methods";
+import { createPaymentSession, resolvePaymentMethod } from "@/features/payments/session";
 
 import {
   CheckoutFormState,

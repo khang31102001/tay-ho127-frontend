@@ -517,3 +517,18 @@ export function ProductEditor() {
 - [Domain-Driven Design - Evans](https://www.domainlanguage.com/ddd/)
 - [Next.js Documentation](https://nextjs.org/docs)
 - [React Best Practices](https://react.dev/)
+
+## Domain grouping (thực tế sau khi chuyển code)
+
+Mỗi feature cũ nằm trong thư mục con của domain, import qua barrel của thư mục con (hoặc barrel domain):
+
+| Domain | Thư mục con |
+|---|---|
+| `catalog` | `products`, `categories`, `menus`, `menu` (site), `menu-products`, `modifier-groups`, `public` |
+| `content` | `articles`, `article-categories`, `article-tags`, `banners`, `pages`, `page-sections`, `news` (site), `public` |
+| `access-control` | `users`, `roles`, `permissions`, `customers` |
+| `payments` | gốc (admin) + `session` (trang thanh toán site), `methods` |
+| `orders` | gốc + `order-options`, `order-settings`, `delivery-methods`, `promotions` |
+| `organization` | gốc + `brand-profile` |
+
+Vị trí chung: `core/{api,auth,config,security,utils}` (thay `lib/`), `shared/{ui,components,hooks,admin}`, `layout/{site,admin}`, `providers/`. `core/auth` là server-only nên không re-export từ `core/index.ts`.
