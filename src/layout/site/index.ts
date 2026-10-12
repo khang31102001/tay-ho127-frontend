@@ -1,6 +1,6 @@
 "use client";
 
-export * from "./site/SiteLayout";
-export * from "./site/Header";
-export * from "./site/Footer";
-export * from "./site/MobileMenu";
+export * from "./SiteLayout";
+export * from "./Header";
+export * from "./Footer";
+export * from "./MobileMenu";

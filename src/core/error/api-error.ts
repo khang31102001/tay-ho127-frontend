@@ -1,1 +1,1 @@
-export * from "../../lib/http/api-error";
+export * from "../api/api-error.impl";

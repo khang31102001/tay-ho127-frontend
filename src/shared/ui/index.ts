@@ -1,10 +1,10 @@
 "use client";
 
-export * from "./ui/Button";
-export * from "./ui/Input";
-export * from "./ui/Modal";
-export * from "./ui/Badge";
-export * from "./ui/Spinner";
-export * from "./ui/Card";
-export * from "./ui/Tabs";
-export * from "./ui/Dropdown";
+export * from "./Button";
+export * from "./Input";
+export * from "./Modal";
+export * from "./Badge";
+export * from "./Spinner";
+export * from "./Card";
+export * from "./Tabs";
+export * from "./Dropdown";
