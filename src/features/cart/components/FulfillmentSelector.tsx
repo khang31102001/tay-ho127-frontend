@@ -1,5 +1,5 @@
 import type { ChangeEvent } from "react";
-import { RadioOption } from "@/components/ui/RadioOption";
+import { RadioOption } from "@/shared/ui/RadioOption";
 import { formatCurrency } from "@/core/utils/format-currency";
 import type { ManagedDeliveryMethod } from "@/features/delivery-methods";
 

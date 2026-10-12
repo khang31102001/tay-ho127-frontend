@@ -1,4 +1,4 @@
-import type { EntityStatus } from "@/components/admin/templates/StatusBadge";
+import type { EntityStatus } from "@/shared/admin/templates/StatusBadge";
 import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/core/api/admin-api";
 import { ApiError, resolveErrorKind } from "@/core/api/api-error";
 import type { PaginatedResult } from "@/core/api/api-types";

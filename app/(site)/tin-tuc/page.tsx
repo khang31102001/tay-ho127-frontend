@@ -1,4 +1,4 @@
-import { Container } from "@/components/ui/Container";
+import { Container } from "@/shared/ui/Container";
 import { FeaturedArticle, NewsHero, NewsListingSection, listNewsArticles, listNewsCategories } from "@/features/news";
 import { buildMetadata } from "@/features/seo/utils/build-metadata";
 

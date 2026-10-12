@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Star } from "lucide-react";
 
-import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templates/DataExplorer/DataExplorer";
+import { DataExplorer, type DataExplorerColumn } from "@/shared/admin/templates/DataExplorer/DataExplorer";
 import { useAdminAuth } from "@/features/admin-auth";
 
 import { useCustomerAddressesExplorer } from "../hooks/useCustomerAddressesExplorer";

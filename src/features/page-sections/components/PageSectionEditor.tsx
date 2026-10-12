@@ -1,11 +1,11 @@
 "use client";
 
-import { DataEditor } from "@/components/admin/templates/DataEditor/DataEditor";
+import { DataEditor } from "@/shared/admin/templates/DataEditor/DataEditor";
 import {
   adminFieldInputClassName,
   adminFieldLabelClassName,
-} from "@/components/admin/templates/formFieldClassName";
-import { MediaPicker } from "@/components/shared/MediaPicker";
+} from "@/shared/admin/templates/formFieldClassName";
+import { MediaPicker } from "@/features/media/components/MediaPicker";
 
 import { usePageSectionEditor } from "../hooks/usePageSectionEditor";
 import { SECTION_TYPE_OPTIONS, type SectionType } from "../types/page-section.types";

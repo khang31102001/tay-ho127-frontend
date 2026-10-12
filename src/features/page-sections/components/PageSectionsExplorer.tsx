@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowDown, ArrowUp } from "lucide-react";
 
-import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templates/DataExplorer/DataExplorer";
+import { DataExplorer, type DataExplorerColumn } from "@/shared/admin/templates/DataExplorer/DataExplorer";
 
 import { usePageSectionsExplorer } from "../hooks/usePageSectionsExplorer";
 import { SECTION_TYPE_OPTIONS, type ManagedPageSection } from "../types/page-section.types";

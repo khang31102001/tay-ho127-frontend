@@ -1,9 +1,9 @@
 "use client";
 
-import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templates/DataExplorer/DataExplorer";
-import { StatusBadge } from "@/components/admin/templates/StatusBadge";
-import { ExportButton } from "@/components/admin/import-export/ExportButton";
-import { ImportDialog } from "@/components/admin/import-export/ImportDialog";
+import { DataExplorer, type DataExplorerColumn } from "@/shared/admin/templates/DataExplorer/DataExplorer";
+import { StatusBadge } from "@/shared/admin/templates/StatusBadge";
+import { ExportButton } from "@/shared/admin/import-export/ExportButton";
+import { ImportDialog } from "@/shared/admin/import-export/ImportDialog";
 import { formatCurrency } from "@/core/utils/format-currency";
 import { useAdminAuth } from "@/features/admin-auth";
 

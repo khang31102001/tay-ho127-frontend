@@ -4,7 +4,7 @@ import { useState, type ChangeEvent } from "react";
 import Link from "next/link";
 import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 
-import MenuBackgroundDecoration from "@/components/ui/MenuBackgroundDecoration";
+import MenuBackgroundDecoration from "@/shared/ui/MenuBackgroundDecoration";
 import { useCart } from "../context/cart-context";
 import { useCartFulfillment } from "../hooks/useCartFulfillment";
 import { markCartReviewed } from "../services/cart-review.service";

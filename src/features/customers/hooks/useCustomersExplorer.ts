@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-import type { EntityStatus } from "@/components/admin/templates/StatusBadge";
+import type { EntityStatus } from "@/shared/admin/templates/StatusBadge";
 import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import { listCustomers } from "../services/customer.service";

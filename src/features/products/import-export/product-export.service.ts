@@ -1,4 +1,4 @@
-import type { ExportColumn } from "@/components/admin/import-export/import-export.types";
+import type { ExportColumn } from "@/shared/admin/import-export/import-export.types";
 import type { ManagedCategory } from "@/features/categories";
 
 import type { ManagedProduct } from "../types/product.types";

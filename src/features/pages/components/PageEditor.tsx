@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { ListTree } from "lucide-react";
 
-import { DataEditor } from "@/components/admin/templates/DataEditor/DataEditor";
+import { DataEditor } from "@/shared/admin/templates/DataEditor/DataEditor";
 import {
   adminFieldInputClassName,
   adminFieldLabelClassName,
-} from "@/components/admin/templates/formFieldClassName";
-import { SlugInput } from "@/components/shared/SlugInput";
-import type { PublishStatus } from "@/components/shared/PublishStatusBadge";
+} from "@/shared/admin/templates/formFieldClassName";
+import { SlugInput } from "@/shared/components/SlugInput";
+import type { PublishStatus } from "@/shared/components/PublishStatusBadge";
 
 import { usePageEditor } from "../hooks/usePageEditor";
 

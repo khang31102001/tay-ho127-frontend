@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ImagePlus, X } from "lucide-react";
 
-import { adminFieldLabelClassName } from "@/components/admin/templates/formFieldClassName";
+import { adminFieldLabelClassName } from "@/shared/admin/templates/formFieldClassName";
 import type { ManagedMedia } from "@/features/media";
 
 import {

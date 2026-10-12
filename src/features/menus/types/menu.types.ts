@@ -1,4 +1,4 @@
-import type { EntityStatus } from "@/components/admin/templates/StatusBadge";
+import type { EntityStatus } from "@/shared/admin/templates/StatusBadge";
 
 /**
  * Thực đơn bán (SalesMenu của Backend Catalog) — nguồn duy nhất cho cả Admin

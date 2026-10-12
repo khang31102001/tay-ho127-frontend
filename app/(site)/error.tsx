@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 
-import { ButtonLink } from "@/components/ui/ButtonLink";
-import { Container } from "@/components/ui/Container";
+import { ButtonLink } from "@/shared/ui/ButtonLink";
+import { Container } from "@/shared/ui/Container";
 
 type SiteErrorProps = {
   error: Error & { digest?: string };

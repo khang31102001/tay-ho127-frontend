@@ -1,11 +1,11 @@
 "use client";
 
 import type { ManagedMedia } from "@/features/media";
-import { MediaPicker } from "@/components/shared/MediaPicker";
+import { MediaPicker } from "@/features/media/components/MediaPicker";
 import {
   adminFieldInputClassName,
   adminFieldLabelClassName,
-} from "@/components/admin/templates/formFieldClassName";
+} from "@/shared/admin/templates/formFieldClassName";
 import { getSiteUrl } from "@/core/config/site-url";
 
 import type { SeoMetadataFormValue } from "../types/seo-metadata.types";

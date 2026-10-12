@@ -2,15 +2,15 @@
 
 import { useState } from "react";
 
-import { DataEditor } from "@/components/admin/templates/DataEditor/DataEditor";
+import { DataEditor } from "@/shared/admin/templates/DataEditor/DataEditor";
 import {
   adminFieldInputClassName,
   adminFieldLabelClassName,
-} from "@/components/admin/templates/formFieldClassName";
-import type { EntityStatus } from "@/components/admin/templates/StatusBadge";
+} from "@/shared/admin/templates/formFieldClassName";
+import type { EntityStatus } from "@/shared/admin/templates/StatusBadge";
 import { useAdminAuth } from "@/features/admin-auth";
-import { MediaMultiPicker } from "@/components/shared/MediaPicker";
-import { Tabs, type TabItem } from "@/components/ui/Tabs";
+import { MediaMultiPicker } from "@/features/media/components/MediaPicker";
+import { Tabs, type TabItem } from "@/shared/ui/Tabs";
 import { SeoFieldsForm, StructuredDataSection } from "@/features/seo";
 
 import { useProductEditor } from "../hooks/useProductEditor";

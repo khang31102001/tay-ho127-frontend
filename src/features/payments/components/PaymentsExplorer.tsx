@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 
-import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templates/DataExplorer/DataExplorer";
-import { MoneyDisplay } from "@/components/shared/MoneyDisplay";
+import { DataExplorer, type DataExplorerColumn } from "@/shared/admin/templates/DataExplorer/DataExplorer";
+import { MoneyDisplay } from "@/shared/components/MoneyDisplay";
 import { PAYMENT_STATUS_OPTIONS, PaymentStatusBadge } from "@/features/orders";
 
 import { usePaymentsExplorer, type PaymentStatusFilter } from "../hooks/usePaymentsExplorer";

@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 
-import { DataEditor } from "@/components/admin/templates/DataEditor/DataEditor";
-import { StatusPopup } from "@/components/shared/StatusPopup";
-import { Tabs, type TabItem } from "@/components/ui/Tabs";
+import { DataEditor } from "@/shared/admin/templates/DataEditor/DataEditor";
+import { StatusPopup } from "@/shared/components/StatusPopup";
+import { Tabs, type TabItem } from "@/shared/ui/Tabs";
 
 import { useBrandProfileEditor } from "../hooks/useBrandProfileEditor";
 import { BrandBrandingForm } from "./BrandBrandingForm";

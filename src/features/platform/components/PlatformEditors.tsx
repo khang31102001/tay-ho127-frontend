@@ -1,11 +1,11 @@
 "use client";
 
-import { ActiveStatusField } from "@/components/admin/templates/ActiveStatusField";
-import { DataEditor } from "@/components/admin/templates/DataEditor/DataEditor";
+import { ActiveStatusField } from "@/shared/admin/templates/ActiveStatusField";
+import { DataEditor } from "@/shared/admin/templates/DataEditor/DataEditor";
 import {
   adminFieldInputClassName,
   adminFieldLabelClassName,
-} from "@/components/admin/templates/formFieldClassName";
+} from "@/shared/admin/templates/formFieldClassName";
 import { useAdminAuth } from "@/features/admin-auth";
 import { OrganizationSelect } from "@/features/organization";
 

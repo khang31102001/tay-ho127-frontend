@@ -1,7 +1,7 @@
 import Image from "next/image";
 
-import { Reveal } from "@/components/shared/Reveal";
-import { Container } from "@/components/ui/Container";
+import { Reveal } from "@/shared/components/Reveal";
+import { Container } from "@/shared/ui/Container";
 
 /* ============================================================
  * DATA

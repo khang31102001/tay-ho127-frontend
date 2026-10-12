@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-import { StatusPopup } from "@/components/shared/StatusPopup";
+import { StatusPopup } from "@/shared/components/StatusPopup";
 
 import { useDataEditor } from "./useDataEditor";
 

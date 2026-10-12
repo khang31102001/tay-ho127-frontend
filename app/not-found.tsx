@@ -1,7 +1,7 @@
 // Import ButtonLink để đưa người dùng về trang chủ.
-import { ButtonLink } from "@/components/ui/ButtonLink";
+import { ButtonLink } from "@/shared/ui/ButtonLink";
 // Import Container chuẩn.
-import { Container } from "@/components/ui/Container";
+import { Container } from "@/shared/ui/Container";
 
 // Trang 404 khi đường dẫn không tồn tại.
 export default function NotFound() {

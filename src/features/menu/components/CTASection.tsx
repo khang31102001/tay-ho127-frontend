@@ -1,7 +1,7 @@
 // Import ButtonLink cho CTA.
-import { ButtonLink } from "@/components/ui/ButtonLink";
+import { ButtonLink } from "@/shared/ui/ButtonLink";
 // Import Container chuẩn.
-import { Container } from "@/components/ui/Container";
+import { Container } from "@/shared/ui/Container";
 import type { SiteBrand } from "@/features/brand-profile/types/brand-profile.types";
 import {
   formatBrandAddress,

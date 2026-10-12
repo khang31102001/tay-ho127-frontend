@@ -1,4 +1,4 @@
-import { PriceSummary } from "@/components/shared/PriceSummary";
+import { PriceSummary } from "@/shared/components/PriceSummary";
 import type { PaymentSession } from "../types/payment.types";
 
 type PaymentSummaryProps = {

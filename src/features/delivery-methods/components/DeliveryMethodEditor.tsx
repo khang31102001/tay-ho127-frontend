@@ -1,7 +1,7 @@
 "use client";
 
-import { DataEditor } from "@/components/admin/templates/DataEditor/DataEditor";
-import { adminFieldInputClassName, adminFieldLabelClassName } from "@/components/admin/templates/formFieldClassName";
+import { DataEditor } from "@/shared/admin/templates/DataEditor/DataEditor";
+import { adminFieldInputClassName, adminFieldLabelClassName } from "@/shared/admin/templates/formFieldClassName";
 
 import { useDeliveryMethodEditor } from "../hooks/useDeliveryMethodEditor";
 import { DELIVERY_METHOD_TYPE_OPTIONS, type DeliveryMethodType } from "../types/delivery-method.types";

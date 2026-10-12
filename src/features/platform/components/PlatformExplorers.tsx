@@ -1,8 +1,8 @@
 "use client";
 
-import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templates/DataExplorer/DataExplorer";
-import { StatusBadge, statusFromIsActive } from "@/components/admin/templates/StatusBadge";
-import { adminFieldInputClassName } from "@/components/admin/templates/formFieldClassName";
+import { DataExplorer, type DataExplorerColumn } from "@/shared/admin/templates/DataExplorer/DataExplorer";
+import { StatusBadge, statusFromIsActive } from "@/shared/admin/templates/StatusBadge";
+import { adminFieldInputClassName } from "@/shared/admin/templates/formFieldClassName";
 import { useAdminAuth } from "@/features/admin-auth";
 
 import type { AuditLogEntry, ManagedSystemSetting } from "../types/platform.types";

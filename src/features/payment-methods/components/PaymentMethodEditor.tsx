@@ -1,8 +1,8 @@
 "use client";
 
-import { DataEditor } from "@/components/admin/templates/DataEditor/DataEditor";
-import { adminFieldInputClassName, adminFieldLabelClassName } from "@/components/admin/templates/formFieldClassName";
-import { MediaPicker } from "@/components/shared/MediaPicker";
+import { DataEditor } from "@/shared/admin/templates/DataEditor/DataEditor";
+import { adminFieldInputClassName, adminFieldLabelClassName } from "@/shared/admin/templates/formFieldClassName";
+import { MediaPicker } from "@/features/media/components/MediaPicker";
 
 import { usePaymentMethodEditor } from "../hooks/usePaymentMethodEditor";
 import { PAYMENT_METHOD_GROUP_OPTIONS, type PaymentMethodGroup } from "../types/payment-method.types";

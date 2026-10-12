@@ -1,4 +1,4 @@
-import type { PublishStatus } from "@/components/shared/PublishStatusBadge";
+import type { PublishStatus } from "@/shared/components/PublishStatusBadge";
 
 /**
  * Page của User Site (Trang chủ, Thực đơn, Landing Page...) do Admin quản lý.

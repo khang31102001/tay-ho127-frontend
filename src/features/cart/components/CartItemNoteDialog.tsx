@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 
-import { BottomSheetDialog } from "@/components/ui/BottomSheetDialog";
+import { BottomSheetDialog } from "@/shared/ui/BottomSheetDialog";
 
 const NOTE_MAX_LENGTH = 250;
 

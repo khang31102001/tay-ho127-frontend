@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-import { MoneyDisplay } from "@/components/shared/MoneyDisplay";
+import { MoneyDisplay } from "@/shared/components/MoneyDisplay";
 
 import type { OrderItem } from "../types/order-item.types";
 

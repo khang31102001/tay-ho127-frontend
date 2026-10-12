@@ -4,8 +4,8 @@ import Link from "next/link";
 import { Eye, EyeOff, Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 
-import { StatusPopup } from "@/components/shared/StatusPopup";
-import { TreeView, filterTree, collectExpandableIds, type TreeItem, type TreeViewHandle } from "@/components/shared/tree";
+import { StatusPopup } from "@/shared/components/StatusPopup";
+import { TreeView, filterTree, collectExpandableIds, type TreeItem, type TreeViewHandle } from "@/shared/components/tree";
 import { useAdminAuth } from "@/features/admin-auth";
 
 import { useNavigationItemsTree } from "../hooks/useNavigationItemsTree";

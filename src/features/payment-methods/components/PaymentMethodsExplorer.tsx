@@ -1,7 +1,7 @@
 "use client";
 
-import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templates/DataExplorer/DataExplorer";
-import { StatusBadge } from "@/components/admin/templates/StatusBadge";
+import { DataExplorer, type DataExplorerColumn } from "@/shared/admin/templates/DataExplorer/DataExplorer";
+import { StatusBadge } from "@/shared/admin/templates/StatusBadge";
 
 import { usePaymentMethodsExplorer } from "../hooks/usePaymentMethodsExplorer";
 import { PAYMENT_METHOD_GROUP_OPTIONS, type ManagedPaymentMethod } from "../types/payment-method.types";

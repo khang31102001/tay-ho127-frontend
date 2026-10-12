@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 
-import type { EntityStatus } from "@/components/admin/templates/StatusBadge";
+import type { EntityStatus } from "@/shared/admin/templates/StatusBadge";
 import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import type { MediaUpsertInput } from "../services/media-library.service";

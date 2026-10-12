@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 
-import { DataEditor } from "@/components/admin/templates/DataEditor/DataEditor";
+import { DataEditor } from "@/shared/admin/templates/DataEditor/DataEditor";
 import {
   adminFieldInputClassName,
   adminFieldLabelClassName,
-} from "@/components/admin/templates/formFieldClassName";
-import { MediaPicker } from "@/components/shared/MediaPicker";
-import { StatusPopup } from "@/components/shared/StatusPopup";
+} from "@/shared/admin/templates/formFieldClassName";
+import { MediaPicker } from "@/features/media/components/MediaPicker";
+import { StatusPopup } from "@/shared/components/StatusPopup";
 
 import { useSeoSettingsForm } from "../hooks/useSeoSettingsForm";
 

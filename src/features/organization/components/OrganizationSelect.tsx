@@ -3,7 +3,7 @@
 import {
   adminFieldInputClassName,
   adminFieldLabelClassName,
-} from "@/components/admin/templates/formFieldClassName";
+} from "@/shared/admin/templates/formFieldClassName";
 
 import type { ManagedOrganization } from "../types/organization.types";
 

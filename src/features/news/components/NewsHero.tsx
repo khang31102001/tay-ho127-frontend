@@ -1,4 +1,4 @@
-import { Container } from "@/components/ui/Container";
+import { Container } from "@/shared/ui/Container";
 
 /**
  * Cùng công thức với MenuHero (bg-brand-ink + bg-hero, badge pill, heading-xl)

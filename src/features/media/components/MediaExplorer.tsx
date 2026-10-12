@@ -3,8 +3,8 @@
 import Image from "next/image";
 import { FileText, Video } from "lucide-react";
 
-import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templates/DataExplorer/DataExplorer";
-import { StatusBadge } from "@/components/admin/templates/StatusBadge";
+import { DataExplorer, type DataExplorerColumn } from "@/shared/admin/templates/DataExplorer/DataExplorer";
+import { StatusBadge } from "@/shared/admin/templates/StatusBadge";
 import { useAdminAuth } from "@/features/admin-auth";
 import { formatFileSize } from "@/core/utils/format-file-size";
 import { isNextImageCompatibleUrl } from "@/core/config/image-hosts";

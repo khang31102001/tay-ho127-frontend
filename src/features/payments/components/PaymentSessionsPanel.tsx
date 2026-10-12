@@ -1,6 +1,6 @@
 "use client";
 
-import { MoneyDisplay } from "@/components/shared/MoneyDisplay";
+import { MoneyDisplay } from "@/shared/components/MoneyDisplay";
 import { useAdminAuth } from "@/features/admin-auth";
 
 import { usePaymentSessionsPanel } from "../hooks/usePaymentSessionsPanel";

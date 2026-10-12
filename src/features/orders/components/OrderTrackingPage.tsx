@@ -5,9 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { formatCurrency } from "@/core/utils/format-currency";
-import MenuBackgroundDecoration from "@/components/ui/MenuBackgroundDecoration";
-import { StatusTimeline, type StatusTimelineEntry } from "@/components/shared/StatusTimeline";
-import { PriceSummary } from "@/components/shared/PriceSummary";
+import MenuBackgroundDecoration from "@/shared/ui/MenuBackgroundDecoration";
+import { StatusTimeline, type StatusTimelineEntry } from "@/shared/components/StatusTimeline";
+import { PriceSummary } from "@/shared/components/PriceSummary";
 import { useOrderTracking } from "../hooks/useOrderTracking";
 import { resolveCustomerOrderStatusLabel } from "../utils/customer-order-status-label";
 import { PAYMENT_STATUS_LABEL } from "../types/payment-status";

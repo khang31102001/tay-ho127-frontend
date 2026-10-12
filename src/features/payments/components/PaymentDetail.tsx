@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 
-import { StatusPopup } from "@/components/shared/StatusPopup";
-import { StatusTimeline } from "@/components/shared/StatusTimeline";
-import { MoneyDisplay } from "@/components/shared/MoneyDisplay";
+import { StatusPopup } from "@/shared/components/StatusPopup";
+import { StatusTimeline } from "@/shared/components/StatusTimeline";
+import { MoneyDisplay } from "@/shared/components/MoneyDisplay";
 import { PaymentStatusBadge } from "@/features/orders";
 
 import { usePaymentDetail } from "../hooks/usePaymentDetail";

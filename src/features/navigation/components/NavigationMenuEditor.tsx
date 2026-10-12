@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 
-import { DataEditor } from "@/components/admin/templates/DataEditor/DataEditor";
-import { adminFieldInputClassName, adminFieldLabelClassName } from "@/components/admin/templates/formFieldClassName";
+import { DataEditor } from "@/shared/admin/templates/DataEditor/DataEditor";
+import { adminFieldInputClassName, adminFieldLabelClassName } from "@/shared/admin/templates/formFieldClassName";
 
 import { useNavigationMenuEditor } from "../hooks/useNavigationMenuEditor";
 import { NAVIGATION_LOCATION_OPTIONS } from "../types/navigation.types";

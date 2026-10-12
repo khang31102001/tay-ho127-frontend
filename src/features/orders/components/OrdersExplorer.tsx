@@ -1,7 +1,7 @@
 "use client";
 
-import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templates/DataExplorer/DataExplorer";
-import { MoneyDisplay } from "@/components/shared/MoneyDisplay";
+import { DataExplorer, type DataExplorerColumn } from "@/shared/admin/templates/DataExplorer/DataExplorer";
+import { MoneyDisplay } from "@/shared/components/MoneyDisplay";
 
 import {
   useOrdersExplorer,

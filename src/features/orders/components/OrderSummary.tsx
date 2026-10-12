@@ -1,4 +1,4 @@
-import { MoneyDisplay } from "@/components/shared/MoneyDisplay";
+import { MoneyDisplay } from "@/shared/components/MoneyDisplay";
 
 import type { ManagedOrder } from "../types/order.types";
 

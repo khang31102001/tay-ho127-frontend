@@ -1,6 +1,6 @@
 "use client";
 
-import { DataEditor } from "@/components/admin/templates/DataEditor/DataEditor";
+import { DataEditor } from "@/shared/admin/templates/DataEditor/DataEditor";
 
 import type { SeoEntityType } from "../types/seo-metadata.types";
 import { useSeoEditorPage } from "../hooks/useSeoEditorPage";

@@ -1,10 +1,10 @@
 "use client";
 
-import { DataEditor } from "@/components/admin/templates/DataEditor/DataEditor";
+import { DataEditor } from "@/shared/admin/templates/DataEditor/DataEditor";
 import {
   adminFieldInputClassName,
   adminFieldLabelClassName,
-} from "@/components/admin/templates/formFieldClassName";
+} from "@/shared/admin/templates/formFieldClassName";
 
 import { useRedirectEditor } from "../hooks/useRedirectEditor";
 import type { RedirectType } from "../types/redirect.types";

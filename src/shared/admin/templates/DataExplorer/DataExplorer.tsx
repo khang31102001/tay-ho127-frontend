@@ -4,8 +4,8 @@ import Link from "next/link";
 import { Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 
-import { StatusPopup } from "@/components/shared/StatusPopup";
-import { Pagination } from "@/components/ui/Pagination";
+import { StatusPopup } from "@/shared/components/StatusPopup";
+import { Pagination } from "@/shared/ui/Pagination";
 
 import { useDataExplorer } from "./useDataExplorer";
 

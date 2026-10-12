@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 
-import { adminFieldLabelClassName } from "@/components/admin/templates/formFieldClassName";
+import { adminFieldLabelClassName } from "@/shared/admin/templates/formFieldClassName";
 
 import type { SeoSchemaFormValue } from "../types/seo-schema.types";
 

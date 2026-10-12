@@ -1,4 +1,4 @@
-import type { PublishStatus } from "@/components/shared/PublishStatusBadge";
+import type { PublishStatus } from "@/shared/components/PublishStatusBadge";
 
 export type ManagedArticle = {
   id: string;

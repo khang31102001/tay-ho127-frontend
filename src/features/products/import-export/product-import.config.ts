@@ -1,4 +1,4 @@
-import type { ImportColumn } from "@/components/admin/import-export/import-export.types";
+import type { ImportColumn } from "@/shared/admin/import-export/import-export.types";
 import type { ManagedCategory } from "@/features/categories";
 import { normalizeText } from "@/core/utils/normalize-text";
 

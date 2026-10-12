@@ -4,16 +4,16 @@ import Link from "next/link";
 import { Eye } from "lucide-react";
 import { useState } from "react";
 
-import { DataEditor } from "@/components/admin/templates/DataEditor/DataEditor";
+import { DataEditor } from "@/shared/admin/templates/DataEditor/DataEditor";
 import {
   adminFieldInputClassName,
   adminFieldLabelClassName,
-} from "@/components/admin/templates/formFieldClassName";
-import { SlugInput } from "@/components/shared/SlugInput";
-import { MediaPicker } from "@/components/shared/MediaPicker";
-import { RichTextEditor } from "@/components/ui/RichTextEditor";
-import type { PublishStatus } from "@/components/shared/PublishStatusBadge";
-import { Tabs, type TabItem } from "@/components/ui/Tabs";
+} from "@/shared/admin/templates/formFieldClassName";
+import { SlugInput } from "@/shared/components/SlugInput";
+import { MediaPicker } from "@/features/media/components/MediaPicker";
+import { RichTextEditor } from "@/shared/ui/RichTextEditor";
+import type { PublishStatus } from "@/shared/components/PublishStatusBadge";
+import { Tabs, type TabItem } from "@/shared/ui/Tabs";
 import { SeoFieldsForm } from "@/features/seo";
 
 import { useArticleEditor } from "../hooks/useArticleEditor";

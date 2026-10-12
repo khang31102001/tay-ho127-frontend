@@ -1,6 +1,6 @@
 "use client";
 
-import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templates/DataExplorer/DataExplorer";
+import { DataExplorer, type DataExplorerColumn } from "@/shared/admin/templates/DataExplorer/DataExplorer";
 
 import { useArticleTagsExplorer } from "../hooks/useArticleTagsExplorer";
 import type { ManagedArticleTag } from "../types/article-tag.types";

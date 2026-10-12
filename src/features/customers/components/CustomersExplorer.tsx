@@ -1,7 +1,7 @@
 "use client";
 
-import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templates/DataExplorer/DataExplorer";
-import { StatusBadge } from "@/components/admin/templates/StatusBadge";
+import { DataExplorer, type DataExplorerColumn } from "@/shared/admin/templates/DataExplorer/DataExplorer";
+import { StatusBadge } from "@/shared/admin/templates/StatusBadge";
 import { useAdminAuth } from "@/features/admin-auth";
 
 import { useCustomersExplorer, type CustomerStatusFilter } from "../hooks/useCustomersExplorer";

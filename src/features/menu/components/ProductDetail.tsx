@@ -2,8 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, Star } from "lucide-react";
 
-import { Container } from "@/components/ui/Container";
-import { Reveal } from "@/components/shared/Reveal";
+import { Container } from "@/shared/ui/Container";
+import { Reveal } from "@/shared/components/Reveal";
 import { formatCurrency } from "@/core/utils/format-currency";
 import type { ProductDetailData } from "../services/menu.service";
 import { CATEGORY_BADGE_CLASS } from "../constants/category-badge";

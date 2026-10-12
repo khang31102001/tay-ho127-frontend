@@ -1,6 +1,6 @@
 "use client";
 
-import { adminFieldInputClassName, adminFieldLabelClassName } from "@/components/admin/templates/formFieldClassName";
+import { adminFieldInputClassName, adminFieldLabelClassName } from "@/shared/admin/templates/formFieldClassName";
 
 import type { BranchContact } from "../types/organization.types";
 

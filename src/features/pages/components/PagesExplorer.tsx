@@ -1,7 +1,7 @@
 "use client";
 
-import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templates/DataExplorer/DataExplorer";
-import { PublishStatusBadge } from "@/components/shared/PublishStatusBadge";
+import { DataExplorer, type DataExplorerColumn } from "@/shared/admin/templates/DataExplorer/DataExplorer";
+import { PublishStatusBadge } from "@/shared/components/PublishStatusBadge";
 
 import { usePagesExplorer } from "../hooks/usePagesExplorer";
 import type { ManagedPage } from "../types/page.types";

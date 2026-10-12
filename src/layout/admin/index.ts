@@ -1,5 +1,4 @@
-"use client";
-
-export * from "./AdminLayout";
-export * from "./AdminSidebar";
+export * from "./AdminDashboardShell";
+export * from "./AdminGuard";
 export * from "./AdminHeader";
+export * from "./AdminSidebar";

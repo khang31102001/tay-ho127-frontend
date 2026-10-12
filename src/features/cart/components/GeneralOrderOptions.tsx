@@ -1,7 +1,7 @@
 "use client";
 
 import type { ChangeEvent } from "react";
-import { RadioOption } from "@/components/ui/RadioOption";
+import { RadioOption } from "@/shared/ui/RadioOption";
 import { useCart } from "../context/cart-context";
 import { useOrderOptions } from "../hooks/useOrderOptions";
 import type { UtensilsPreference } from "../types/cart.types";

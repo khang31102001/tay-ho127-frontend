@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 
-import MenuBackgroundDecoration from "@/components/ui/MenuBackgroundDecoration";
+import MenuBackgroundDecoration from "@/shared/ui/MenuBackgroundDecoration";
 import { usePaymentPage } from "../hooks/usePaymentPage";
 import { PaymentSummary } from "./PaymentSummary";
 import { QRPaymentView } from "./QRPaymentView";

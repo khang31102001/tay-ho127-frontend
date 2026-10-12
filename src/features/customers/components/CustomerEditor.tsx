@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { MapPin, ShoppingBag } from "lucide-react";
 
-import { DataEditor } from "@/components/admin/templates/DataEditor/DataEditor";
+import { DataEditor } from "@/shared/admin/templates/DataEditor/DataEditor";
 import {
   adminFieldInputClassName,
   adminFieldLabelClassName,
-} from "@/components/admin/templates/formFieldClassName";
-import { MediaPicker } from "@/components/shared/MediaPicker";
-import type { EntityStatus } from "@/components/admin/templates/StatusBadge";
+} from "@/shared/admin/templates/formFieldClassName";
+import { MediaPicker } from "@/features/media/components/MediaPicker";
+import type { EntityStatus } from "@/shared/admin/templates/StatusBadge";
 
 import { useCustomerEditor } from "../hooks/useCustomerEditor";
 import { GENDER_OPTIONS, type Gender } from "../types/customer.types";

@@ -12,7 +12,7 @@ import {
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
-import { NavigationProgress } from "@/components/shared/loading/NavigationProgress";
+import { NavigationProgress } from "@/shared/components/loading/NavigationProgress";
 
 /**
  * Lưới an toàn: nếu pathname không đổi (redirect về chính nó, handler chặn điều

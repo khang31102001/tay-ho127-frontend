@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 
-import { StatusPopup } from "@/components/shared/StatusPopup";
-import { StatusTimeline } from "@/components/shared/StatusTimeline";
+import { StatusPopup } from "@/shared/components/StatusPopup";
+import { StatusTimeline } from "@/shared/components/StatusTimeline";
 
 import { useOrderDetail } from "../hooks/useOrderDetail";
 import { ORDER_STATUS_LABEL } from "../types/order-status";

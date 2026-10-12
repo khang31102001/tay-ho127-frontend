@@ -2,8 +2,8 @@
 
 import { useCart } from "@/features/cart";
 import { formatCurrency } from "@/core/utils/format-currency";
-import { StatusPopup } from "@/components/shared/StatusPopup";
-import MenuBackgroundDecoration from "@/components/ui/MenuBackgroundDecoration";
+import { StatusPopup } from "@/shared/components/StatusPopup";
+import MenuBackgroundDecoration from "@/shared/ui/MenuBackgroundDecoration";
 import { resolvePaymentMethod } from "@/features/payment";
 import { useCheckoutForm } from "../hooks/useCheckoutForm";
 import { CheckoutItemsList } from "./CheckoutItemsList";

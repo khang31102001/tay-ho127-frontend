@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 
-import { NavigationOverlay } from "@/components/shared/loading/NavigationOverlay";
+import { NavigationOverlay } from "@/shared/components/loading/NavigationOverlay";
 import { AdminGuard } from "./AdminGuard";
 import { AdminHeader } from "./AdminHeader";
 import { AdminSidebar } from "./AdminSidebar";

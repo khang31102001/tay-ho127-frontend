@@ -1,6 +1,6 @@
 import { Trash2 } from "lucide-react";
 
-import { adminFieldInputClassName, adminFieldLabelClassName } from "@/components/admin/templates/formFieldClassName";
+import { adminFieldInputClassName, adminFieldLabelClassName } from "@/shared/admin/templates/formFieldClassName";
 
 import { SOCIAL_PLATFORM_OPTIONS } from "../types/social-link.types";
 import type { SocialLink, SocialPlatform } from "../types/social-link.types";

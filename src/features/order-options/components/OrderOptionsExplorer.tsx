@@ -1,6 +1,6 @@
 "use client";
 
-import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templates/DataExplorer/DataExplorer";
+import { DataExplorer, type DataExplorerColumn } from "@/shared/admin/templates/DataExplorer/DataExplorer";
 import { MODIFIER_SELECTION_TYPE_OPTIONS } from "@/features/modifier-groups/types/modifier-group.types";
 
 import { useOrderOptionsExplorer } from "../hooks/useOrderOptionsExplorer";

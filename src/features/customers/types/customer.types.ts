@@ -1,4 +1,4 @@
-import type { EntityStatus } from "@/components/admin/templates/StatusBadge";
+import type { EntityStatus } from "@/shared/admin/templates/StatusBadge";
 
 export const GENDER_OPTIONS = [
   { value: "male", label: "Nam" },

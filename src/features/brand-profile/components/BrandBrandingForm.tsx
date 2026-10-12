@@ -1,4 +1,4 @@
-import { MediaPicker } from "@/components/shared/MediaPicker";
+import { MediaPicker } from "@/features/media/components/MediaPicker";
 import type { ManagedMedia } from "@/features/media";
 
 import type { BrandProfileFormValue } from "../hooks/useBrandProfileEditor";

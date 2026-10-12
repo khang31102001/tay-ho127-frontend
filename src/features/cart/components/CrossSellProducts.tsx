@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { fetchCrossSellProducts } from "@/features/menu/services/menu.service";
 import { CrossSellProductCard } from "@/features/menu/components/CrossSellProductCard";
 import type { UiProduct } from "@/features/menu/types/menu.types";
-import { SwiperCarousel } from "@/components/ui/SwiperCarousel";
+import { SwiperCarousel } from "@/shared/ui/SwiperCarousel";
 import { useCart } from "../context/cart-context";
 
 /** Tự động chuyển slide mỗi 4 giây — "tự nhảy" theo yêu cầu. */

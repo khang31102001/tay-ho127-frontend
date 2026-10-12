@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
-import { Reveal } from "@/components/shared/Reveal";
+import { Reveal } from "@/shared/components/Reveal";
 
 import type { NewsArticleSummaryView } from "../types/news.types";
 import { NewsMeta } from "./NewsMeta";

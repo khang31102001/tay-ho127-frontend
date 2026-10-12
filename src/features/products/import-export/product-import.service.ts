@@ -1,4 +1,4 @@
-import type { ImportOutcome } from "@/components/admin/import-export/import-export.types";
+import type { ImportOutcome } from "@/shared/admin/import-export/import-export.types";
 
 import { createProduct, updateProduct } from "../services/product.service";
 import type { ManagedProduct } from "../types/product.types";

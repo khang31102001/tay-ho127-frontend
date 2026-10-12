@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 
-import { DataEditor } from "@/components/admin/templates/DataEditor/DataEditor";
-import { adminFieldInputClassName, adminFieldLabelClassName } from "@/components/admin/templates/formFieldClassName";
-import { StatusPopup } from "@/components/shared/StatusPopup";
+import { DataEditor } from "@/shared/admin/templates/DataEditor/DataEditor";
+import { adminFieldInputClassName, adminFieldLabelClassName } from "@/shared/admin/templates/formFieldClassName";
+import { StatusPopup } from "@/shared/components/StatusPopup";
 
 import { useOrderSettingsForm } from "../hooks/useOrderSettingsForm";
 import { ORDER_CODE_DATE_FORMAT_OPTIONS, type OrderCodeDateFormat } from "../types/order-settings.types";

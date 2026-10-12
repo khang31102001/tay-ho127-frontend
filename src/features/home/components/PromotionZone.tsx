@@ -1,6 +1,6 @@
 import Image from "next/image";
-import { Reveal } from "@/components/shared/Reveal";
-import { ButtonLink } from "@/components/ui/ButtonLink";
+import { Reveal } from "@/shared/components/Reveal";
+import { ButtonLink } from "@/shared/ui/ButtonLink";
 // Banner đang chạy lấy từ Backend (features/content-public); media import thẳng service
 // (không qua barrel @/features/media — barrel re-export UI Admin, xem menu.service.ts).
 import { listActiveBanners } from "@/features/content-public";

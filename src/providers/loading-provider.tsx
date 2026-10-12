@@ -10,7 +10,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { LoadingOverlay } from "@/components/shared/LoadingOverlay";
+import { LoadingOverlay } from "@/shared/components/LoadingOverlay";
 
 /**
  * Overlay chỉ thực sự hiện sau khoảng trễ này — tránh nhấp nháy khi request

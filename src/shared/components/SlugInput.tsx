@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import {
   adminFieldInputClassName,
   adminFieldLabelClassName,
-} from "@/components/admin/templates/formFieldClassName";
+} from "@/shared/admin/templates/formFieldClassName";
 import { slugify } from "@/core/utils/slugify";
 
 type SlugInputProps = {

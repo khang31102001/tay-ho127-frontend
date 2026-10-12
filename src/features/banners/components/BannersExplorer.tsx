@@ -1,6 +1,6 @@
 "use client";
 
-import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templates/DataExplorer/DataExplorer";
+import { DataExplorer, type DataExplorerColumn } from "@/shared/admin/templates/DataExplorer/DataExplorer";
 
 import { useBannersExplorer } from "../hooks/useBannersExplorer";
 import { BANNER_PLACEMENT_OPTIONS, type ManagedBanner } from "../types/banner.types";

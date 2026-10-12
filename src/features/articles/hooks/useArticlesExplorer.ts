@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-import type { PublishStatus } from "@/components/shared/PublishStatusBadge";
+import type { PublishStatus } from "@/shared/components/PublishStatusBadge";
 import { listArticleCategories } from "@/features/article-categories";
 import { useAsyncData } from "@/shared/hooks/useAsyncData";
 

@@ -1,8 +1,8 @@
 "use client";
 
-import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templates/DataExplorer/DataExplorer";
-import { StatusBadge } from "@/components/admin/templates/StatusBadge";
-import { MoneyDisplay } from "@/components/shared/MoneyDisplay";
+import { DataExplorer, type DataExplorerColumn } from "@/shared/admin/templates/DataExplorer/DataExplorer";
+import { StatusBadge } from "@/shared/admin/templates/StatusBadge";
+import { MoneyDisplay } from "@/shared/components/MoneyDisplay";
 
 import { useDeliveryMethodsExplorer } from "../hooks/useDeliveryMethodsExplorer";
 import { DELIVERY_METHOD_TYPE_OPTIONS, type ManagedDeliveryMethod } from "../types/delivery-method.types";

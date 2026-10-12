@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-import type { TreeMoveEvent } from "@/components/shared/tree";
+import type { TreeMoveEvent } from "@/shared/components/tree";
 import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import { deleteItem, listItemsByMenuId, reorderItems, updateItem } from "../services/navigation.service";

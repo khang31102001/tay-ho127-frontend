@@ -1,13 +1,13 @@
 "use client";
 
-import { Container } from "@/components/ui/Container";
+import { Container } from "@/shared/ui/Container";
 import Link from "next/link";
 import { ChevronRightIcon, MoveLeftIcon } from "lucide-react";
 
 import { ProductCard, type UiProduct } from "@/features/menu";
-import { Reveal } from "@/components/shared/Reveal";
-import { SwiperCarousel } from "@/components/ui/SwiperCarousel";
-import MenuBackgroundDecoration from "@/components/ui/MenuBackgroundDecoration";
+import { Reveal } from "@/shared/components/Reveal";
+import { SwiperCarousel } from "@/shared/ui/SwiperCarousel";
+import MenuBackgroundDecoration from "@/shared/ui/MenuBackgroundDecoration";
 
 /**
  * Thời gian tự động chuyển sản phẩm.

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 
-import { adminFieldInputClassName, adminFieldLabelClassName } from "@/components/admin/templates/formFieldClassName";
+import { adminFieldInputClassName, adminFieldLabelClassName } from "@/shared/admin/templates/formFieldClassName";
 import { listMenus } from "@/features/menus";
 import { useAsyncData } from "@/shared/hooks/useAsyncData";
 

@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 
-import type { PopupStatus } from "@/components/shared/StatusPopup";
+import type { PopupStatus } from "@/shared/components/StatusPopup";
 
 type PopupState = {
   open: boolean;

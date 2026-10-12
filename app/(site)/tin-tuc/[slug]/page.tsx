@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 
-import { Container } from "@/components/ui/Container";
+import { Container } from "@/shared/ui/Container";
 import {
   ArticleContent,
   ArticleCover,
@@ -15,7 +15,7 @@ import {
 import { buildMetadata } from "@/features/seo/utils/build-metadata";
 import { resolveSeoPayloadForEntity } from "@/features/seo/services/seo-resolver.service";
 import { resolveArticlePageSchemas } from "@/features/seo/services/seo-schema-resolver.service";
-import { JsonLd } from "@/components/shared/JsonLd";
+import { JsonLd } from "@/shared/components/JsonLd";
 
 type NewsDetailPageProps = {
   params: { slug: string };

@@ -5,7 +5,7 @@ import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 
 import type { CartItem } from "@/features/cart";
 import { calculateCartItemTotal, consumeCartReviewedFlag, useCart } from "@/features/cart";
-import type { PopupStatus } from "@/components/shared/StatusPopup";
+import type { PopupStatus } from "@/shared/components/StatusPopup";
 import { useAuth } from "@/features/auth";
 // Import thẳng service (không qua barrel @/features/orders) — barrel đó re-export UI Admin, lý do đầy đủ xem
 // features/menu/services/menu.service.ts.

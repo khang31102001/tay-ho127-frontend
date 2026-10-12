@@ -7,7 +7,7 @@ import {
   useState,
 } from "react";
 
-import type { LanguageCode, LanguageOption } from "./LanguageDropdown";
+import type { LanguageCode, LanguageOption } from "../components/LanguageDropdown";
 
 /* =========================================================
  * KHAI BÁO TYPE CHO GOOGLE TRANSLATE

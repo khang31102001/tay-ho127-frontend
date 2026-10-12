@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useMemo, useState } from "react";
 import { Check, FileText, LoaderCircle, Search, Video, X } from "lucide-react";
 
-import { BottomSheetDialog } from "@/components/ui/BottomSheetDialog";
+import { BottomSheetDialog } from "@/shared/ui/BottomSheetDialog";
 import type { ManagedMedia, MediaType } from "@/features/media";
 
 /** "file" là tên gọi nghiệp vụ của loại "document" (PDF, tài liệu). */

@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { StarIcon } from "lucide-react";
 
-import { Container } from "@/components/ui/Container";
-import { Reveal } from "@/components/shared/Reveal";
-import { SwiperCarousel } from "@/components/ui/SwiperCarousel";
+import { Container } from "@/shared/ui/Container";
+import { Reveal } from "@/shared/components/Reveal";
+import { SwiperCarousel } from "@/shared/ui/SwiperCarousel";
 
 import { listTestimonials, type TestimonialItem } from "../services/testimonial.service";
 

@@ -2,9 +2,9 @@
 
 import { ProductCard } from "./ProductCard";
 import type { MenuResponse } from "../types/menu.types";
-import { Reveal } from "@/components/shared/Reveal";
-import { Container } from "@/components/ui/Container";
-import MenuBackgroundDecoration from "@/components/ui/MenuBackgroundDecoration";
+import { Reveal } from "@/shared/components/Reveal";
+import { Container } from "@/shared/ui/Container";
+import MenuBackgroundDecoration from "@/shared/ui/MenuBackgroundDecoration";
 import { categories, useMenuGrid, type MenuCategory } from "../hooks/useMenuGrid";
 
 /**

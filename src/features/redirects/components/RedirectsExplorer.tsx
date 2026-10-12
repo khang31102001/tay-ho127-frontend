@@ -1,6 +1,6 @@
 "use client";
 
-import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templates/DataExplorer/DataExplorer";
+import { DataExplorer, type DataExplorerColumn } from "@/shared/admin/templates/DataExplorer/DataExplorer";
 
 import type { ManagedRedirect } from "../types/redirect.types";
 import { useRedirectsExplorer } from "../hooks/useRedirectsExplorer";

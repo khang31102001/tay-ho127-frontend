@@ -3,7 +3,7 @@
 import Image from "next/image";
 
 import { formatCurrency } from "@/core/utils/format-currency";
-import { QuantityStepper } from "@/components/ui/QuantityStepper";
+import { QuantityStepper } from "@/shared/ui/QuantityStepper";
 import { calculateCartItemTotal, calculateCartItemUnitPrice } from "../services/cart.service";
 import type { CartItem } from "../types/cart.types";
 import { CartItemNoteButton } from "./CartItemNoteButton";

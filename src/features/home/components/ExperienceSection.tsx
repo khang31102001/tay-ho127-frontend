@@ -7,8 +7,8 @@ import {
   useState,
 } from "react";
 
-import { Reveal } from "@/components/shared/Reveal";
-import { Container } from "@/components/ui/Container";
+import { Reveal } from "@/shared/components/Reveal";
+import { Container } from "@/shared/ui/Container";
 
 /* ============================================================
  * TYPES

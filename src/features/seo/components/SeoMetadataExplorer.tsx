@@ -1,6 +1,6 @@
 "use client";
 
-import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templates/DataExplorer/DataExplorer";
+import { DataExplorer, type DataExplorerColumn } from "@/shared/admin/templates/DataExplorer/DataExplorer";
 
 import { useSeoMetadataExplorer, type SeoMetadataRow } from "../hooks/useSeoMetadataExplorer";
 import { seoMetadataRowId } from "../utils/seo-metadata-key";

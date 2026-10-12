@@ -1,4 +1,4 @@
-import type { EntityStatus } from "@/components/admin/templates/StatusBadge";
+import type { EntityStatus } from "@/shared/admin/templates/StatusBadge";
 
 /**
  * Danh mục bài viết — tách riêng khỏi ManagedCategory (Catalog) dù cùng dùng

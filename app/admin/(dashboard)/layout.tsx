@@ -1,4 +1,4 @@
-import { AdminDashboardShell } from "@/components/admin/layout/AdminDashboardShell";
+import { AdminDashboardShell } from "@/layout/admin/AdminDashboardShell";
 
 interface AdminDashboardLayoutProps {
   children: React.ReactNode;

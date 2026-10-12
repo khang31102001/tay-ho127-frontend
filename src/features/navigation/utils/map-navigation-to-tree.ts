@@ -1,4 +1,4 @@
-import type { TreeItem } from "@/components/shared/tree";
+import type { TreeItem } from "@/shared/components/tree";
 
 import type { NavigationTreeItem } from "../types/navigation.types";
 
