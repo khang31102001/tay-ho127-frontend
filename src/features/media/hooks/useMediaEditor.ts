@@ -7,6 +7,7 @@ import type { EntityStatus } from "@/components/admin/templates/StatusBadge";
 import { useAsyncData } from "@/hooks/useAsyncData";
 
 import type { MediaUpsertInput } from "../services/media-library.service";
+import { MEDIA_UPLOAD_MAX_BYTES, uploadLibraryMedia } from "../services/media-library.service";
 import {
   createLibraryMedia,
   deleteLibraryMedia,
@@ -15,6 +16,9 @@ import {
 } from "../services/media-library.service";
 
 export type MediaFormValue = MediaUpsertInput;
+
+/** "url": nhập URL có sẵn; "upload": chọn file để Backend lưu. Sửa media luôn là "url" (không đổi file đã upload). */
+export type MediaSourceMode = "url" | "upload";
 
 const EMPTY_FORM: MediaFormValue = {
   fileName: "",
@@ -34,6 +38,8 @@ export function useMediaEditor({ id }: UseMediaEditorParams) {
 
   const [form, setForm] = useState<MediaFormValue>(EMPTY_FORM);
   const [status, setStatus] = useState<EntityStatus>("active");
+  const [sourceMode, setSourceMode] = useState<MediaSourceMode>("upload");
+  const [file, setFile] = useState<File | null>(null);
 
   const existing = useAsyncData(() => getLibraryMediaById(id ?? ""), [id], {
     enabled: isEditMode,
@@ -54,9 +60,22 @@ export function useMediaEditor({ id }: UseMediaEditorParams) {
   async function handleSave() {
     if (isEditMode) {
       await updateLibraryMedia(id, form);
-    } else {
-      await createLibraryMedia(form);
+      return;
     }
+
+    if (sourceMode === "url") {
+      await createLibraryMedia(form);
+      return;
+    }
+
+    if (!file) {
+      throw new Error("Vui lòng chọn file để tải lên.");
+    }
+    if (file.size > MEDIA_UPLOAD_MAX_BYTES) {
+      throw new Error(`File vượt quá giới hạn ${MEDIA_UPLOAD_MAX_BYTES / (1024 * 1024)}MB.`);
+    }
+
+    await uploadLibraryMedia(file, form.altText);
   }
 
   async function handleDelete() {
@@ -72,6 +91,10 @@ export function useMediaEditor({ id }: UseMediaEditorParams) {
   return {
     form,
     status,
+    sourceMode,
+    setSourceMode,
+    file,
+    setFile,
     updateField,
     isLoading: existing.isLoading,
     loadError: existing.error,

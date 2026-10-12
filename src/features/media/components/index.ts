@@ -1,5 +1,4 @@
 "use client";
 
-export * from "./MediaLibrary";
-export * from "./MediaUploader";
-export * from "./MediaBrowser";
+export * from "./MediaEditor";
+export * from "./MediaExplorer";

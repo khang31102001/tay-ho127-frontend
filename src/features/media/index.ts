@@ -1,3 +1,3 @@
 export * from "./components";
-export * from "./services/media.service";
-export type { MediaFile } from "./types/media.types";
+export { listMedia } from "./services/public-media.service";
+export type { ManagedMedia, MediaType } from "./types/media.types";
