@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { fetchBackend } from "@/lib/http/backend-fetch";
+import { fetchBackend } from "@/core/auth/backend-fetch";
 
 /**
  * Page đã xuất bản cho phía trình duyệt (không cần đăng nhập) — proxy tới Backend

@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useNavigationRouter } from "@/provider/navigation-loading-provider";
+import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 
 import type { ManagedCategory } from "@/features/categories";
 import type { ManagedProduct } from "@/features/products";
 import { listCategories } from "@/features/categories";
 import { listProducts } from "@/features/products";
 
-import { useAsyncData } from "@/hooks/useAsyncData";
+import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import {
   createPromotion,

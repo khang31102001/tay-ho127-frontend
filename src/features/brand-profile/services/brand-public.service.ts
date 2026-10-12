@@ -1,4 +1,4 @@
-import { fetchBackend } from "@/lib/http/backend-fetch";
+import { fetchBackend } from "@/core/auth/backend-fetch";
 
 import type { SiteBrand } from "../types/brand-profile.types";
 import { type BrandProfileDto, toManagedBrandProfile } from "./brand-profile.service";

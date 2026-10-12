@@ -6,7 +6,7 @@ import { UserRound } from "lucide-react";
 import { useState } from "react";
 
 import { CartTrigger, MiniCart, useCart, useFlyToCart, useMiniCart } from "@/features/cart";
-import { useScrollThreshold } from "@/hooks/useScrollThreshold";
+import { useScrollThreshold } from "@/shared/hooks/useScrollThreshold";
 import { AuthModal, useAuth, type AuthUser } from "@/features/auth";
 
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";

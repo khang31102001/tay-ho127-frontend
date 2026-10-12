@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
-import { site } from "@/data/site";
-import { getSiteUrl } from "@/lib/site-url";
+import { site } from "@/core/config/site-data";
+import { getSiteUrl } from "@/core/config/site-url";
 
 import type { SeoPayload } from "./seo.types";
 

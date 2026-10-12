@@ -6,7 +6,7 @@ import {
   fetchBackendAsAdmin,
   toAdminSessionUser,
   writeSessionCookies,
-} from "@/lib/auth/admin-backend-session";
+} from "@/core/auth/admin-backend-session";
 
 /**
  * Admin đang đăng nhập (từ cookie phiên) — AdminAuthProvider gọi khi tải

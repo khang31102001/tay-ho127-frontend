@@ -6,7 +6,7 @@ import {
   adminFieldInputClassName,
   adminFieldLabelClassName,
 } from "@/components/admin/templates/formFieldClassName";
-import { getSiteUrl } from "@/lib/site-url";
+import { getSiteUrl } from "@/core/config/site-url";
 
 import type { SeoMetadataFormValue } from "../types/seo-metadata.types";
 import type { ManagedSeoSettings } from "../types/seo-settings.types";

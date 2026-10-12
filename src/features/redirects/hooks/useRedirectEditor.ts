@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useNavigationRouter } from "@/provider/navigation-loading-provider";
+import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 
 import type { RedirectFormValue } from "../types/redirect.types";
 import {

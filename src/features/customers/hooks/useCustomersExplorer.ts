@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 
 import type { EntityStatus } from "@/components/admin/templates/StatusBadge";
-import { useAsyncData } from "@/hooks/useAsyncData";
+import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import { listCustomers } from "../services/customer.service";
 

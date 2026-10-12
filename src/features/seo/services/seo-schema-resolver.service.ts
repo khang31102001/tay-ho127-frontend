@@ -3,7 +3,7 @@
 // Admin (BrandProfileEditor, MediaExplorer/MediaEditor).
 import { getSiteBrand } from "@/features/brand-profile/services/brand-public.service";
 import { listMedia } from "@/features/media/services/public-media.service";
-import { getSiteUrl } from "@/lib/site-url";
+import { getSiteUrl } from "@/core/config/site-url";
 
 import { getPublicSeoSchema } from "./seo-public.service";
 import {

@@ -5,8 +5,8 @@ import {
   toCustomerSessionUser,
   toCustomerTokens,
   writeCustomerCookies,
-} from "@/lib/auth/customer-backend-session";
-import { fetchBackend } from "@/lib/http/backend-fetch";
+} from "@/core/auth/customer-backend-session";
+import { fetchBackend } from "@/core/auth/backend-fetch";
 
 /**
  * BFF đăng nhập khách hàng: xác thực với Backend (POST /api/v1/customer/auth/login), lấy hồ sơ (GET /api/v1/customers/me),

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type MouseEvent } from "react";
-import { useNavigationRouter } from "@/provider/navigation-loading-provider";
+import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 
 import { useCart, useFlyToCart } from "@/features/cart";
 import type { ProductDetail } from "../types/menu.types";

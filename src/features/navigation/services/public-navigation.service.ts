@@ -1,5 +1,5 @@
 import { listPublishedPages } from "@/features/content-public";
-import { fetchBackend } from "@/lib/http/backend-fetch";
+import { fetchBackend } from "@/core/auth/backend-fetch";
 
 import type { NavigationItem, NavigationLocation, NavigationTargetType } from "../types/navigation.types";
 

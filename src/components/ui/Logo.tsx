@@ -3,7 +3,7 @@ import Image from "next/image";
 // Import Link để logo bấm về trang chủ.
 import Link from "next/link";
 // Import dữ liệu site tập trung.
-import { site } from "../../data/site";
+import { site } from "../../core/config/site-data";
 
 // Logo component nhận tone để dùng đúng ảnh màu/trắng theo nền.
 type LogoProps = {

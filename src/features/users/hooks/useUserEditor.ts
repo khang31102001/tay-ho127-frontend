@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useNavigationRouter } from "@/provider/navigation-loading-provider";
+import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 
 import {
   assignUserBrand,
@@ -14,7 +14,7 @@ import {
   removeUserDepartment,
 } from "@/features/organization";
 import { listRoles } from "@/features/roles";
-import { useAsyncData } from "@/hooks/useAsyncData";
+import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import {
   assignUserRole,

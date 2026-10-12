@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-import { getSiteUrl } from "@/lib/site-url";
+import { getSiteUrl } from "@/core/config/site-url";
 // fetchMenu qua barrel @/features/menu là an toàn cho Site (barrel này không
 // re-export UI admin) — đúng cách app/(site)/thuc-don/page.tsx đang dùng.
 import { fetchMenu } from "@/features/menu";

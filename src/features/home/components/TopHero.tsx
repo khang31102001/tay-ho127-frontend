@@ -10,7 +10,7 @@ import {
   formatOpeningHours,
   getContactPhone,
 } from "@/features/brand-profile/utils/site-contact";
-import { useScrollThreshold } from "@/hooks/useScrollThreshold";
+import { useScrollThreshold } from "@/shared/hooks/useScrollThreshold";
 
 /* =================================================
  * TYPES

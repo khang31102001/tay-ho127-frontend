@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { fetchBackend } from "@/lib/http/backend-fetch";
+import { fetchBackend } from "@/core/auth/backend-fetch";
 
 /**
  * Media công khai cho phía trình duyệt (không cần đăng nhập) — proxy tới

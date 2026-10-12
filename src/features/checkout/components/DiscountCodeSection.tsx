@@ -2,7 +2,7 @@
 
 import { useState, type KeyboardEvent } from "react";
 
-import { formatCurrency } from "@/lib/format-currency";
+import { formatCurrency } from "@/core/utils/format-currency";
 import type { AppliedDiscount } from "../services/discount-code.service";
 
 type DiscountCodeSectionProps = {

@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { clearSessionCookies, fetchBackendAsAdmin, writeSessionCookies } from "@/lib/auth/admin-backend-session";
+import { clearSessionCookies, fetchBackendAsAdmin, writeSessionCookies } from "@/core/auth/admin-backend-session";
 
 /**
  * BFF proxy duy nhất của Admin Portal: /api/admin/backend/<path>?<query>

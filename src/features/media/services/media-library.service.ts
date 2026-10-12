@@ -1,7 +1,7 @@
 import type { EntityStatus } from "@/components/admin/templates/StatusBadge";
-import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/lib/http/admin-api";
-import { ApiError, resolveErrorKind } from "@/lib/http/api-error";
-import type { PaginatedResult } from "@/lib/http/api-types";
+import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/core/api/admin-api";
+import { ApiError, resolveErrorKind } from "@/core/api/api-error";
+import type { PaginatedResult } from "@/core/api/api-types";
 
 import type { ManagedMedia, MediaType } from "../types/media.types";
 

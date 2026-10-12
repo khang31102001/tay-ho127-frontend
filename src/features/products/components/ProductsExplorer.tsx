@@ -4,7 +4,7 @@ import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templa
 import { StatusBadge } from "@/components/admin/templates/StatusBadge";
 import { ExportButton } from "@/components/admin/import-export/ExportButton";
 import { ImportDialog } from "@/components/admin/import-export/ImportDialog";
-import { formatCurrency } from "@/lib/format-currency";
+import { formatCurrency } from "@/core/utils/format-currency";
 import { useAdminAuth } from "@/features/admin-auth";
 
 import { useProductsExplorer, type ProductRow } from "../hooks/useProductsExplorer";

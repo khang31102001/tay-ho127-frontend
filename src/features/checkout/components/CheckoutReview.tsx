@@ -1,7 +1,7 @@
 "use client";
 
 import { useCart } from "@/features/cart";
-import { formatCurrency } from "@/lib/format-currency";
+import { formatCurrency } from "@/core/utils/format-currency";
 import { StatusPopup } from "@/components/shared/StatusPopup";
 import MenuBackgroundDecoration from "@/components/ui/MenuBackgroundDecoration";
 import { resolvePaymentMethod } from "@/features/payment";

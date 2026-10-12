@@ -2,7 +2,7 @@
 
 import { Minus, Plus } from "lucide-react";
 
-import { formatCurrency } from "@/lib/format-currency";
+import { formatCurrency } from "@/core/utils/format-currency";
 import type { ProductDetail } from "../types/menu.types";
 import { useProductDetail } from "../hooks/useProductDetail";
 

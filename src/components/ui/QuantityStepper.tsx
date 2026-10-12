@@ -1,7 +1,7 @@
 "use client";
 
 import { Minus, Plus } from "lucide-react";
-import { cn } from "@/lib/cn";
+import { cn } from "@/core/utils/cn";
 
 type QuantityStepperSize = "sm" | "md" | "lg";
 

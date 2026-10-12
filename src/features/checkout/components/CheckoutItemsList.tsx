@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { formatCurrency } from "@/lib/format-currency";
+import { formatCurrency } from "@/core/utils/format-currency";
 import { calculateCartItemTotal, type CartItem, type CartItemModifierSelection } from "@/features/cart";
 
 type CheckoutItemsListProps = {

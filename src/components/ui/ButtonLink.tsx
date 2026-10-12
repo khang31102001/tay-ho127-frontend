@@ -1,7 +1,7 @@
 // Import Link của Next để chuyển trang không reload toàn bộ web.
 import Link from "next/link";
 // Import helper nối class dùng chung.
-import { cn } from "@/lib/cn";
+import { cn } from "@/core/utils/cn";
 
 // Bảng biến thể button tập trung để đổi style một lần.
 const variants = {

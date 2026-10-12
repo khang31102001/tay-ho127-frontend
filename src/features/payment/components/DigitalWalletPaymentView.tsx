@@ -1,4 +1,4 @@
-import { formatCurrency } from "@/lib/format-currency";
+import { formatCurrency } from "@/core/utils/format-currency";
 import type { PaymentSession } from "../types/payment.types";
 
 type DigitalWalletPaymentViewProps = {

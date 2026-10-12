@@ -1,6 +1,6 @@
 "use client";
 
-import { useAsyncData } from "@/hooks/useAsyncData";
+import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import { deleteModifierGroup, listModifierGroups } from "../services/modifier-group.service";
 import type { ManagedModifierGroup } from "../types/modifier-group.types";

@@ -5,8 +5,8 @@ import {
   loginWithPassword,
   toAdminSessionUser,
   writeSessionCookies,
-} from "@/lib/auth/admin-backend-session";
-import { fetchBackend } from "@/lib/http/backend-fetch";
+} from "@/core/auth/admin-backend-session";
+import { fetchBackend } from "@/core/auth/backend-fetch";
 
 /**
  * BFF login: xác thực với Backend (POST /api/v1/auth/login), lấy hồ sơ + quyền

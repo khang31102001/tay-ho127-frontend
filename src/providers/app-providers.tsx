@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { CartProvider, FlyToCartProvider, MiniCartProvider } from "@/features/cart";
 import { AuthProvider, useAuth } from "@/features/auth";
 import { AppInitLoading } from "@/components/shared/loading/AppInitLoading";
-import { site } from "@/data/site";
+import { site } from "@/core/config/site-data";
 import { FavoritesProvider } from "@/features/favorites";
 
 type AppProvidersProps = {

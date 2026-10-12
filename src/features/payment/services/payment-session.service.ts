@@ -1,5 +1,5 @@
-import { isApiError } from "@/lib/http/api-error";
-import { salesApi } from "@/lib/http/sales-api";
+import { isApiError } from "@/core/api/api-error";
+import { salesApi } from "@/core/api/sales-api";
 // Import thẳng service/type (không qua barrel @/features/orders) — barrel đó re-export UI Admin, lý do đầy đủ xem
 // features/menu/services/menu.service.ts.
 import type { CreateOrderInput } from "@/features/orders/services/site-order.service";

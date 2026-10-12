@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import { useAsyncData } from "@/hooks/useAsyncData";
-import { useNavigationRouter } from "@/provider/navigation-loading-provider";
+import { useAsyncData } from "@/shared/hooks/useAsyncData";
+import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 
 import type { ManagedArticleCategory } from "../types/article-category.types";
 import {

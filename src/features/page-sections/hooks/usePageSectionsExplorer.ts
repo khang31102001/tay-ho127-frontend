@@ -1,7 +1,7 @@
 "use client";
 
 import { getPageById } from "@/features/pages";
-import { useAsyncData } from "@/hooks/useAsyncData";
+import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import type { ManagedPageSection } from "../types/page-section.types";
 import {

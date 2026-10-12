@@ -1,5 +1,5 @@
-import { adminApi } from "@/lib/http/admin-api";
-import { isApiError } from "@/lib/http/api-error";
+import { adminApi } from "@/core/api/admin-api";
+import { isApiError } from "@/core/api/api-error";
 
 import type { ManagedSeoSettings, SeoSettingsFormValue } from "../types/seo-settings.types";
 import { DEFAULT_SEO_SETTINGS } from "../utils/default-seo-settings";

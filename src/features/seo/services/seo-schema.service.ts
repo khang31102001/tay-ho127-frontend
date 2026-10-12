@@ -1,5 +1,5 @@
-import { adminApi } from "@/lib/http/admin-api";
-import { isApiError } from "@/lib/http/api-error";
+import { adminApi } from "@/core/api/admin-api";
+import { isApiError } from "@/core/api/api-error";
 
 import type { SeoEntityType } from "../types/seo-metadata.types";
 import type { ManagedSeoSchema, SeoSchemaFormValue, SeoSchemaType } from "../types/seo-schema.types";

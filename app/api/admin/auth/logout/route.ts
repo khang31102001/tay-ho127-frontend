@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { clearSessionCookies, fetchBackendAsAdmin, readSessionTokens } from "@/lib/auth/admin-backend-session";
+import { clearSessionCookies, fetchBackendAsAdmin, readSessionTokens } from "@/core/auth/admin-backend-session";
 
 /**
  * BFF logout: thu hồi refresh token ở Backend (best effort — lỗi mạng vẫn

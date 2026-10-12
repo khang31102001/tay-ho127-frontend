@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { useCart, useFlyToCart } from "@/features/cart";
 import { useFavorites } from "@/features/favorites";
-import { formatCurrency } from "@/lib/format-currency";
+import { formatCurrency } from "@/core/utils/format-currency";
 import { UiProduct } from "../types/menu.types";
 import Image from "next/image";
 import Link from "next/link";

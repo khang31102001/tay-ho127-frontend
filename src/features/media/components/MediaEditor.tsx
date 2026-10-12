@@ -9,7 +9,7 @@ import {
 } from "@/components/admin/templates/formFieldClassName";
 import { StatusBadge } from "@/components/admin/templates/StatusBadge";
 import { useAdminAuth } from "@/features/admin-auth";
-import { formatFileSize } from "@/lib/format-file-size";
+import { formatFileSize } from "@/core/utils/format-file-size";
 import { MEDIA_TYPE_OPTIONS, type MediaType } from "../types/media.types";
 
 import { type MediaSourceMode, useMediaEditor } from "../hooks/useMediaEditor";

@@ -2,7 +2,7 @@
 
 import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templates/DataExplorer/DataExplorer";
 import { useAdminAuth } from "@/features/admin-auth";
-import { formatCurrency } from "@/lib/format-currency";
+import { formatCurrency } from "@/core/utils/format-currency";
 
 import { useMenuProductsExplorer } from "../hooks/useMenuProductsExplorer";
 import type { ManagedMenuProductRow } from "../types/menu-product.types";

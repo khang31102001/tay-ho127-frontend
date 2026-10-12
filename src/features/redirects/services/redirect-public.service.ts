@@ -1,4 +1,4 @@
-import { fetchBackend } from "@/lib/http/backend-fetch";
+import { fetchBackend } from "@/core/auth/backend-fetch";
 
 import type { RedirectType } from "../types/redirect.types";
 

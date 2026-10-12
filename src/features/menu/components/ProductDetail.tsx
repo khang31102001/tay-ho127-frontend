@@ -4,7 +4,7 @@ import { ChevronLeft, Star } from "lucide-react";
 
 import { Container } from "@/components/ui/Container";
 import { Reveal } from "@/components/shared/Reveal";
-import { formatCurrency } from "@/lib/format-currency";
+import { formatCurrency } from "@/core/utils/format-currency";
 import type { ProductDetailData } from "../services/menu.service";
 import { CATEGORY_BADGE_CLASS } from "../constants/category-badge";
 import { ProductActions } from "./ProductActions";

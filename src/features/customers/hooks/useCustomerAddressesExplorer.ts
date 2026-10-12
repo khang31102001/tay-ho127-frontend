@@ -1,6 +1,6 @@
 "use client";
 
-import { useAsyncData } from "@/hooks/useAsyncData";
+import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import { getCustomerById } from "../services/customer.service";
 import type { ManagedCustomerAddress } from "../types/customer-address.types";

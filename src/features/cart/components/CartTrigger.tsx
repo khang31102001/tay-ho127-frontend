@@ -3,7 +3,7 @@
 import { forwardRef, useEffect, useRef } from "react";
 import { ShoppingCart } from "lucide-react";
 
-import { cn } from "@/lib/cn";
+import { cn } from "@/core/utils/cn";
 
 type CartTriggerVariant = "header" | "floating";
 

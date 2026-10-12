@@ -2,7 +2,7 @@
 
 import { useState, type ChangeEvent } from "react";
 import Link from "next/link";
-import { useNavigationRouter } from "@/provider/navigation-loading-provider";
+import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 
 import MenuBackgroundDecoration from "@/components/ui/MenuBackgroundDecoration";
 import { useCart } from "../context/cart-context";

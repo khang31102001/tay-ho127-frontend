@@ -1,6 +1,6 @@
 "use client";
 
-import { useAsyncData } from "@/hooks/useAsyncData";
+import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import type { ManagedRole } from "../types/role.types";
 import { deleteRole, listRoles } from "../services/role.service";

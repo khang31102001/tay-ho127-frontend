@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useNavigationRouter } from "@/provider/navigation-loading-provider";
+import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 
 import { listCategories } from "@/features/categories";
 import { listMedia } from "@/features/media";
 import { listModifierGroups } from "@/features/modifier-groups";
-import { useAsyncData } from "@/hooks/useAsyncData";
+import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import type { ManagedProduct } from "../types/product.types";
 import {
@@ -18,7 +18,7 @@ import {
   useSeoSchemaForm,
   type ManagedSeoSettings,
 } from "@/features/seo";
-import { getSiteUrl } from "@/lib/site-url";
+import { getSiteUrl } from "@/core/config/site-url";
 import {
   createProduct,
   deleteProduct,

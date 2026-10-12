@@ -1,4 +1,4 @@
-import { createHttpClient } from "@/lib/http/api-client";
+import { createHttpClient } from "@/core/api/http-client";
 
 import type { PromotionValidateRequest, PromotionValidationResult } from "../types/promotion.types";
 

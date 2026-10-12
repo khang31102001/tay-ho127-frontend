@@ -1,4 +1,4 @@
-import { formatCurrency } from "@/lib/format-currency";
+import { formatCurrency } from "@/core/utils/format-currency";
 
 type MoneyDisplayProps = {
   value: number;

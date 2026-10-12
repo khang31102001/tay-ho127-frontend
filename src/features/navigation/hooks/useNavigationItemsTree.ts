@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 
 import type { TreeMoveEvent } from "@/components/shared/tree";
-import { useAsyncData } from "@/hooks/useAsyncData";
+import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import { deleteItem, listItemsByMenuId, reorderItems, updateItem } from "../services/navigation.service";
 import type { ManagedNavigationItem, NavigationScope, NavigationTreeItem } from "../types/navigation.types";

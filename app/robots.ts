@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-import { getSiteUrl } from "@/lib/site-url";
+import { getSiteUrl } from "@/core/config/site-url";
 // Import thẳng service (không qua barrel @/features/seo) — barrel đó
 // re-export cả UI Admin, cùng lý do đã áp dụng cho @/features/articles ở
 // app/(site)/tin-tuc/page.tsx.

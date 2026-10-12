@@ -1,6 +1,6 @@
 "use client";
 
-import { useAsyncData } from "@/hooks/useAsyncData";
+import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import { getMenuById, listMenus } from "../services/navigation.service";
 import type { NavigationScope } from "../types/navigation.types";

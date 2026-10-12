@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 
-import { useAsyncData } from "@/hooks/useAsyncData";
-import { useNavigationRouter } from "@/provider/navigation-loading-provider";
+import { useAsyncData } from "@/shared/hooks/useAsyncData";
+import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 
 import { listMedia } from "@/features/media";
 import { listArticleCategories } from "@/features/article-categories";

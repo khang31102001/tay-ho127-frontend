@@ -1,6 +1,6 @@
 "use client";
 
-import { useAsyncData } from "@/hooks/useAsyncData";
+import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import type { ManagedBanner } from "../types/banner.types";
 import { deleteBanner, listBanners } from "../services/banner.service";

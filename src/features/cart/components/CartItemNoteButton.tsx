@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { NotebookPen } from "lucide-react";
 
-import { cn } from "@/lib/cn";
+import { cn } from "@/core/utils/cn";
 import type { CartItem } from "../types/cart.types";
 import { CartItemNoteDialog } from "./CartItemNoteDialog";
 

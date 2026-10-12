@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/cn";
+import { cn } from "@/core/utils/cn";
 
 import type { NewsCategoryOption } from "../types/news.types";
 

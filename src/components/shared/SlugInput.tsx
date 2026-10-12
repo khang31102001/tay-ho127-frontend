@@ -6,7 +6,7 @@ import {
   adminFieldInputClassName,
   adminFieldLabelClassName,
 } from "@/components/admin/templates/formFieldClassName";
-import { slugify } from "@/lib/slugify";
+import { slugify } from "@/core/utils/slugify";
 
 type SlugInputProps = {
   value: string;

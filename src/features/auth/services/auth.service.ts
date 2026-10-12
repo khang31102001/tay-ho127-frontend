@@ -9,7 +9,7 @@ import type {
   RegisterPayload,
 } from "../types/auth.types";
 
-import { readApiResponse } from "@/services/api-client";
+import { readApiResponse } from "@/core/api/read-api-response";
 
 /**
  * Đăng nhập/đăng ký KHÁCH HÀNG của Site — gọi Route Handler BFF app/api/customer/* (xác thực với Backend

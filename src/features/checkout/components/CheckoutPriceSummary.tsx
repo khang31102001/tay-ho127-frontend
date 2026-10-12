@@ -1,4 +1,4 @@
-import { formatCurrency } from "@/lib/format-currency";
+import { formatCurrency } from "@/core/utils/format-currency";
 import type { CheckoutTotals } from "../types/checkout.types";
 import type { AppliedDiscount } from "../services/discount-code.service";
 import { DiscountCodeSection } from "./DiscountCodeSection";

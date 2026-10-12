@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-import { formatCurrency } from "@/lib/format-currency";
+import { formatCurrency } from "@/core/utils/format-currency";
 import MenuBackgroundDecoration from "@/components/ui/MenuBackgroundDecoration";
 // Import thẳng (không qua barrel @/features/auth, @/features/orders) — 2
 // barrel này re-export UI admin/AuthModal, lý do đầy đủ xem

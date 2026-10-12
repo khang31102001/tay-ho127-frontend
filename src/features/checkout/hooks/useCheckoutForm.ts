@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
-import { useNavigationRouter } from "@/provider/navigation-loading-provider";
+import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 
 import type { CartItem } from "@/features/cart";
 import { calculateCartItemTotal, consumeCartReviewedFlag, useCart } from "@/features/cart";

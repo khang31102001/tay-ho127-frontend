@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { useCart, useFlyToCart } from "@/features/cart";
-import { formatCurrency } from "@/lib/format-currency";
+import { formatCurrency } from "@/core/utils/format-currency";
 import type { UiProduct } from "../types/menu.types";
 import { CATEGORY_BADGE_CLASS } from "../constants/category-badge";
 

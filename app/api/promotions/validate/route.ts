@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { fetchBackend } from "@/lib/http/backend-fetch";
+import { fetchBackend } from "@/core/auth/backend-fetch";
 
 /**
  * Kiểm tra mã giảm giá cho Checkout (không cần đăng nhập) — proxy tới Backend

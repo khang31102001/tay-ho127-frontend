@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { ProductDetail, getProductDetail } from "@/features/menu";
-import { buildMetadata } from "@/lib/seo/build-metadata";
+import { buildMetadata } from "@/features/seo/utils/build-metadata";
 import { resolveSeoPayloadForEntity } from "@/features/seo/services/seo-resolver.service";
 import { resolveProductPageSchemas } from "@/features/seo/services/seo-schema-resolver.service";
 import { JsonLd } from "@/components/shared/JsonLd";

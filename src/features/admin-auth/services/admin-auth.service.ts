@@ -1,7 +1,7 @@
 import type { AdminLoginCredentials, AdminUser } from "../types/admin-auth.types";
 
-import { createHttpClient } from "@/lib/http/api-client";
-import { isApiError } from "@/lib/http/api-error";
+import { createHttpClient } from "@/core/api/http-client";
+import { isApiError } from "@/core/api/api-error";
 
 /**
  * Đăng nhập Admin qua BFF Route Handler cùng origin (app/api/admin/auth/*) —

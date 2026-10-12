@@ -6,7 +6,7 @@ import {
   adminFieldLabelClassName,
 } from "@/components/admin/templates/formFieldClassName";
 import { useAdminAuth } from "@/features/admin-auth";
-import { formatCurrency } from "@/lib/format-currency";
+import { formatCurrency } from "@/core/utils/format-currency";
 
 import { useMenuProductEditor } from "../hooks/useMenuProductEditor";
 

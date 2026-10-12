@@ -1,7 +1,7 @@
 "use client";
 
 import { useId } from "react";
-import { formatCurrency } from "@/lib/format-currency";
+import { formatCurrency } from "@/core/utils/format-currency";
 import type { ManagedModifierGroup } from "@/features/modifier-groups/types/modifier-group.types";
 
 type ModifierGroupSelectorProps = {

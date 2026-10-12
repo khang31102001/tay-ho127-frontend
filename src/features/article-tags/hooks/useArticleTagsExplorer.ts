@@ -1,6 +1,6 @@
 "use client";
 
-import { useAsyncData } from "@/hooks/useAsyncData";
+import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import type { ManagedArticleTag } from "../types/article-tag.types";
 import { deleteArticleTag, listArticleTags } from "../services/article-tag.service";

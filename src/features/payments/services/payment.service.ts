@@ -1,7 +1,7 @@
 import type { PaymentStatus } from "@/features/orders";
-import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/lib/http/admin-api";
-import { isApiError } from "@/lib/http/api-error";
-import type { PaginatedResult } from "@/lib/http/api-types";
+import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/core/api/admin-api";
+import { isApiError } from "@/core/api/api-error";
+import type { PaginatedResult } from "@/core/api/api-types";
 
 import type { ManagedPayment } from "../types/payment.types";
 

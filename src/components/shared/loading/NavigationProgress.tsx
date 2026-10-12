@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import type { NavigationPhase } from "@/provider/navigation-loading-provider";
+import type { NavigationPhase } from "@/providers/navigation-loading-provider";
 
 type NavigationProgressProps = {
   phase: NavigationPhase;

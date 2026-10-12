@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 
-import { useAsyncData } from "@/hooks/useAsyncData";
+import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import type { ManagedPermission } from "../types/permission.types";
 import { deletePermission, listPermissions } from "../services/permission.service";

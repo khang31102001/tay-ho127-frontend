@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { clearCustomerCookies, readCustomerTokens } from "@/lib/auth/customer-backend-session";
-import { fetchBackend } from "@/lib/http/backend-fetch";
+import { clearCustomerCookies, readCustomerTokens } from "@/core/auth/customer-backend-session";
+import { fetchBackend } from "@/core/auth/backend-fetch";
 
 /**
  * BFF đăng xuất khách hàng: thu hồi refresh token ở Backend (POST /api/v1/customer/auth/logout) rồi xóa cookie. Luôn xóa

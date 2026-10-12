@@ -5,7 +5,7 @@ import Link from "next/link";
 
 import { adminFieldInputClassName, adminFieldLabelClassName } from "@/components/admin/templates/formFieldClassName";
 import { listMenus } from "@/features/menus";
-import { useAsyncData } from "@/hooks/useAsyncData";
+import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import { MenuProductsPicker } from "./MenuProductsPicker";
 

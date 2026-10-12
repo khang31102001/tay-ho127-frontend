@@ -1,4 +1,4 @@
-import { fetchBackend } from "@/lib/http/backend-fetch";
+import { fetchBackend } from "@/core/auth/backend-fetch";
 // Import thẳng type của các feature Catalog (không qua barrel) — barrel của
 // chúng re-export cả Explorer/Editor Admin "use client"; xem giải thích đầy đủ
 // ở features/menu/services/menu.service.ts.

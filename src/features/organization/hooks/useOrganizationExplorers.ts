@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 
-import { useAsyncData } from "@/hooks/useAsyncData";
+import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import type { ManagedBrand, ManagedDepartment } from "../types/organization.types";
 import { listBrands, listDepartments, listOrganizations } from "../services/organization.service";

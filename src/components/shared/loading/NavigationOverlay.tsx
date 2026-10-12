@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { LoaderCircle } from "lucide-react";
 
-import { useNavigationLoading } from "@/provider/navigation-loading-provider";
+import { useNavigationLoading } from "@/providers/navigation-loading-provider";
 
 type NavigationOverlayProps = {
   text?: string;

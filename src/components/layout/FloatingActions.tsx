@@ -12,7 +12,7 @@ import {
 
 import type { SiteBrand } from "@/features/brand-profile/types/brand-profile.types";
 import { buildGoogleMapsUrl, getSocialUrl } from "@/features/brand-profile/utils/site-contact";
-import { useScrollThreshold } from "@/hooks/useScrollThreshold";
+import { useScrollThreshold } from "@/shared/hooks/useScrollThreshold";
 
 /* =========================================================
  * CONSTANTS

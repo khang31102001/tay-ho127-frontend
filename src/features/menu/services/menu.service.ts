@@ -14,7 +14,7 @@ import type { ManagedCategory } from "@/features/categories/types/category.types
 import { listMedia } from "@/features/media/services/public-media.service";
 import type { ManagedMedia } from "@/features/media/types/media.types";
 import type { ManagedModifierGroup } from "@/features/modifier-groups/types/modifier-group.types";
-import { normalizeText } from "@/lib/normalize-text";
+import { normalizeText } from "@/core/utils/normalize-text";
 
 import type {
   Category,

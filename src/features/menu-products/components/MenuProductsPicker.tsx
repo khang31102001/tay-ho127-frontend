@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { GripVertical, Search, X } from "lucide-react";
 
-import { cn } from "@/lib/cn";
-import { formatCurrency } from "@/lib/format-currency";
+import { cn } from "@/core/utils/cn";
+import { formatCurrency } from "@/core/utils/format-currency";
 
 import { useMenuProductsPicker } from "../hooks/useMenuProductsPicker";
 

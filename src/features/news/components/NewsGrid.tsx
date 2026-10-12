@@ -1,4 +1,4 @@
-import { cn } from "@/lib/cn";
+import { cn } from "@/core/utils/cn";
 
 import type { NewsArticleSummaryView } from "../types/news.types";
 import { NewsCard } from "./NewsCard";

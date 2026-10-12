@@ -1,6 +1,6 @@
 "use client";
 
-import { useAsyncData } from "@/hooks/useAsyncData";
+import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import type { ManagedMedia } from "../types/media.types";
 import { deleteLibraryMedia, listLibraryMedia } from "../services/media-library.service";

@@ -1,6 +1,6 @@
 import { Container } from "@/components/ui/Container";
 import { FeaturedArticle, NewsHero, NewsListingSection, listNewsArticles, listNewsCategories } from "@/features/news";
-import { buildMetadata } from "@/lib/seo/build-metadata";
+import { buildMetadata } from "@/features/seo/utils/build-metadata";
 
 export const metadata = buildMetadata({
   title: "Tin tức",

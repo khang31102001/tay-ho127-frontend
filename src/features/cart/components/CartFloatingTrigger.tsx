@@ -3,7 +3,7 @@
 import { useCart } from "../context/cart-context";
 import { useFlyToCart } from "../context/fly-to-cart-context";
 import { useMiniCart } from "../context/mini-cart-context";
-import { useScrollThreshold } from "@/hooks/useScrollThreshold";
+import { useScrollThreshold } from "@/shared/hooks/useScrollThreshold";
 import { CartTrigger } from "./CartTrigger";
 
 /**

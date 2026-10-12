@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 
 import type { PublishStatus } from "@/components/shared/PublishStatusBadge";
 import { listArticleCategories } from "@/features/article-categories";
-import { useAsyncData } from "@/hooks/useAsyncData";
+import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import type { ManagedArticleListItem } from "../types/article.types";
 import { deleteArticle, listArticles } from "../services/article.service";

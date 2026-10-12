@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { clearCustomerCookies, fetchBackendAsCustomer, writeCustomerCookies } from "@/lib/auth/customer-backend-session";
+import { clearCustomerCookies, fetchBackendAsCustomer, writeCustomerCookies } from "@/core/auth/customer-backend-session";
 
 /**
  * BFF proxy của TRANG SITE cho nghiệp vụ bán hàng: /api/sales/<path> → Backend /api/v1/sales/<path>. Chỉ cho đi qua đúng

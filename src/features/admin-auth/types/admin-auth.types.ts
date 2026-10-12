@@ -1,4 +1,4 @@
-import type { AdminSessionUser } from "@/lib/auth/admin-backend-session";
+import type { AdminSessionUser } from "@/core/auth/admin-backend-session";
 
 /** Admin đang đăng nhập — hồ sơ + role + mã quyền Backend (vd. "users.view"), không chứa token. */
 export type AdminUser = AdminSessionUser;

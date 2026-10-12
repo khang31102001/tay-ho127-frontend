@@ -6,8 +6,8 @@ import { FileText, Video } from "lucide-react";
 import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templates/DataExplorer/DataExplorer";
 import { StatusBadge } from "@/components/admin/templates/StatusBadge";
 import { useAdminAuth } from "@/features/admin-auth";
-import { formatFileSize } from "@/lib/format-file-size";
-import { isNextImageCompatibleUrl } from "@/lib/image-hosts";
+import { formatFileSize } from "@/core/utils/format-file-size";
+import { isNextImageCompatibleUrl } from "@/core/config/image-hosts";
 import { MEDIA_TYPE_OPTIONS, type ManagedMedia } from "../types/media.types";
 
 import { useMediaExplorer } from "../hooks/useMediaExplorer";

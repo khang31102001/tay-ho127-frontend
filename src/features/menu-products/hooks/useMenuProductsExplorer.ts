@@ -4,7 +4,7 @@ import { useMemo } from "react";
 
 import { listMenus } from "@/features/menus";
 import { listProducts } from "@/features/products";
-import { useAsyncData } from "@/hooks/useAsyncData";
+import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import type {
   ManagedMenuProduct,

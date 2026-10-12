@@ -1,4 +1,4 @@
-import { fetchBackend } from "@/lib/http/backend-fetch";
+import { fetchBackend } from "@/core/auth/backend-fetch";
 
 import type { ManagedSeoMetadata, SeoEntityType } from "../types/seo-metadata.types";
 import type { ManagedSeoSchema, SeoSchemaType } from "../types/seo-schema.types";

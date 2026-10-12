@@ -1,6 +1,6 @@
 import type { EntityStatus } from "@/components/admin/templates/StatusBadge";
-import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/lib/http/admin-api";
-import type { PaginatedResult } from "@/lib/http/api-types";
+import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/core/api/admin-api";
+import type { PaginatedResult } from "@/core/api/api-types";
 
 import type { Gender, ManagedCustomer } from "../types/customer.types";
 

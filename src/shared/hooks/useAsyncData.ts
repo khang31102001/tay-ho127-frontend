@@ -1,19 +1,70 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type DependencyList } from "react";
 
-export function useAsyncData<T>(fn: () => Promise<T>) {
-  const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+type AsyncDataState<T> = {
+  data: T | undefined;
+  isLoading: boolean;
+  /** Message lỗi hiển thị được (đã chuẩn hóa ở api-client), null khi thành công. */
+  error: string | null;
+  /** Tải lại (vd. sau khi xóa 1 dòng) — trả về khi đã tải xong. */
+  reload: () => Promise<void>;
+};
+
+/**
+ * Trạng thái loading/error/data cho 1 lời gọi service bất đồng bộ — dùng chung
+ * cho các màn Explorer/Editor của Admin thay vì mỗi hook tự lặp lại cùng một
+ * khối useState + try/catch + cờ hủy.
+ *
+ * - `load` chạy lại khi `deps` đổi; kết quả của lần gọi cũ bị bỏ qua (tránh
+ *   ghi đè bởi response đến trễ).
+ * - `enabled = false` => không gọi, isLoading = false (vd. Editor ở chế độ tạo mới).
+ */
+export function useAsyncData<T>(
+  load: () => Promise<T>,
+  deps: DependencyList,
+  { enabled = true, fallbackError = "Không thể tải dữ liệu." }: { enabled?: boolean; fallbackError?: string } = {},
+): AsyncDataState<T> {
+  const [data, setData] = useState<T>();
+  const [isLoading, setIsLoading] = useState(enabled);
+  const [error, setError] = useState<string | null>(null);
+  const requestIdRef = useRef(0);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const stableLoad = useCallback(load, deps);
+
+  const run = useCallback(async () => {
+    const requestId = ++requestIdRef.current;
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const result = await stableLoad();
+      if (requestId === requestIdRef.current) setData(result);
+    } catch (loadError) {
+      if (requestId === requestIdRef.current) {
+        setError(loadError instanceof Error ? loadError.message : fallbackError);
+      }
+    } finally {
+      if (requestId === requestIdRef.current) setIsLoading(false);
+    }
+  }, [stableLoad, fallbackError]);
 
   useEffect(() => {
-    setLoading(true);
-    fn()
-      .then(setData)
-      .catch(setError)
-      .finally(() => setLoading(false));
-  }, [fn]);
+    if (!enabled) {
+      setIsLoading(false);
+      return;
+    }
 
-  return { data, loading, error };
+    run();
+
+    return () => {
+      // Hủy kết quả của lần gọi đang chạy khi deps đổi hoặc unmount. requestIdRef là
+      // bộ đếm (không phải DOM node) — tăng nó trong cleanup chính là mục đích.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      requestIdRef.current++;
+    };
+  }, [enabled, run]);
+
+  return { data, isLoading, error, reload: run };
 }

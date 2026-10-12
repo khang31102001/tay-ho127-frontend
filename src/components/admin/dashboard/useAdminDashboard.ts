@@ -3,7 +3,7 @@
 import { countProducts } from "@/features/products";
 import { countRoles } from "@/features/roles";
 import { countUsers } from "@/features/users";
-import { useAsyncData } from "@/hooks/useAsyncData";
+import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 type DashboardStats = {
   productCount: number | null;

@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 
-import { useAsyncData } from "@/hooks/useAsyncData";
+import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import type { ManagedArticleCategory } from "../types/article-category.types";
 import { deleteArticleCategory, listArticleCategories } from "../services/article-category.service";

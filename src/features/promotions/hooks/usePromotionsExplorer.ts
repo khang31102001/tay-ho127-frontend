@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 
-import { useAsyncData } from "@/hooks/useAsyncData";
+import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import type { ManagedPromotion } from "../types/promotion.types";
 import { deletePromotion, listPromotions, resolvePromotionEffectiveStatus } from "../services/promotion.service";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useNavigationRouter } from "@/provider/navigation-loading-provider";
+import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 
 // Import thẳng (không qua barrel) — lý do đầy đủ xem features/menu/services/menu.service.ts.
 import { useCart, type CartItemModifierSelection, type CartProduct } from "@/features/cart";

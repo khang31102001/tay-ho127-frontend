@@ -1,4 +1,4 @@
-import { adminApi } from "@/lib/http/admin-api";
+import { adminApi } from "@/core/api/admin-api";
 
 import type { ManagedBrandProfile } from "../types/brand-profile.types";
 import type { SocialLink, SocialPlatform } from "../types/social-link.types";

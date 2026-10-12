@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ShoppingBag, X } from "lucide-react";
 
-import { formatCurrency } from "@/lib/format-currency";
+import { formatCurrency } from "@/core/utils/format-currency";
 import { useCart } from "../context/cart-context";
 import { GeneralOrderOptions } from "./GeneralOrderOptions";
 import { MiniCartItem } from "./MiniCartItem";

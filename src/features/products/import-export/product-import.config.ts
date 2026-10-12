@@ -1,6 +1,6 @@
 import type { ImportColumn } from "@/components/admin/import-export/import-export.types";
 import type { ManagedCategory } from "@/features/categories";
-import { normalizeText } from "@/lib/normalize-text";
+import { normalizeText } from "@/core/utils/normalize-text";
 
 import type { ProductImportRow } from "./product-import.types";
 

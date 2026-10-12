@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useNavigationRouter } from "@/provider/navigation-loading-provider";
+import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 
 import type { EntityStatus } from "@/components/admin/templates/StatusBadge";
-import { useAsyncData } from "@/hooks/useAsyncData";
+import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import type { MediaUpsertInput } from "../services/media-library.service";
 import { MEDIA_UPLOAD_MAX_BYTES, uploadLibraryMedia } from "../services/media-library.service";

@@ -5,7 +5,7 @@ import {
   fetchMenu,
   type MenuResponse,
 } from "@/features/menu";
-import { buildMetadata } from "@/lib/seo/build-metadata";
+import { buildMetadata } from "@/features/seo/utils/build-metadata";
 
 // Metadata riêng cho trang thực đơn — dữ liệu tĩnh nên build trực tiếp, không cần generateMetadata.
 export const metadata = buildMetadata({

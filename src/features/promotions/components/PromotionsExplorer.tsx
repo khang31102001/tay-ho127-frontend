@@ -1,7 +1,7 @@
 "use client";
 
 import { DataExplorer, type DataExplorerColumn } from "@/components/admin/templates/DataExplorer/DataExplorer";
-import { formatCurrency } from "@/lib/format-currency";
+import { formatCurrency } from "@/core/utils/format-currency";
 
 import { usePromotionsExplorer, type PromotionRow } from "../hooks/usePromotionsExplorer";
 import { PROMOTION_TYPE_LABEL } from "../types/promotion.types";

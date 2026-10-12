@@ -1,6 +1,6 @@
 "use client";
 
-import { useNavigationRouter } from "@/provider/navigation-loading-provider";
+import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 import { LogOut, Menu } from "lucide-react";
 
 import { useAdminAuth } from "@/features/admin-auth";

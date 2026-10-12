@@ -1,7 +1,7 @@
-import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/lib/http/admin-api";
-import type { PaginatedResult } from "@/lib/http/api-types";
-import { isApiError } from "@/lib/http/api-error";
-import { salesApi } from "@/lib/http/sales-api";
+import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/core/api/admin-api";
+import type { PaginatedResult } from "@/core/api/api-types";
+import { isApiError } from "@/core/api/api-error";
+import { salesApi } from "@/core/api/sales-api";
 
 import type { DeliveryMethodType, ManagedDeliveryMethod } from "../types/delivery-method.types";
 

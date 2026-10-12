@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 
 import { listCategories } from "@/features/categories";
-import { useAsyncData } from "@/hooks/useAsyncData";
+import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import type { ManagedProduct } from "../types/product.types";
 import { deleteProduct, listProducts } from "../services/product.service";

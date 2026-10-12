@@ -1,4 +1,4 @@
-import { adminApi } from "@/lib/http/admin-api";
+import { adminApi } from "@/core/api/admin-api";
 
 import type { ManagedOrderSettings, OrderSettingsFormValue } from "../types/order-settings.types";
 

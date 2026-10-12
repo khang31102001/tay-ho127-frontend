@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { listOrganizations } from "@/features/organization";
-import { useAsyncData } from "@/hooks/useAsyncData";
+import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import type { AuditLogFilter, ManagedFiscalYear, ManagedSystemSetting } from "../types/platform.types";
 import { deleteSystemSetting, listAuditLogs, listFiscalYears, listSystemSettings } from "../services/platform.service";

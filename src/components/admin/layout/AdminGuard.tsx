@@ -4,7 +4,7 @@ import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 
 import { AppInitLoading } from "@/components/shared/loading/AppInitLoading";
-import { site } from "@/data/site";
+import { site } from "@/core/config/site-data";
 import { useAdminAuth } from "@/features/admin-auth";
 
 type AdminGuardProps = {

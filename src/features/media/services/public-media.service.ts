@@ -1,5 +1,5 @@
-import { fetchBackend } from "@/lib/http/backend-fetch";
-import { isNextImageCompatibleUrl } from "@/lib/image-hosts";
+import { fetchBackend } from "@/core/auth/backend-fetch";
+import { isNextImageCompatibleUrl } from "@/core/config/image-hosts";
 
 import { SEED_MEDIA } from "../mocks/media.mock";
 import type { ManagedMedia, MediaType } from "../types/media.types";

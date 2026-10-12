@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-import { normalizeText } from "@/lib/normalize-text";
+import { normalizeText } from "@/core/utils/normalize-text";
 
 type UseDataExplorerParams<T> = {
   rows: T[];

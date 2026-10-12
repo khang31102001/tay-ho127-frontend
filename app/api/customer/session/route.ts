@@ -6,7 +6,7 @@ import {
   fetchBackendAsCustomer,
   toCustomerSessionUser,
   writeCustomerCookies,
-} from "@/lib/auth/customer-backend-session";
+} from "@/core/auth/customer-backend-session";
 
 /**
  * Phiên khách hàng hiện tại (GET /api/v1/customers/me qua cookie HttpOnly, tự refresh khi access token hết hạn). Trình

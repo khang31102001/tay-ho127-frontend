@@ -11,9 +11,9 @@ import "./globals.css";
 // @ts-ignore: side-effect CSS import may not have type declarations in this setup
 import "@/styles/components.css";
 // Import thông tin site tập trung từ data.
-import { site } from "@/data/site";
-import { getSiteUrl } from "@/lib/site-url";
-import { NavigationLoadingProvider } from "@/provider/navigation-loading-provider";
+import { site } from "@/core/config/site-data";
+import { getSiteUrl } from "@/core/config/site-url";
+import { NavigationLoadingProvider } from "@/providers/navigation-loading-provider";
 
 // Metadata SEO mặc định của Next.js App Router.
 // (site) và admin có thể override qua metadata riêng ở layout con.

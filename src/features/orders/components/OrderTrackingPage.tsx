@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-import { formatCurrency } from "@/lib/format-currency";
+import { formatCurrency } from "@/core/utils/format-currency";
 import MenuBackgroundDecoration from "@/components/ui/MenuBackgroundDecoration";
 import { StatusTimeline, type StatusTimelineEntry } from "@/components/shared/StatusTimeline";
 import { PriceSummary } from "@/components/shared/PriceSummary";

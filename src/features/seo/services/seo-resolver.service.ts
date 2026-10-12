@@ -1,4 +1,4 @@
-import type { SeoPayload } from "@/lib/seo/seo.types";
+import type { SeoPayload } from "@/features/seo/utils/seo.types";
 // Import thẳng service (không qua barrel @/features/media) — file này được
 // gọi trực tiếp từ generateMetadata() ở app/(site)/**, barrel @/features/media
 // re-export cả UI Admin (MediaExplorer/MediaEditor). Dùng public-media.service

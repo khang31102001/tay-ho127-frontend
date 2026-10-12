@@ -1,8 +1,8 @@
 // Import Footer dùng chung cho mọi trang khách hàng.
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
-import { AppProviders } from "@/provider/app-providers";
-import { LoadingProvider } from "@/provider/loading-provider";
+import { AppProviders } from "@/providers/app-providers";
+import { LoadingProvider } from "@/providers/loading-provider";
 import FloatingActions from "@/components/layout/FloatingActions";
 import { NavigationOverlay } from "@/components/shared/loading/NavigationOverlay";
 import { JsonLd } from "@/components/shared/JsonLd";

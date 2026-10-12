@@ -3,7 +3,7 @@
 import "@/styles/admin-theme.css";
 
 import { AdminAuthProvider } from "@/features/admin-auth";
-import { LoadingProvider } from "@/provider/loading-provider";
+import { LoadingProvider } from "@/providers/loading-provider";
 
 export const metadata = {
   title: "Quản trị | Bánh Cuốn Tây Hồ 127",

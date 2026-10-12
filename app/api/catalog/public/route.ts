@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { fetchBackend } from "@/lib/http/backend-fetch";
+import { fetchBackend } from "@/core/auth/backend-fetch";
 
 /**
  * Catalog đang bán cho phía trình duyệt (không cần đăng nhập) — proxy tới

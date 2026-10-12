@@ -4,8 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 
 import { listCategories } from "@/features/categories";
 import { listProducts, type ManagedProduct } from "@/features/products";
-import { useAsyncData } from "@/hooks/useAsyncData";
-import { normalizeText } from "@/lib/normalize-text";
+import { useAsyncData } from "@/shared/hooks/useAsyncData";
+import { normalizeText } from "@/core/utils/normalize-text";
 
 import {
   createMenuProduct,
