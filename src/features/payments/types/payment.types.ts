@@ -1,27 +1,14 @@
-import type { PaymentStatus } from "@/features/orders";
+export type PaymentMethod = {
+  id: string;
+  name: string;
+  code: string;
+  enabled: boolean;
+};
 
-/**
- * Payment tách biệt khỏi Order để sau này gắn cổng thanh toán thật (VNPay,
- * MoMo, ZaloPay, Stripe...) mà không phải sửa Order. PaymentStatus tái sử
- * dụng type từ features/orders (không định nghĩa trùng) — Order.paymentStatus
- * vẫn giữ lại như một field snapshot để hiển thị nhanh ở list/badge, được
- * đồng bộ bởi payment.service mỗi khi Payment đổi trạng thái.
- */
-export type ManagedPayment = {
+export type Payment = {
   id: string;
   orderId: string;
-  orderCode: string;
-  paymentMethodCode: string;
-  paymentMethodLabel: string;
   amount: number;
-  status: PaymentStatus;
-  transactionId?: string;
-  gateway?: string;
-  gatewayReference?: string;
-  /** Trạng thái kế tiếp hợp lệ do Backend quyết định — Admin chỉ hiện các nút này. */
-  nextStatuses: PaymentStatus[];
-  paidAt: string | null;
-  failedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
+  status: "pending" | "completed" | "failed" | "cancelled";
+  method: string;
 };
