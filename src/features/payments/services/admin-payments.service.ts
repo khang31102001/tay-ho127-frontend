@@ -9,5 +9,5 @@ export async function getPaymentSessions() {
 }
 
 export async function confirmPayment(id: string, data: unknown) {
-  return adminApi.put(`/payments/${id}/confirm", data);
+  return adminApi.put(`/payments/${id}/confirm`, data);
 }
