@@ -1,0 +1,783 @@
+// =====================================================================
+// Bánh Cuốn Tây Hồ 127 — Database Blueprint (DBML)
+// =====================================================================
+// Nguồn: trích xuất trực tiếp từ các type TypeScript hiện có trong
+// src/features/*/types/*.ts (Next.js/TypeScript frontend, KHÔNG có
+// backend thật — mock data + localStorage). File này là bản dịch
+// 1:1 sang lược đồ quan hệ, dùng làm Blueprint giao cho Backend
+// (EF Core Entity → DbContext → Configuration → Migration →
+// Repository/Application Service → REST API) mà không cần đọc lại
+// Frontend.
+//
+// Quy ước đọc file:
+//   - Mỗi Table có Note trỏ lại đúng file .types.ts nguồn (traceability).
+//   - "(backend-only)" trên 1 cột = cột KHÔNG tồn tại trong type Frontend,
+//     được thêm vì Backend thật sự cần nó (vd. password_hash). Đây là
+//     phần duy nhất "bịa thêm" — mọi cột khác đều bắt nguồn từ 1 field
+//     Frontend có thật.
+//   - id dùng varchar để khớp id dạng chuỗi hiện tại của mock (vd.
+//     "product-bc001", "menu-thuc-don-chinh"). Backend có thể đổi sang
+//     uuid/identity int theo convention riêng — không đổi ý nghĩa quan hệ.
+//   - KHÔNG model Cart/CartItem (features/cart) — đó là state thuần
+//     phía trình duyệt (localStorage key "tayho-cart", xem CLAUDE.md),
+//     chưa từng là dữ liệu server. Nó chỉ "hoá thân" thành Order + OrderItem
+//     (snapshot) tại thời điểm khách bấm Đặt hàng.
+//   - features/menu (Menu/MenuGroup/Category/SubCategory/Product/Price)
+//     là READ PROJECTION cho Customer Site (dựng bởi menu.service.ts từ
+//     category/product/menu/menu_product bên dưới) — KHÔNG phải bảng riêng.
+//   - Product.mediaIds / Product.modifierGroupIds / Article.tagIds ở
+//     Frontend là mảng string[] (mock/localStorage, chưa cần field phụ
+//     per-assignment). Ở đây được CHUẨN HOÁ thành junction table đúng
+//     chuẩn quan hệ (điều EF Core/SQL cần) — có ghi rõ trong Note.
+// =====================================================================
+
+Project tayho127 {
+  database_type: 'PostgreSQL'
+  Note: '''
+    Bánh Cuốn Tây Hồ 127 — Customer Site + Admin Portal.
+    Blueprint dịch từ Frontend TypeScript types (branch feature/homepage-ui-refresh).
+    Xem ghi chú đầu file .dbml để hiểu quy ước.
+  '''
+}
+
+// =====================================================================
+// ENUMS
+// =====================================================================
+
+Enum entity_status {
+  active
+  inactive
+}
+
+Enum publish_status {
+  draft
+  published
+  archived
+}
+
+Enum media_type {
+  image
+  video
+  document
+}
+
+Enum gender {
+  male
+  female
+  other
+}
+
+Enum section_type {
+  hero
+  introduction
+  promotion
+  highlight
+  testimonial
+  cta
+}
+
+Enum banner_placement {
+  HOME_HERO
+  HOME_PROMOTION
+  MENU_HERO
+  ARTICLE_BANNER
+}
+
+Enum navigation_location {
+  header
+  footer
+  mobile
+  "admin-sidebar"
+}
+
+Enum navigation_target_type {
+  page
+  route
+  external
+}
+
+Enum modifier_selection_type {
+  single
+  multiple
+}
+
+Enum delivery_method_type {
+  delivery
+  pickup
+}
+
+Enum payment_method_group {
+  cod
+  card
+  bank_transfer
+  e_wallet
+}
+
+Enum order_status {
+  pending
+  confirmed
+  preparing
+  ready
+  delivering
+  completed
+  cancelled
+}
+
+Enum payment_status {
+  pending
+  paid
+  failed
+  refunded
+  cancelled
+}
+
+Enum payment_transaction_action {
+  created
+  charge
+  refund
+  cancel
+  retry
+}
+
+Enum payment_transaction_result {
+  success
+  failed
+}
+
+Enum permission_key {
+  "menu:manage"
+  "user:manage"
+  "role:manage"
+  "order:manage"
+}
+
+Enum auth_provider {
+  credentials
+  google
+}
+
+Enum account_type {
+  customer
+  admin
+}
+
+Enum social_platform {
+  website
+  facebook
+  instagram
+  tiktok
+  shopee
+  zalo
+  youtube
+}
+
+// =====================================================================
+// IDENTITY & ACCESS
+// Nguồn: features/users, features/roles, features/admin-auth,
+//        features/customers, features/auth
+// =====================================================================
+
+Table role {
+  id varchar(50) [pk]
+  name varchar(100) [unique, not null]
+  description text
+  status entity_status [not null, default: 'active']
+
+  Note: 'Source: src/features/roles/types/role.types.ts (ManagedRole)'
+}
+
+Table role_permission {
+  role_id varchar(50) [not null, ref: > role.id]
+  permission permission_key [not null]
+
+  indexes {
+    (role_id, permission) [pk]
+  }
+
+  Note: '''
+    Chuẩn hoá ManagedRole.permissions (PermissionKey[]) thành junction table.
+    Source: src/features/roles/types/role.types.ts
+  '''
+}
+
+Table user_account {
+  id varchar(50) [pk]
+  account_type account_type [not null, note: 'discriminator — customer (Customer Site) hoặc admin (Admin Portal)']
+  full_name varchar(150) [not null]
+  email varchar(150) [unique, note: 'unique cho phép nhiều NULL (Postgres) — account_type=admin bắt buộc có email, account_type=customer có thể chỉ có phone; ràng buộc "bắt buộc theo account_type" xử lý ở tầng ứng dụng/CHECK constraint, DBML không diễn tả được']
+  phone varchar(30)
+  provider auth_provider [not null, default: 'credentials', note: 'account_type=admin luôn = credentials; account_type=customer có thể = google']
+  password_hash varchar(255) [note: '(backend-only), null khi provider = google']
+  role varchar(100) [ref: > role.name, note: 'CHỈ set khi account_type = admin — tham chiếu role.name']
+  customer_id varchar(50) [ref: > customer.id, note: 'CHỈ set khi account_type = customer — bridge sang hồ sơ khách hàng, gán qua findOrCreateCustomerByContact() khi login/register']
+  status entity_status [not null, default: 'active']
+  created_at timestamp [not null]
+
+  Note: '''
+    GỘP theo yêu cầu tường minh: 1 bảng đăng nhập DUY NHẤT dùng chung cho cả
+    Customer Site (cũ: site_account/AuthUser) lẫn Admin Portal (cũ:
+    admin_user = ManagedUser + AdminUser). role/customer_id loại trừ nhau
+    theo account_type (chỉ 1 trong 2 có giá trị tại 1 thời điểm) — đánh đổi
+    có chủ đích để dùng 1 bảng, không phải chuẩn 3NF chặt.
+    CẢNH BÁO: CLAUDE.md của Frontend hiện ghi rõ features/admin-auth và
+    features/auth "Separate mock stack... never merge them" — tách biệt có
+    chủ đích vì lý do bảo mật (lộ bảng khách hàng không kéo theo lộ tài
+    khoản vận hành/admin). Gộp ở đây là quyết định kiến trúc được yêu cầu
+    tường minh cho riêng bản Blueprint này — Backend team nên cân nhắc lại
+    rủi ro (RBAC, blast radius khi leak) trước khi triển khai thật.
+    Source: src/features/users/types/user.types.ts, src/features/admin-auth/types/admin-auth.types.ts, src/features/auth/types/auth.types.ts
+  '''
+}
+
+Table customer {
+  id varchar(50) [pk]
+  customer_code varchar(20) [unique, not null, note: 'Tự sinh dạng KH00001']
+  full_name varchar(150) [not null]
+  phone varchar(30) [not null]
+  email varchar(150)
+  avatar_media_id varchar(50) [ref: > media.id]
+  date_of_birth date
+  gender gender
+  status entity_status [not null, default: 'active']
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+
+  Note: '''
+    Hồ sơ khách hàng do Admin quản lý — KHÁC user_account (định danh đăng
+    nhập, dùng chung cho cả Customer Site và Admin Portal). 2 domain vẫn
+    tách nhau: 1 customer có thể tồn tại mà chưa từng đăng nhập (Admin tạo
+    tay), và 1 user_account (account_type=customer) trỏ sang đúng 1 customer
+    qua customer_id.
+    Source: src/features/customers/types/customer.types.ts (ManagedCustomer)
+  '''
+}
+
+Table customer_address {
+  id varchar(50) [pk]
+  customer_id varchar(50) [not null, ref: > customer.id]
+  receiver_name varchar(150) [not null]
+  phone varchar(30) [not null]
+  address_line varchar(255) [not null]
+  ward varchar(100)
+  district varchar(100)
+  province varchar(100)
+  note text
+  is_default boolean [not null, default: false]
+
+  Note: 'Source: src/features/customers/types/customer-address.types.ts (ManagedCustomerAddress)'
+}
+
+// =====================================================================
+// CATALOG
+// Nguồn: features/categories, features/media, features/modifier-groups,
+//        features/products, features/menus, features/menu-products
+// =====================================================================
+
+Table category {
+  id varchar(50) [pk]
+  name varchar(150) [not null]
+  parent_id varchar(50) [ref: > category.id, note: 'null = danh mục gốc']
+  sort_order int [not null, default: 0]
+  status entity_status [not null, default: 'active']
+
+  Note: 'Source: src/features/categories/types/category.types.ts (ManagedCategory)'
+}
+
+Table media {
+  id varchar(50) [pk]
+  file_name varchar(255) [not null]
+  url varchar(500) [not null]
+  type media_type [not null]
+  alt_text varchar(255)
+  size bigint [not null, note: 'byte']
+  status entity_status [not null, default: 'active']
+
+  Note: 'Source: src/features/media/types/media.types.ts (ManagedMedia)'
+}
+
+Table modifier_group {
+  id varchar(50) [pk]
+  name varchar(150) [not null, note: 'vd. "Nước mắm", "Rau"']
+  selection_type modifier_selection_type [not null]
+  is_required boolean [not null, default: false]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+
+  Note: 'Source: src/features/modifier-groups/types/modifier-group.types.ts (ManagedModifierGroup)'
+}
+
+Table modifier_option {
+  id varchar(50) [pk]
+  group_id varchar(50) [not null, ref: > modifier_group.id]
+  label varchar(150) [not null]
+  price_adjustment decimal [not null, default: 0, note: 'chênh lệch giá so với giá gốc Product, có thể âm']
+  is_default boolean [not null, default: false, note: 'chỉ có ý nghĩa khi selection_type = single']
+
+  Note: '''
+    Nhúng trong ManagedModifierGroup.options ở Frontend (luôn sửa cùng Group,
+    không có CRUD độc lập) — vẫn là bảng con thật vì mỗi option có id ổn định.
+    Source: src/features/modifier-groups/types/modifier-group.types.ts (ModifierOption)
+  '''
+}
+
+Table product {
+  id varchar(50) [pk]
+  name varchar(255) [not null]
+  category_id varchar(50) [not null, ref: > category.id]
+  price decimal [not null]
+  old_price decimal [note: 'giá gốc trước giảm giá, hiển thị gạch ngang']
+  description text
+  badge varchar(100) [note: 'nhãn dùng để khớp tìm kiếm trên site, không hiển thị UI']
+  rating decimal [note: 'trung bình thang 5 sao']
+  rating_count int
+  status entity_status [not null, default: 'active']
+
+  Note: 'Source: src/features/products/types/product.types.ts (ManagedProduct)'
+}
+
+Table product_media {
+  product_id varchar(50) [not null, ref: > product.id]
+  media_id varchar(50) [not null, ref: > media.id]
+  sort_order int [not null, default: 0, note: 'giữ thứ tự gallery — Frontend hiện lưu dạng mảng string[] có thứ tự']
+
+  indexes {
+    (product_id, media_id) [pk]
+  }
+
+  Note: '''
+    Chuẩn hoá ManagedProduct.mediaIds (string[]) thành junction table thật.
+    Source: src/features/products/types/product.types.ts
+  '''
+}
+
+Table product_modifier_group {
+  product_id varchar(50) [not null, ref: > product.id]
+  modifier_group_id varchar(50) [not null, ref: > modifier_group.id]
+
+  indexes {
+    (product_id, modifier_group_id) [pk]
+  }
+
+  Note: '''
+    Chuẩn hoá ManagedProduct.modifierGroupIds (string[]) thành junction table thật.
+    Source: src/features/products/types/product.types.ts
+  '''
+}
+
+Table menu {
+  id varchar(50) [pk]
+  name varchar(150) [not null]
+  status entity_status [not null, default: 'active']
+
+  Note: '''
+    Nguồn duy nhất cho cả Admin lẫn Customer Site — id
+    "menu-thuc-don-chinh"/"menu-mon-yeu-thich" chi phối trực tiếp /thuc-don
+    và trang chủ (xem menu.service.ts).
+    Source: src/features/menus/types/menu.types.ts (ManagedMenu)
+  '''
+}
+
+Table menu_product {
+  id varchar(50) [pk]
+  menu_id varchar(50) [not null, ref: > menu.id]
+  product_id varchar(50) [not null, ref: > product.id]
+  price_override decimal [note: 'null = dùng giá gốc Product']
+  sort_order int [not null, default: 0]
+  is_available boolean [not null, default: true]
+
+  indexes {
+    (menu_id, product_id) [unique]
+  }
+
+  Note: 'Source: src/features/menu-products/types/menu-product.types.ts (ManagedMenuProduct)'
+}
+
+// =====================================================================
+// ORDERING & PAYMENTS
+// Nguồn: features/orders, features/payments, features/delivery-methods,
+//        features/payment-methods
+// =====================================================================
+
+Table delivery_method {
+  id varchar(50) [pk]
+  code varchar(50) [unique, not null]
+  name varchar(150) [not null]
+  description text
+  type delivery_method_type [not null]
+  base_fee decimal [not null, default: 0]
+  free_shipping_threshold decimal
+  estimated_min_minutes int
+  estimated_max_minutes int
+  pickup_address varchar(255) [note: 'chỉ có ý nghĩa khi type = pickup']
+  display_order int [not null, default: 0]
+  is_active boolean [not null, default: true]
+  is_default boolean [not null, default: false]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+
+  Note: 'Source: src/features/delivery-methods/types/delivery-method.types.ts (ManagedDeliveryMethod)'
+}
+
+Table payment_method {
+  id varchar(50) [pk]
+  code varchar(50) [unique, not null]
+  name varchar(150) [not null]
+  description text
+  icon_media_id varchar(50) [ref: > media.id]
+  group payment_method_group [not null]
+  gateway varchar(50) [note: 'vd. vnpay, momo, zalopay, stripe — chỉ khi group = card|e_wallet']
+  instructions text
+  bank_name varchar(150)
+  bank_account_number varchar(50)
+  bank_account_holder varchar(150)
+  bank_branch varchar(150)
+  display_order int [not null, default: 0]
+  is_active boolean [not null, default: true]
+  is_default boolean [not null, default: false]
+  min_order_amount decimal
+  max_order_amount decimal
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+
+  Note: 'Source: src/features/payment-methods/types/payment-method.types.ts (ManagedPaymentMethod)'
+}
+
+Table orders {
+  id varchar(50) [pk]
+  order_code varchar(30) [unique, not null]
+  idempotency_key varchar(100) [unique, note: 'chống double-submit — cùng key chỉ tạo 1 Order duy nhất']
+  customer_id varchar(50) [ref: > customer.id, note: 'nullable — hỗ trợ Guest Checkout']
+  customer_name varchar(150) [not null, note: 'snapshot tại thời điểm đặt hàng']
+  phone varchar(30) [not null]
+  email varchar(150)
+  delivery_address_snapshot varchar(500) [not null]
+  payment_method_code varchar(50) [not null, ref: > payment_method.code, note: 'snapshot code+label, xem payment_method_label']
+  payment_method_label varchar(150) [not null]
+  delivery_method_code varchar(50) [not null, ref: > delivery_method.code]
+  delivery_method_label varchar(150) [not null]
+  is_pickup boolean [not null, note: 'snapshot DeliveryMethod.type = pickup, chọn nhánh Timeline Order Tracking']
+  subtotal decimal [not null]
+  discount decimal [not null, default: 0]
+  delivery_fee decimal [not null, default: 0]
+  total_amount decimal [not null]
+  order_status order_status [not null, default: 'pending']
+  payment_status payment_status [not null, default: 'pending']
+  wants_utensils boolean [not null, default: true]
+  note text
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  completed_at timestamp
+  cancelled_at timestamp
+
+  Note: '''
+    customerName/phone/email/deliveryAddressSnapshot là bản sao tại thời
+    điểm đặt hàng, KHÔNG tham chiếu sống tới Customer — sửa hồ sơ Customer
+    sau này không làm thay đổi lịch sử Order.
+    Đặt tên bảng vật lý "orders" (số nhiều, khớp quy ước EF Core mặc định)
+    thay vì "order" — "order" là từ khoá dự trữ ở nhiều SQL engine.
+    Source: src/features/orders/types/order.types.ts (ManagedOrder)
+  '''
+}
+
+Table order_item {
+  id varchar(50) [pk, note: '(backend-only) surrogate key — Frontend nhúng OrderItem[] trực tiếp trong Order.items, không có id riêng']
+  order_id varchar(50) [not null, ref: > orders.id]
+  product_id varchar(50) [not null, ref: > product.id, note: 'tham chiếu để truy vết — KHÔNG dùng để lấy lại giá/tên hiển thị, xem các cột snapshot bên dưới']
+  product_name varchar(255) [not null, note: 'snapshot']
+  product_image varchar(500) [not null, note: 'snapshot']
+  unit_price decimal [not null, note: 'giá gốc, chưa cộng modifier']
+  quantity int [not null]
+  discount decimal [default: 0]
+  line_total decimal [not null, note: 'đã cộng dồn priceAdjustment của modifiers']
+  note text
+
+  Note: 'Source: src/features/orders/types/order-item.types.ts (OrderItem)'
+}
+
+Table order_item_modifier {
+  id varchar(50) [pk, note: '(backend-only) surrogate key — Frontend nhúng OrderItemModifierSnapshot[] trong OrderItem.modifiers']
+  order_item_id varchar(50) [not null, ref: > order_item.id]
+  group_id varchar(50) [not null, note: 'snapshot ModifierGroup.id tại thời điểm đặt hàng — KHÔNG ref sống tới modifier_group']
+  group_name varchar(150) [not null]
+  option_id varchar(50) [not null]
+  option_label varchar(150) [not null]
+  price_adjustment decimal [not null]
+
+  Note: '''
+    Snapshot bất biến — Admin đổi tên/giá modifier sau này KHÔNG được làm
+    thay đổi Order cũ (cố ý không đặt FK sống tới modifier_group/modifier_option).
+    Source: src/features/orders/types/order-item.types.ts (OrderItemModifierSnapshot)
+  '''
+}
+
+Table order_status_history {
+  id varchar(50) [pk, note: '(backend-only) surrogate key — Frontend nhúng trong Order.statusHistory']
+  order_id varchar(50) [not null, ref: > orders.id]
+  from_status order_status [note: 'null cho entry đầu tiên (khởi tạo đơn)']
+  to_status order_status [not null]
+  changed_at timestamp [not null]
+  changed_by varchar(150) [not null, note: '"Khách hàng" khi tự đặt hàng, hoặc tên admin thực hiện']
+  note text
+
+  Note: '''
+    Append-only Timeline, chỉ hiển thị read-only ở Order Detail.
+    Source: src/features/orders/types/order-status-history.types.ts (OrderStatusHistoryEntry)
+  '''
+}
+
+Table payment {
+  id varchar(50) [pk]
+  order_id varchar(50) [not null, ref: > orders.id]
+  order_code varchar(30) [not null, note: 'snapshot hiển thị nhanh, trùng order.order_code']
+  payment_method_code varchar(50) [not null, ref: > payment_method.code]
+  payment_method_label varchar(150) [not null]
+  amount decimal [not null]
+  status payment_status [not null, default: 'pending']
+  transaction_id varchar(150)
+  gateway varchar(50)
+  gateway_reference varchar(150)
+  paid_at timestamp
+  failed_at timestamp
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+
+  Note: '''
+    Tách biệt khỏi Order để gắn cổng thanh toán thật (VNPay/MoMo/ZaloPay/
+    Stripe...) mà không sửa Order. Order.payment_status vẫn là field
+    snapshot, đồng bộ mỗi khi Payment đổi trạng thái.
+    Source: src/features/payments/types/payment.types.ts (ManagedPayment)
+  '''
+}
+
+Table payment_transaction {
+  id varchar(50) [pk]
+  payment_id varchar(50) [not null, ref: > payment.id]
+  action payment_transaction_action [not null]
+  result payment_transaction_result [not null]
+  gateway varchar(50)
+  gateway_reference varchar(150)
+  message text
+  changed_by varchar(150) [not null]
+  created_at timestamp [not null]
+
+  Note: '''
+    Audit log append-only cho mỗi lần gọi gateway — KHÔNG BAO GIỜ sửa/xoá 1
+    entry đã ghi. KHÔNG lưu số thẻ/CVV/token bí mật, chỉ message tóm tắt.
+    Source: src/features/payments/types/payment-transaction.types.ts (ManagedPaymentTransaction)
+  '''
+}
+
+// =====================================================================
+// CONTENT / CMS
+// Nguồn: features/pages, features/page-sections, features/banners,
+//        features/article-categories, features/article-tags, features/articles
+// =====================================================================
+
+Table page {
+  id varchar(50) [pk]
+  name varchar(150) [not null]
+  slug varchar(150) [unique, not null]
+  status publish_status [not null, default: 'draft']
+  published_at timestamp
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+
+  Note: '''
+    Trang chủ/Thực đơn/Landing Page... do Admin quản lý — chỉ giữ định danh
+    + trạng thái xuất bản, nội dung chi tiết nằm ở page_section.
+    Source: src/features/pages/types/page.types.ts (ManagedPage)
+  '''
+}
+
+Table page_section {
+  id varchar(50) [pk]
+  page_id varchar(50) [not null, ref: > page.id]
+  section_type section_type [not null]
+  eyebrow varchar(150)
+  heading varchar(255)
+  subheading varchar(255)
+  body text
+  media_id varchar(50) [ref: > media.id]
+  cta_label varchar(100)
+  cta_url varchar(500)
+  display_order int [not null, default: 0]
+  is_visible boolean [not null, default: true]
+
+  Note: 'Source: src/features/page-sections/types/page-section.types.ts (ManagedPageSection)'
+}
+
+Table banner {
+  id varchar(50) [pk]
+  name varchar(150) [not null]
+  desktop_media_id varchar(50) [ref: > media.id]
+  mobile_media_id varchar(50) [ref: > media.id]
+  alt_text varchar(255) [not null]
+  heading varchar(255)
+  subheading varchar(255)
+  cta_label varchar(100)
+  cta_url varchar(500)
+  placement banner_placement [not null]
+  start_at timestamp [note: 'null = không giới hạn thời gian bắt đầu']
+  end_at timestamp [note: 'null = không giới hạn thời gian kết thúc']
+  display_order int [not null, default: 0]
+  is_active boolean [not null, default: true]
+
+  Note: '''
+    KHÔNG FK tới page — Site tự query theo placement, tách rời khỏi 1 record
+    Page cụ thể.
+    Source: src/features/banners/types/banner.types.ts (ManagedBanner)
+  '''
+}
+
+Table article_category {
+  id varchar(50) [pk]
+  name varchar(150) [not null]
+  slug varchar(150) [unique, not null]
+  parent_id varchar(50) [ref: > article_category.id]
+  sort_order int [not null, default: 0]
+  status entity_status [not null, default: 'active']
+
+  Note: '''
+    Taxonomy riêng cho bài viết — tách khỏi category (Catalog) dù cùng
+    pattern tự tham chiếu parentId, vì đối tượng khác hẳn nhau.
+    Source: src/features/article-categories/types/article-category.types.ts (ManagedArticleCategory)
+  '''
+}
+
+Table article_tag {
+  id varchar(50) [pk]
+  name varchar(100) [not null]
+  slug varchar(100) [unique, not null]
+
+  Note: 'Source: src/features/article-tags/types/article-tag.types.ts (ManagedArticleTag)'
+}
+
+Table article {
+  id varchar(50) [pk]
+  title varchar(255) [not null]
+  slug varchar(255) [unique, not null]
+  summary varchar(500) [not null]
+  content text [not null, note: 'HTML từ RichTextEditor (Tiptap) — Site PHẢI sanitize khi render']
+  featured_media_id varchar(50) [ref: > media.id]
+  category_id varchar(50) [ref: > article_category.id]
+  author_name varchar(150) [not null]
+  status publish_status [not null, default: 'draft']
+  published_at timestamp
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+
+  Note: 'Source: src/features/articles/types/article.types.ts (ManagedArticle)'
+}
+
+Table article_tag_map {
+  article_id varchar(50) [not null, ref: > article.id]
+  tag_id varchar(50) [not null, ref: > article_tag.id]
+
+  indexes {
+    (article_id, tag_id) [pk]
+  }
+
+  Note: '''
+    Chuẩn hoá ManagedArticle.tagIds (string[]) thành junction table thật —
+    Frontend không cần field phụ per-assignment nên không có domain CRUD
+    riêng cho quan hệ này, nhưng vẫn là bảng M:N chuẩn ở tầng quan hệ.
+    Source: src/features/articles/types/article.types.ts
+  '''
+}
+
+// =====================================================================
+// NAVIGATION
+// Nguồn: features/navigation
+// =====================================================================
+
+Table navigation_menu {
+  id varchar(50) [pk]
+  code varchar(50) [unique, not null]
+  name varchar(150) [not null]
+  location navigation_location [not null]
+  is_active boolean [not null, default: true]
+
+  Note: 'Source: src/features/navigation/types/navigation.types.ts (ManagedNavigationMenu)'
+}
+
+Table navigation_item {
+  id varchar(50) [pk]
+  menu_id varchar(50) [not null, ref: > navigation_menu.id]
+  parent_id varchar(50) [ref: > navigation_item.id]
+  label varchar(150) [not null]
+  target_type navigation_target_type [not null]
+  target_id varchar(50) [note: 'polymorphic — chỉ có ý nghĩa khi target_type = page (trỏ page.id); route/external dùng cột url']
+  url varchar(500)
+  icon varchar(100)
+  sort_order int [not null, default: 0]
+  is_visible boolean [not null, default: true]
+  open_in_new_tab boolean [default: false]
+
+  Note: '''
+    Lưu phẳng theo parent_id (tự tham chiếu, giống category/article_category)
+    — Backend dựng cây children lồng nhau khi trả response cho
+    Header/Footer/AdminSidebar (xem NavigationItem ở tầng response Frontend).
+    Source: src/features/navigation/types/navigation.types.ts (ManagedNavigationItem)
+  '''
+}
+
+// =====================================================================
+// BRAND / MARKETING
+// Nguồn: features/brand, features/home (testimonials)
+// =====================================================================
+
+Table brand_settings {
+  id varchar(50) [pk, note: 'single-row — hệ thống chỉ phục vụ 1 thương hiệu']
+  name varchar(150) [not null]
+  tagline varchar(255) [not null]
+  description text
+  phone varchar(30) [not null]
+  hotline varchar(30)
+  email varchar(150)
+  address_line varchar(255) [not null]
+  ward varchar(100)
+  district varchar(100)
+  province varchar(100)
+  tax_code varchar(50)
+  legal_name varchar(255)
+  logo_media_id varchar(50) [ref: > media.id]
+  logo_dark_media_id varchar(50) [ref: > media.id]
+  logo_light_media_id varchar(50) [ref: > media.id]
+  favicon_media_id varchar(50) [ref: > media.id]
+  og_image_media_id varchar(50) [ref: > media.id]
+  open_time time [not null]
+  close_time time [not null]
+  business_hours_note varchar(255)
+  updated_at timestamp [not null]
+
+  Note: '''
+    Single-brand settings — không tạo entity Brand nhiều bản ghi.
+    Source: src/features/brand/types/brand-settings.types.ts (ManagedBrandSettings)
+  '''
+}
+
+Table social_link {
+  id varchar(50) [pk]
+  brand_settings_id varchar(50) [not null, ref: > brand_settings.id]
+  platform social_platform [not null]
+  url varchar(500) [not null]
+  display_order int [not null, default: 0]
+  is_active boolean [not null, default: true]
+
+  Note: 'Source: src/features/brand/types/social-link.types.ts (SocialLink)'
+}
+
+Table testimonial {
+  id varchar(50) [pk]
+  customer_name varchar(150) [not null]
+  avatar_text varchar(5) [not null, note: 'chữ cái hiển thị trong avatar tròn khi không có ảnh thật']
+  rating int [not null, note: '1-5']
+  content text [not null]
+  created_at timestamp [not null, note: 'Frontend hiện hiển thị dạng tương đối ("1 tuần trước") — tính động từ cột này, không lưu chuỗi timeAgo']
+
+  Note: '''
+    Đánh giá khách hàng hiển thị ở trang chủ — hiện là mock nội bộ, không
+    ràng buộc Customer/Order (không có customerId/orderId trong Frontend).
+    Source: src/features/home/mocks/testimonials.mock.ts (TestimonialItem)
+  '''
+}
