@@ -1,7 +1,12 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { forgotPassword, loginWithCredentials, registerAccount } from "../services/auth.service";
+import {
+  forgotPassword,
+  loginWithCredentials,
+  requestRegistrationOtp,
+  verifyRegistration,
+} from "../services/auth.service";
 import type { AuthUser } from "../types/auth.types";
 
 /**
@@ -11,6 +16,11 @@ import type { AuthUser } from "../types/auth.types";
 const GOOGLE_NOT_AVAILABLE_MESSAGE = "Đăng nhập bằng Google chưa khả dụng. Vui lòng đăng nhập bằng email.";
 
 export type AuthMode = "login" | "register" | "forgot-password";
+
+/** Đăng ký gồm 2 bước: điền form → nhập mã OTP nhận qua Zalo/SMS. */
+export type RegisterStep = "form" | "otp";
+
+const OTP_MIN_LENGTH = 4;
 
 type UseAuthModalParams = {
   open: boolean;
@@ -34,13 +44,29 @@ export function useAuthModal({ open, onClose, onAuthenticated }: UseAuthModalPar
   const [registerError, setRegisterError] = useState("");
   const [registerSuccess, setRegisterSuccess] = useState("");
   const [registerLoading, setRegisterLoading] = useState(false);
+  const [registerStep, setRegisterStep] = useState<RegisterStep>("form");
+  const [otpCode, setOtpCode] = useState("");
+  const [otpError, setOtpError] = useState("");
+  const [otpLoading, setOtpLoading] = useState(false);
+  /** Mốc (ms) từ đó được gửi lại mã; null khi chưa gửi mã nào. */
+  const [resendAvailableAt, setResendAvailableAt] = useState<number | null>(null);
+  const [now, setNow] = useState(() => Date.now());
 
   const [forgotPhone, setForgotPhone] = useState("");
   const [forgotError, setForgotError] = useState("");
   const [forgotSuccess, setForgotSuccess] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
 
-  const isLoading = loading !== null || registerLoading || forgotLoading;
+  const isLoading = loading !== null || registerLoading || otpLoading || forgotLoading;
+  const resendSecondsLeft = resendAvailableAt === null ? 0 : Math.max(0, Math.ceil((resendAvailableAt - now) / 1000));
+
+  // Đếm ngược "Gửi lại mã" — chỉ chạy khi đang ở bước nhập mã và còn phải chờ.
+  useEffect(() => {
+    if (registerStep !== "otp" || resendSecondsLeft <= 0) return;
+
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [registerStep, resendSecondsLeft]);
 
   useEffect(() => {
     if (!open) return;
@@ -66,15 +92,24 @@ export function useAuthModal({ open, onClose, onAuthenticated }: UseAuthModalPar
       setError("");
       setRegisterError("");
       setRegisterSuccess("");
+      resetOtpStep();
       setForgotError("");
       setForgotSuccess("");
     }
   }, [open]);
 
+  function resetOtpStep() {
+    setRegisterStep("form");
+    setOtpCode("");
+    setOtpError("");
+    setResendAvailableAt(null);
+  }
+
   function switchMode(nextMode: AuthMode) {
     setError("");
     setRegisterError("");
     setRegisterSuccess("");
+    resetOtpStep();
     setForgotError("");
     setForgotSuccess("");
     setMode(nextMode);
@@ -112,21 +147,73 @@ export function useAuthModal({ open, onClose, onAuthenticated }: UseAuthModalPar
     setRegisterLoading(true);
 
     try {
-      const result = await registerAccount({
-        fullName: registerFullName,
-        phone: registerPhone,
-        email: registerEmail,
-        password: registerPassword,
-        confirmPassword: registerConfirmPassword,
-      });
-      // Đăng ký xong là đã đăng nhập (cookie phiên được máy chủ ghi).
-      setRegisterSuccess(result.message);
-      onAuthenticated(result.data.user);
+      await sendRegistrationOtp();
+      setOtpCode("");
+      setOtpError("");
+      setRegisterStep("otp");
     } catch (error) {
-      setRegisterError(error instanceof Error ? error.message : "Đăng ký thất bại.");
+      setRegisterError(error instanceof Error ? error.message : "Không gửi được mã xác minh.");
     } finally {
       setRegisterLoading(false);
     }
+  }
+
+  /** Gửi (hoặc gửi lại) mã OTP với thông tin đã điền ở form đăng ký. */
+  async function sendRegistrationOtp() {
+    const result = await requestRegistrationOtp({
+      fullName: registerFullName,
+      phone: registerPhone,
+      email: registerEmail,
+      password: registerPassword,
+      confirmPassword: registerConfirmPassword,
+    });
+    setNow(Date.now());
+    setResendAvailableAt(new Date(result.data.resendAvailableAt).getTime());
+    return result;
+  }
+
+  async function handleOtpSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setOtpError("");
+
+    const code = otpCode.replace(/\s/g, "");
+    if (code.length < OTP_MIN_LENGTH) {
+      setOtpError("Vui lòng nhập mã xác minh.");
+      return;
+    }
+
+    setOtpLoading(true);
+
+    try {
+      const result = await verifyRegistration({ phone: registerPhone, code });
+      // Mã đúng → tài khoản đã được tạo và đăng nhập (cookie phiên được máy chủ ghi).
+      onAuthenticated(result.data.user);
+    } catch (error) {
+      setOtpError(error instanceof Error ? error.message : "Xác minh thất bại.");
+    } finally {
+      setOtpLoading(false);
+    }
+  }
+
+  async function handleResendOtp() {
+    if (resendSecondsLeft > 0 || otpLoading) return;
+
+    setOtpError("");
+    setOtpLoading(true);
+
+    try {
+      await sendRegistrationOtp();
+      setOtpCode("");
+    } catch (error) {
+      setOtpError(error instanceof Error ? error.message : "Không gửi được mã xác minh.");
+    } finally {
+      setOtpLoading(false);
+    }
+  }
+
+  /** Quay lại form đăng ký để sửa số điện thoại/thông tin; mã đã gửi bỏ dùng. */
+  function handleBackToRegisterForm() {
+    resetOtpStep();
   }
 
   async function handleForgotSubmit(event: FormEvent<HTMLFormElement>) {
@@ -173,6 +260,16 @@ export function useAuthModal({ open, onClose, onAuthenticated }: UseAuthModalPar
     registerSuccess,
     registerLoading,
     handleRegisterSubmit,
+
+    registerStep,
+    otpCode,
+    setOtpCode,
+    otpError,
+    otpLoading,
+    resendSecondsLeft,
+    handleOtpSubmit,
+    handleResendOtp,
+    handleBackToRegisterForm,
 
     forgotPhone,
     setForgotPhone,

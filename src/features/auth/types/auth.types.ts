@@ -28,6 +28,12 @@ export type RegisterPayload = {
   confirmPassword: string;
 };
 
+/** Bước 2 của đăng ký: mã OTP khách nhận được qua Zalo/SMS. */
+export type VerifyRegistrationPayload = {
+  phone: string;
+  code: string;
+};
+
 export type ForgotPasswordPayload = {
   phone: string;
 };
@@ -37,6 +43,16 @@ export type AuthSuccessResponse = {
   message: string;
   data: {
     user: AuthUser;
+  };
+};
+
+/** Đã gửi OTP: mã hết hạn lúc `expiresAt`, được gửi lại từ `resendAvailableAt` (ISO UTC). */
+export type RegistrationOtpSuccessResponse = {
+  success: true;
+  message: string;
+  data: {
+    expiresAt: string;
+    resendAvailableAt: string;
   };
 };
 
@@ -51,6 +67,7 @@ export type AuthErrorResponse = {
 };
 
 export type AuthResponse = AuthSuccessResponse | AuthErrorResponse;
+export type RegistrationOtpResponse = RegistrationOtpSuccessResponse | AuthErrorResponse;
 export type ForgotPasswordResponse =
   | ForgotPasswordSuccessResponse
   | AuthErrorResponse;
