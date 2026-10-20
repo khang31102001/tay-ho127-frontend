@@ -59,6 +59,16 @@ export default function AuthModal({
     registerLoading,
     handleRegisterSubmit,
 
+    registerStep,
+    otpCode,
+    setOtpCode,
+    otpError,
+    otpLoading,
+    resendSecondsLeft,
+    handleOtpSubmit,
+    handleResendOtp,
+    handleBackToRegisterForm,
+
     forgotPhone,
     setForgotPhone,
     forgotError,
@@ -69,7 +79,13 @@ export default function AuthModal({
 
   if (!open) return null;
 
-  const { title, description } = MODE_CONTENT[mode];
+  const isOtpStep = mode === "register" && registerStep === "otp";
+  const { title, description } = isOtpStep
+    ? {
+        title: "Xác minh số điện thoại",
+        description: `Nhập mã gồm chữ số vừa được gửi tới ${registerPhone} (Zalo hoặc tin nhắn).`,
+      }
+    : MODE_CONTENT[mode];
 
   return (
     <div
@@ -182,7 +198,63 @@ export default function AuthModal({
           </>
         ) : null}
 
-        {mode === "register" ? (
+        {isOtpStep ? (
+          <>
+            <form className={styles.form} onSubmit={handleOtpSubmit}>
+              <label className={styles.field}>
+                <span>Mã xác minh</span>
+                <input
+                  className={styles.otpInput}
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={8}
+                  value={otpCode}
+                  onChange={(event) => setOtpCode(event.target.value.replace(/\D/g, ""))}
+                  placeholder="••••••"
+                  autoFocus
+                  required
+                  disabled={otpLoading}
+                />
+              </label>
+
+              {otpError ? <p className={styles.error}>{otpError}</p> : null}
+
+              <button
+                type="submit"
+                className={styles.primaryButton}
+                disabled={otpLoading}
+              >
+                {otpLoading ? "Đang xác minh..." : "Xác minh và đăng ký"}
+              </button>
+            </form>
+
+            <p className={styles.resendRow}>
+              Chưa nhận được mã?{" "}
+              <button
+                type="button"
+                className={styles.footerLink}
+                onClick={handleResendOtp}
+                disabled={otpLoading || resendSecondsLeft > 0}
+              >
+                {resendSecondsLeft > 0 ? `Gửi lại sau ${resendSecondsLeft}s` : "Gửi lại mã"}
+              </button>
+            </p>
+
+            <p className={styles.footerText}>
+              <button
+                type="button"
+                className={styles.footerLink}
+                onClick={handleBackToRegisterForm}
+                disabled={otpLoading}
+              >
+                Sửa thông tin đăng ký
+              </button>
+            </p>
+          </>
+        ) : null}
+
+        {mode === "register" && !isOtpStep ? (
           <>
             <form className={styles.form} onSubmit={handleRegisterSubmit}>
               <label className={styles.field}>
@@ -260,7 +332,7 @@ export default function AuthModal({
                 className={styles.primaryButton}
                 disabled={registerLoading}
               >
-                {registerLoading ? "Đang đăng ký..." : "Đăng ký"}
+                {registerLoading ? "Đang gửi mã..." : "Đăng ký"}
               </button>
             </form>
 

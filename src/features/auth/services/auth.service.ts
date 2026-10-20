@@ -7,6 +7,9 @@ import type {
   ForgotPasswordSuccessResponse,
   LoginCredentials,
   RegisterPayload,
+  RegistrationOtpResponse,
+  RegistrationOtpSuccessResponse,
+  VerifyRegistrationPayload,
 } from "../types/auth.types";
 
 import { readApiResponse } from "@/core/api/read-api-response";
@@ -18,7 +21,8 @@ import { readApiResponse } from "@/core/api/read-api-response";
  */
 const API_ENDPOINTS = {
   login: "/api/customer/auth/login",
-  register: "/api/customer/auth/register",
+  requestRegistrationOtp: "/api/customer/auth/register/request-otp",
+  verifyRegistration: "/api/customer/auth/register/verify",
   logout: "/api/customer/auth/logout",
   session: "/api/customer/session",
   forgotPassword: "/api/auth/forgot-password",
@@ -41,11 +45,14 @@ export async function loginWithCredentials(
   return readApiResponse<AuthResponse>(response, "Đăng nhập thất bại.");
 }
 
-/** Đăng ký xong là đăng nhập luôn (cookie phiên được ghi) — trả về khách vừa tạo. */
-export async function registerAccount(
+/**
+ * Đăng ký bước 1: gửi thông tin đăng ký, Backend gửi mã OTP qua Zalo/SMS tới số điện thoại. Chưa có tài khoản nào được
+ * tạo cho tới khi mã được xác minh (verifyRegistration).
+ */
+export async function requestRegistrationOtp(
   payload: RegisterPayload,
-): Promise<AuthSuccessResponse> {
-  const response = await fetch(API_ENDPOINTS.register, {
+): Promise<RegistrationOtpSuccessResponse> {
+  const response = await fetch(API_ENDPOINTS.requestRegistrationOtp, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -53,7 +60,22 @@ export async function registerAccount(
     body: JSON.stringify(payload),
   });
 
-  return readApiResponse<AuthResponse>(response, "Đăng ký thất bại.");
+  return readApiResponse<RegistrationOtpResponse>(response, "Không gửi được mã xác minh.");
+}
+
+/** Đăng ký bước 2: mã đúng thì tài khoản được tạo và đăng nhập luôn (cookie phiên được ghi) — trả về khách vừa tạo. */
+export async function verifyRegistration(
+  payload: VerifyRegistrationPayload,
+): Promise<AuthSuccessResponse> {
+  const response = await fetch(API_ENDPOINTS.verifyRegistration, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  return readApiResponse<AuthResponse>(response, "Xác minh thất bại.");
 }
 
 /** Khách đang đăng nhập (theo cookie) hoặc null khi chưa đăng nhập / phiên hết hạn / không kết nối được. */

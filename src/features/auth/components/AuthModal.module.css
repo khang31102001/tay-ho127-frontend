@@ -229,6 +229,21 @@
   font-weight: 600;
 }
 
+/* Ô nhập mã OTP: số lớn, giãn chữ để dễ đối chiếu với tin nhắn. */
+.field .otpInput {
+  text-align: center;
+  letter-spacing: 0.5em;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.resendRow {
+  margin: 0;
+  text-align: center;
+  color: #667267;
+  font-size: 13.5px;
+}
+
 .footerText {
   margin: 18px 0 0;
   text-align: center;
