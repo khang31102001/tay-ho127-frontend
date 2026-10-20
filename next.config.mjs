@@ -26,6 +26,8 @@ const nextConfig = {
   },
   // Bật strict mode để phát hiện lỗi render trong quá trình phát triển.
   reactStrictMode: true,
+  // Gói tối thiểu để chạy trong Docker (.next/standalone) — xem Dockerfile.
+  output: "standalone",
 };
 
 export default nextConfig;
