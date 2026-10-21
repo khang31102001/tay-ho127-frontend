@@ -29,26 +29,45 @@ export async function readProblemDetail(response: Response): Promise<string | un
   return typeof problem?.detail === "string" ? problem.detail : undefined;
 }
 
+/** Backend trả "Retry-After" (giây) cùng mã 429 khi chạm giới hạn gửi mã; không có/không hợp lệ thì undefined. */
+export function readRetryAfterSeconds(response: Response): number | undefined {
+  const seconds = Number(response.headers.get("retry-after"));
+  return Number.isFinite(seconds) && seconds > 0 ? Math.ceil(seconds) : undefined;
+}
+
+/** Chữ có dấu tiếng Việt: Backend (CustomerAuthService) trả lỗi nghiệp vụ đã là câu tiếng Việt cho khách. */
+const VIETNAMESE_TEXT = /[ăâđêôơưàáạảãằắặẳẵầấậẩẫèéẹẻẽềếệểễìíịỉĩòóọỏõồốộổỗờớợởỡùúụủũừứựửữỳýỵỷỹ]/i;
+
 /**
- * Backend trả lỗi nghiệp vụ bằng tiếng Anh; ở đây đổi sang câu tiếng Việt cho khách. Khớp theo nội dung các thông báo của
- * CustomerAuthService (RequestRegistrationOtpAsync / VerifyRegistrationOtpAsync) — đổi chữ ở Backend thì sửa ở đây.
+ * Chuyển lỗi của Backend (POST /customer/auth/register/otp và /register) thành câu hiển thị cho khách: 409 trùng
+ * email/SĐT, 429 chạm giới hạn gửi mã (đọc header Retry-After), 503 không gửi được mã; 400 giữ nguyên thông báo
+ * tiếng Việt của Backend (mã hết hạn / sai / nhập sai quá số lần...). Lỗi khác dùng `fallback`.
  */
-export function registrationFailureMessage(status: number, detail: string | undefined, fallback: string): string {
+export function registrationFailureMessage(
+  status: number,
+  detail: string | undefined,
+  fallback: string,
+  retryAfterSeconds?: number,
+): string {
   if (status === 409) return "Email hoặc số điện thoại này đã được đăng ký.";
 
   if (status === 429) {
-    const seconds = detail?.match(/wait (\d+) seconds/)?.[1];
-    return seconds
-      ? `Vui lòng đợi ${seconds} giây trước khi gửi lại mã.`
+    return retryAfterSeconds
+      ? `Vui lòng đợi ${retryAfterSeconds} giây trước khi gửi lại mã.`
       : "Bạn đã yêu cầu quá nhiều mã cho số điện thoại này. Vui lòng thử lại sau ít phút.";
   }
 
-  if (status === 400 && detail) {
-    if (detail.includes("has expired")) return "Mã xác minh đã hết hạn. Vui lòng gửi lại mã mới.";
-    if (detail.includes("is incorrect")) return "Mã xác minh không đúng. Vui lòng kiểm tra lại.";
-    if (detail.includes("Too many incorrect attempts")) return "Bạn đã nhập sai quá nhiều lần. Vui lòng gửi lại mã mới.";
-    if (detail.includes("could not send")) return "Không gửi được mã xác minh. Vui lòng thử lại sau ít phút.";
-  }
+  if (status === 503) return "Không gửi được mã xác minh. Vui lòng thử lại sau ít phút.";
+
+  if (status === 400 && detail && VIETNAMESE_TEXT.test(detail)) return detail;
 
   return fallback;
+}
+
+/**
+ * Backend đang TẮT xác minh số điện thoại (Customer:PhoneVerification:Required = false): POST /register/otp trả 400 với
+ * thông báo này. Khi đó đăng ký chỉ còn 1 bước (POST /register không cần mã) — không phải lỗi với khách.
+ */
+export function isPhoneVerificationDisabled(status: number, detail: string | undefined): boolean {
+  return status === 400 && !!detail && detail.includes("chưa được bật");
 }

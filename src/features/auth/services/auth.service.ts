@@ -46,8 +46,9 @@ export async function loginWithCredentials(
 }
 
 /**
- * Đăng ký bước 1: gửi thông tin đăng ký, Backend gửi mã OTP qua Zalo/SMS tới số điện thoại. Chưa có tài khoản nào được
- * tạo cho tới khi mã được xác minh (verifyRegistration).
+ * Đăng ký bước 1: xin mã OTP — Backend gửi mã qua Zalo/SMS tới số điện thoại và trả `challengeId` (giữ lại để gửi ở bước
+ * 2). Chưa có tài khoản nào được tạo cho tới khi gọi verifyRegistration. Backend tắt xác minh thì kết quả có
+ * `verificationRequired: false` và bước 2 gọi thẳng, không cần mã.
  */
 export async function requestRegistrationOtp(
   payload: RegisterPayload,
@@ -63,7 +64,10 @@ export async function requestRegistrationOtp(
   return readApiResponse<RegistrationOtpResponse>(response, "Không gửi được mã xác minh.");
 }
 
-/** Đăng ký bước 2: mã đúng thì tài khoản được tạo và đăng nhập luôn (cookie phiên được ghi) — trả về khách vừa tạo. */
+/**
+ * Đăng ký bước 2: gửi đủ thông tin đăng ký cùng `challengeId` + mã OTP; mã đúng thì tài khoản được tạo và đăng nhập luôn
+ * (cookie phiên được ghi) — trả về khách vừa tạo. Không có `challengeId`/`code` khi Backend tắt xác minh số điện thoại.
+ */
 export async function verifyRegistration(
   payload: VerifyRegistrationPayload,
 ): Promise<AuthSuccessResponse> {
