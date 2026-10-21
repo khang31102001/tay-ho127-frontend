@@ -2,9 +2,9 @@ name: CI & Deploy
 
 on:
   push:
-    branches: [main]
+    branches: [main, production, uat, dev]
   pull_request:
-    branches: [main]
+    branches: [main, production, uat, dev]
 
 jobs:
   # Chặn lỗi trước khi deploy: nếu job này đỏ thì job `deploy` không chạy.
@@ -27,7 +27,7 @@ jobs:
 
   deploy:
     needs: ci
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/production'
     runs-on: ubuntu-latest
     permissions:
       contents: read
