@@ -17,6 +17,12 @@ import { getPublicNavigation } from "@/features/navigation/services/public-navig
 // Thương hiệu + liên hệ chi nhánh chính từ Backend (server-only) — cùng lý do import thẳng service như trên.
 import { getSiteBrand } from "@/features/organization/brand-profile/services/brand-public.service";
 
+// Layout này gọi Backend (menu, thương hiệu, schema) bằng BACKEND_API_URL — biến chỉ có lúc CHẠY, không có lúc
+// `next build` (CI/Docker). Nếu để Next prerender lúc build, getPublicNavigation()/getSiteBrand() lỗi → trả về rỗng/mặc
+// định và trang bị đóng băng thành file tĩnh (Cache-Control s-maxage=1 năm), Admin sửa menu cũng không bao giờ hiện.
+// force-dynamic: luôn render lúc có request, khi Backend đã sẵn sàng.
+export const dynamic = "force-dynamic";
+
 interface SiteLayoutProps {
   children: React.ReactNode;
 }
