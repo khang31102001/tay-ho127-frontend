@@ -2,12 +2,24 @@ import { NextResponse } from "next/server";
 
 import { fetchBackend } from "@/core/auth/backend-fetch";
 
-import { failure, isValidPhone, normalizePhone, readProblemDetail, registrationFailureMessage } from "../_shared";
+import {
+  failure,
+  isPhoneVerificationDisabled,
+  isValidPhone,
+  normalizePhone,
+  readProblemDetail,
+  readRetryAfterSeconds,
+  registrationFailureMessage,
+} from "../_shared";
 
 /**
- * BFF đăng ký, bước 1: gửi thông tin đăng ký sang Backend (POST /api/v1/customer/auth/register/request-otp). Backend kiểm
- * tra email/SĐT chưa dùng, lưu đăng ký tạm và gửi mã OTP tới số điện thoại (Zalo/SMS). CHƯA có tài khoản nào được tạo —
- * tài khoản chỉ ra đời ở bước 2 (verify).
+ * BFF đăng ký, bước 1: xin mã OTP (POST /api/v1/customer/auth/register/otp, chỉ gửi số điện thoại + email). Backend kiểm
+ * tra email/SĐT chưa dùng rồi gửi mã tới số điện thoại (Zalo/SMS) và trả `challengeId`; Backend KHÔNG giữ thông tin đăng
+ * ký, nên trình duyệt phải giữ `challengeId` cùng dữ liệu form để gửi lại ở bước 2 (route verify). CHƯA có tài khoản nào
+ * được tạo.
+ *
+ * Backend tắt xác minh số điện thoại (Customer:PhoneVerification:Required = false) → trả `verificationRequired: false`:
+ * trình duyệt bỏ bước nhập mã và gọi thẳng bước 2.
  */
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => null)) as
@@ -40,28 +52,47 @@ export async function POST(request: Request) {
   }
 
   try {
-    const backendResponse = await fetchBackend("/customer/auth/register/request-otp", {
+    const backendResponse = await fetchBackend("/customer/auth/register/otp", {
       method: "POST",
-      body: JSON.stringify({
-        fullName: body.fullName.trim(),
-        phone: normalizePhone(body.phone),
-        email: body.email.trim(),
-        password: body.password,
-      }),
+      body: JSON.stringify({ phone: normalizePhone(body.phone), email: body.email.trim() }),
     });
     if (!backendResponse.ok) {
       const detail = await readProblemDetail(backendResponse);
+
+      if (isPhoneVerificationDisabled(backendResponse.status, detail)) {
+        return NextResponse.json({
+          success: true,
+          message: "Không cần xác minh số điện thoại.",
+          data: { verificationRequired: false },
+        });
+      }
+
       return failure(
-        registrationFailureMessage(backendResponse.status, detail, "Không gửi được mã xác minh."),
+        registrationFailureMessage(
+          backendResponse.status,
+          detail,
+          "Không gửi được mã xác minh.",
+          readRetryAfterSeconds(backendResponse),
+        ),
         backendResponse.status,
       );
     }
 
-    const result = (await backendResponse.json()) as { expiresAtUtc: string; resendAvailableAtUtc: string };
+    const result = (await backendResponse.json()) as {
+      challengeId: string;
+      expiresAtUtc: string;
+      resendAfterSeconds: number;
+    };
     return NextResponse.json({
       success: true,
       message: "Đã gửi mã xác minh tới số điện thoại của bạn.",
-      data: { expiresAt: result.expiresAtUtc, resendAvailableAt: result.resendAvailableAtUtc },
+      data: {
+        verificationRequired: true,
+        challengeId: result.challengeId,
+        expiresAt: result.expiresAtUtc,
+        // Backend trả số giây phải đợi; trình duyệt cần mốc thời điểm tuyệt đối để đếm ngược.
+        resendAvailableAt: new Date(Date.now() + result.resendAfterSeconds * 1000).toISOString(),
+      },
     });
   } catch (error) {
     console.error("Customer register (request-otp): không gọi được Backend", error);

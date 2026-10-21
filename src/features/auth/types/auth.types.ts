@@ -28,10 +28,17 @@ export type RegisterPayload = {
   confirmPassword: string;
 };
 
-/** Bước 2 của đăng ký: mã OTP khách nhận được qua Zalo/SMS. */
+/**
+ * Bước 2 của đăng ký (tạo tài khoản): Backend không giữ thông tin đăng ký giữa hai bước nên gửi lại đủ dữ liệu form, kèm
+ * `challengeId` (bước 1 trả về) và `code` (mã OTP khách nhận qua Zalo/SMS). Bỏ cả hai khi Backend không bật xác minh.
+ */
 export type VerifyRegistrationPayload = {
+  fullName: string;
   phone: string;
-  code: string;
+  email: string;
+  password: string;
+  challengeId?: string;
+  code?: string;
 };
 
 export type ForgotPasswordPayload = {
@@ -46,14 +53,22 @@ export type AuthSuccessResponse = {
   };
 };
 
-/** Đã gửi OTP: mã hết hạn lúc `expiresAt`, được gửi lại từ `resendAvailableAt` (ISO UTC). */
+/**
+ * Kết quả bước 1 của đăng ký. Đã gửi OTP: `challengeId` phải gửi lại ở bước 2, mã hết hạn lúc `expiresAt`, được gửi lại
+ * từ `resendAvailableAt` (ISO UTC). `verificationRequired: false` = Backend không bật xác minh số điện thoại, bỏ qua bước
+ * nhập mã.
+ */
 export type RegistrationOtpSuccessResponse = {
   success: true;
   message: string;
-  data: {
-    expiresAt: string;
-    resendAvailableAt: string;
-  };
+  data:
+    | {
+        verificationRequired: true;
+        challengeId: string;
+        expiresAt: string;
+        resendAvailableAt: string;
+      }
+    | { verificationRequired: false };
 };
 
 export type ForgotPasswordSuccessResponse = {

@@ -50,6 +50,8 @@ export function useAuthModal({ open, onClose, onAuthenticated }: UseAuthModalPar
   const [otpLoading, setOtpLoading] = useState(false);
   /** Mốc (ms) từ đó được gửi lại mã; null khi chưa gửi mã nào. */
   const [resendAvailableAt, setResendAvailableAt] = useState<number | null>(null);
+  /** Mã phiên OTP do Backend cấp ở bước 1 — phải gửi lại cùng mã khách nhập ở bước 2. */
+  const [otpChallengeId, setOtpChallengeId] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
 
   const [forgotPhone, setForgotPhone] = useState("");
@@ -103,6 +105,7 @@ export function useAuthModal({ open, onClose, onAuthenticated }: UseAuthModalPar
     setOtpCode("");
     setOtpError("");
     setResendAvailableAt(null);
+    setOtpChallengeId(null);
   }
 
   function switchMode(nextMode: AuthMode) {
@@ -147,7 +150,15 @@ export function useAuthModal({ open, onClose, onAuthenticated }: UseAuthModalPar
     setRegisterLoading(true);
 
     try {
-      await sendRegistrationOtp();
+      const result = await sendRegistrationOtp();
+
+      if (!result.data.verificationRequired) {
+        // Backend không bật xác minh số điện thoại: không có mã để nhập, tạo tài khoản luôn.
+        const created = await verifyRegistration(registrationFormData());
+        onAuthenticated(created.data.user);
+        return;
+      }
+
       setOtpCode("");
       setOtpError("");
       setRegisterStep("otp");
@@ -158,17 +169,28 @@ export function useAuthModal({ open, onClose, onAuthenticated }: UseAuthModalPar
     }
   }
 
-  /** Gửi (hoặc gửi lại) mã OTP với thông tin đã điền ở form đăng ký. */
-  async function sendRegistrationOtp() {
-    const result = await requestRegistrationOtp({
+  /** Dữ liệu form đăng ký — Backend không giữ lại giữa hai bước nên bước 2 gửi lại nguyên vẹn. */
+  function registrationFormData() {
+    return {
       fullName: registerFullName,
       phone: registerPhone,
       email: registerEmail,
       password: registerPassword,
+    };
+  }
+
+  /** Gửi (hoặc gửi lại) mã OTP với thông tin đã điền ở form đăng ký; mỗi lần gửi Backend cấp một `challengeId` mới. */
+  async function sendRegistrationOtp() {
+    const result = await requestRegistrationOtp({
+      ...registrationFormData(),
       confirmPassword: registerConfirmPassword,
     });
-    setNow(Date.now());
-    setResendAvailableAt(new Date(result.data.resendAvailableAt).getTime());
+
+    if (result.data.verificationRequired) {
+      setNow(Date.now());
+      setResendAvailableAt(new Date(result.data.resendAvailableAt).getTime());
+      setOtpChallengeId(result.data.challengeId);
+    }
     return result;
   }
 
@@ -182,10 +204,15 @@ export function useAuthModal({ open, onClose, onAuthenticated }: UseAuthModalPar
       return;
     }
 
+    if (!otpChallengeId) {
+      setOtpError("Phiên xác minh đã hết hiệu lực. Vui lòng gửi lại mã mới.");
+      return;
+    }
+
     setOtpLoading(true);
 
     try {
-      const result = await verifyRegistration({ phone: registerPhone, code });
+      const result = await verifyRegistration({ ...registrationFormData(), challengeId: otpChallengeId, code });
       // Mã đúng → tài khoản đã được tạo và đăng nhập (cookie phiên được máy chủ ghi).
       onAuthenticated(result.data.user);
     } catch (error) {
