@@ -248,7 +248,7 @@ export function Header({
             {/* =================================================
              * ĐĂNG NHẬP
              * =============================================== */}
-
+{/* 
             {currentUser ? (
               <Link
                 href="/tai-khoan/don-hang"
@@ -292,7 +292,7 @@ export function Header({
                 <UserRound className="size-[18px]" />
                 <span>Đăng nhập</span>
               </button>
-            )}
+            )} */}
 
             {/* =================================================
              * MOBILE MENU
@@ -313,9 +313,9 @@ export function Header({
       </header>
 
       {/* Nút giỏ hàng floating (góc phải dưới) + Drawer — xem MiniCart.tsx */}
-      <MiniCart />
+      {/* <MiniCart /> */}
 
-      <AuthModal
+      {/* <AuthModal
         open={loginOpen}
         onClose={() =>
           setLoginOpen(false)
@@ -323,7 +323,9 @@ export function Header({
         onAuthenticated={
           handleAuthenticated
         }
-      />
+      /> */}
+
+
     </>
   );
 }
