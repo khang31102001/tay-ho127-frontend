@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { useCart, useFlyToCart } from "@/features/cart";
 import { useFavorites } from "@/features/favorites";
+import { ORDERING_ENABLED } from "@/core/config/features";
 import { formatCurrency } from "@/core/utils/format-currency";
 import { UiProduct } from "../types/menu.types";
 import Image from "next/image";
@@ -122,7 +123,8 @@ export function ProductCard({ item }: ProductCardProps) {
             <span className="truncate text-[12px]">({item.ratingCount}) đánh giá</span>
           </div>
 
-          {/* <div className="flex shrink-0 items-center gap-1.5">
+          {ORDERING_ENABLED && (
+          <div className="flex shrink-0 items-center gap-1.5">
             <button
               type="button"
               aria-label={`Thêm ${item.name} vào giỏ hàng`}
@@ -131,7 +133,8 @@ export function ProductCard({ item }: ProductCardProps) {
             >
               +
             </button>
-          </div> */}
+          </div>
+          )}
         </div>
       </div>
     </article>

@@ -7,6 +7,7 @@ import { useState } from "react";
 
 import { CartTrigger, MiniCart, useCart, useFlyToCart, useMiniCart } from "@/features/cart";
 import { useScrollThreshold } from "@/shared/hooks/useScrollThreshold";
+import { ORDERING_ENABLED } from "@/core/config/features";
 import { AuthModal, useAuth, type AuthUser } from "@/features/auth";
 
 import { LanguageSwitcher } from "@/shared/components/LanguageSwitcher";
@@ -60,7 +61,7 @@ export function Header({
    * trên CÙNG `useScrollThreshold()`. 2 nút chỉ là 2 presentation của cùng 1
    * Mini Cart (cùng cartCount/toggleMiniCart) — không có logic Cart riêng.
    */
-  const showHeaderCart = !isScrolled && cartCount > 0;
+  const showHeaderCart = ORDERING_ENABLED && !isScrolled && cartCount > 0;
 
   /*
    * Dark variant:
@@ -229,6 +230,7 @@ export function Header({
              * scroll, CartFloatingTrigger thay thế, xem State 2)
              * =============================================== */}
 
+            {ORDERING_ENABLED && (
             <div
               className={`hidden transition-[opacity,transform,max-width] duration-200 ease-out md:block ${
                 showHeaderCart
@@ -244,11 +246,13 @@ export function Header({
                 onClick={toggleMiniCart}
               />
             </div>
+            )}
 
             {/* =================================================
              * ĐĂNG NHẬP
              * =============================================== */}
-{/* 
+{ORDERING_ENABLED && (
+            <>
             {currentUser ? (
               <Link
                 href="/tai-khoan/don-hang"
@@ -292,7 +296,9 @@ export function Header({
                 <UserRound className="size-[18px]" />
                 <span>Đăng nhập</span>
               </button>
-            )} */}
+            )}
+            </>
+            )}
 
             {/* =================================================
              * MOBILE MENU
@@ -313,9 +319,10 @@ export function Header({
       </header>
 
       {/* Nút giỏ hàng floating (góc phải dưới) + Drawer — xem MiniCart.tsx */}
-      {/* <MiniCart /> */}
+      {ORDERING_ENABLED && <MiniCart />}
 
-      {/* <AuthModal
+      {ORDERING_ENABLED && (
+      <AuthModal
         open={loginOpen}
         onClose={() =>
           setLoginOpen(false)
@@ -323,9 +330,8 @@ export function Header({
         onAuthenticated={
           handleAuthenticated
         }
-      /> */}
-
-
+      />
+      )}
     </>
   );
 }

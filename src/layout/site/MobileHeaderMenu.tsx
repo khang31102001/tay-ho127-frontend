@@ -12,6 +12,7 @@ import {
 import { useEffect, useState } from "react";
 
 import type { AuthUser } from "@/features/auth";
+import { ORDERING_ENABLED } from "@/core/config/features";
 
 type NavItem = {
   href: string;
@@ -185,6 +186,8 @@ export default function MobileHeaderMenu({
               Account
           ==================================================== */}
 
+          {ORDERING_ENABLED && (
+          <>
           {currentUser ? (
             <Link
               href="/tai-khoan/don-hang"
@@ -297,6 +300,8 @@ export default function MobileHeaderMenu({
                 {cartCount > 99 ? "99+" : cartCount}
               </span>
             </button>
+          )}
+          </>
           )}
         </div>
       </div>
