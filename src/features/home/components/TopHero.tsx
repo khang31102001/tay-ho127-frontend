@@ -10,6 +10,7 @@ import {
   formatOpeningHours,
   getContactPhone,
 } from "@/features/organization/brand-profile/utils/site-contact";
+import { ORDERING_ENABLED } from "@/core/config/features";
 import { useScrollThreshold } from "@/shared/hooks/useScrollThreshold";
 
 /* =================================================
@@ -57,18 +58,13 @@ const heroContent: HeroContentItem[] = [
       "Từ bàn tay khéo léo,",
       "mỗi phần bánh là một câu chuyện Việt.",
     ],
-    actions: [
-      {
-        label: "Đặt ngay",
-        href: "/thuc-don",
-        variant: "primary",
-      },
-      {
-        label: "Xem thực đơn",
-        href: "/thuc-don",
-        variant: "outline",
-      },
-    ],
+    // "Đặt ngay" thuộc luồng đặt món: chưa mở thì chỉ còn nút xem thực đơn (làm nút chính).
+    actions: ORDERING_ENABLED
+      ? [
+          { label: "Đặt ngay", href: "/thuc-don", variant: "primary" },
+          { label: "Xem thực đơn", href: "/thuc-don", variant: "outline" },
+        ]
+      : [{ label: "Xem thực đơn", href: "/thuc-don", variant: "primary" }],
   },
 ];
 

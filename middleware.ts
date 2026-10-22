@@ -6,6 +6,7 @@ import type { NextRequest } from "next/server";
 // qua barrel ở Middleware sẽ kéo UI Admin vào Edge bundle. Cùng lý do đã áp
 // dụng cho @/features/seo ở app/(site)/**.
 import { findActiveRedirect } from "@/features/redirects/services/redirect-public.service";
+import { ORDERING_ENABLED, isOrderingOnlyPath } from "@/core/config/features";
 
 /**
  * Task 25 — Redirect Management. Kiểm tra pathname khớp source_path đã cấu
@@ -15,7 +16,24 @@ import { findActiveRedirect } from "@/features/redirects/services/redirect-publi
  * findActiveRedirect() đọc danh sách redirect đang bật từ Backend (GET /seo/public/redirects),
  * giữ trong bộ nhớ 60 giây và fail-open khi Backend lỗi — xem redirect-public.service.ts.
  */
+/**
+ * Địa chỉ mà khách thực sự đang truy cập. Trong Docker/sau Nginx, request.url mang tên máy nội bộ (localhost:3000) nên
+ * chuyển hướng dựng từ nó sẽ đưa khách tới địa chỉ sai; Nginx truyền sẵn Host và X-Forwarded-Proto.
+ */
+function publicOrigin(request: NextRequest): string {
+  const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+  if (!host) return request.nextUrl.origin;
+
+  const protocol = request.headers.get("x-forwarded-proto") ?? request.nextUrl.protocol.replace(":", "");
+  return `${protocol}://${host}`;
+}
+
 export async function middleware(request: NextRequest) {
+  // Đăng nhập khách / giỏ hàng / đặt món chưa mở ở môi trường này: gõ tay địa chỉ cũng về trang thực đơn.
+  if (!ORDERING_ENABLED && isOrderingOnlyPath(request.nextUrl.pathname)) {
+    return NextResponse.redirect(new URL("/thuc-don", publicOrigin(request)));
+  }
+
   const redirect = await findActiveRedirect(request.nextUrl.pathname);
 
   if (!redirect) {

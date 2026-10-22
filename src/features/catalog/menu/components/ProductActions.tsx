@@ -2,6 +2,7 @@
 
 import { Minus, Plus } from "lucide-react";
 
+import { ORDERING_ENABLED } from "@/core/config/features";
 import { formatCurrency } from "@/core/utils/format-currency";
 import type { ProductDetail } from "../types/menu.types";
 import { useProductDetail } from "../hooks/useProductDetail";
@@ -13,6 +14,9 @@ type ProductActionsProps = {
 export function ProductActions({ product }: ProductActionsProps) {
   const { quantity, handleIncrement, handleDecrement, handleAddToCart, handleOrderNow, unitPrice } =
     useProductDetail(product);
+
+  // Chọn số lượng / thêm giỏ / đặt ngay thuộc luồng đặt món — chưa mở ở môi trường này.
+  if (!ORDERING_ENABLED) return null;
 
   return (
     <div className="flex flex-col gap-4">
