@@ -55,13 +55,14 @@ export function ProductCard({ item }: ProductCardProps) {
   return (
     <article className="relative flex h-full flex-col rounded-md border border-brand-red bg-brand-cream shadow-card">
       {/* <BestSellerBanner/> */}
-      <Link href={detailHref} className="relative block overflow-hidden h-[142px]" aria-label={`Xem chi tiết ${item.name}`}>
+      <Link href={detailHref} className="relative block aspect-[4/5] overflow-hidden" aria-label={`Xem chi tiết ${item.name}`}>
         <Image
           ref={imageRef}
           src={item.image}
           alt={item.name}
-          width={100}
-          height={142}
+          width={400}
+          height={500}
+          sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw"
           className="h-full w-full object-cover transition-transform duration-500 ease-out hover:scale-105"
         />
         <span
