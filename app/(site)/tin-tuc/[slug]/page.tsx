@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 
 import { Container } from "@/shared/ui/Container";
+import { HeaderBackdrop } from "@/shared/ui/HeaderBackdrop";
 import {
   ArticleContent,
   ArticleCover,
@@ -77,6 +78,8 @@ export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
   });
 
   return (
+    <>
+    <HeaderBackdrop />
     <section className="section-padding">
       <JsonLd data={schemas} />
 
@@ -119,5 +122,6 @@ export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
         <RelatedArticles articles={relatedArticles} />
       </Container>
     </section>
+    </>
   );
 }
