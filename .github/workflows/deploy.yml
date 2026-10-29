@@ -28,6 +28,8 @@ jobs:
   deploy:
     needs: ci
     if: github.event_name == 'push' && github.ref == 'refs/heads/production'
+    # Nạp Environment variables của "Production" (NEXT_PUBLIC_*) — thiếu dòng này thì vars.* chỉ đọc Repository variables.
+    environment: Production
     runs-on: ubuntu-latest
     permissions:
       contents: read
