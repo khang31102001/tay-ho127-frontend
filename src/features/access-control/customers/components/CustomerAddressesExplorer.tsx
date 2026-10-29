@@ -78,7 +78,8 @@ export function CustomerAddressesExplorer({ customerId }: CustomerAddressesExplo
           createLabel="Thêm địa chỉ"
           editHref={(row) => `/admin/sales/customers/${customerId}/addresses/${row.id}`}
           onDelete={canManageAddresses ? handleDelete : undefined}
-          emptyState={loadError ?? "Khách hàng này chưa có địa chỉ nào."}
+          loadError={loadError}
+          emptyState="Khách hàng này chưa có địa chỉ nào."
         />
       </div>
     </div>

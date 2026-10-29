@@ -34,7 +34,8 @@ export function MenusExplorer() {
       createLabel="Thêm thực đơn"
       editHref={(row) => `/admin/catalog/menus/${row.id}`}
       onDelete={hasPermission("sales-menus.delete") ? handleDelete : undefined}
-      emptyState={loadError ?? "Chưa có thực đơn nào."}
+      loadError={loadError}
+      emptyState="Chưa có thực đơn nào."
     />
   );
 }

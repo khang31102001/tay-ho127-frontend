@@ -9,7 +9,7 @@ const columns: DataExplorerColumn<ArticleCategoryRow>[] = [
   { key: "name", header: "Tên danh mục" },
   { key: "slug", header: "Slug" },
   { key: "parentName", header: "Danh mục cha" },
-  { key: "sortOrder", header: "Thứ tự" },
+  { key: "sortOrder", header: "Thứ tự", align: "right" },
   {
     key: "status",
     header: "Trạng thái",
@@ -33,7 +33,8 @@ export function ArticleCategoriesExplorer() {
       createLabel="Thêm danh mục"
       editHref={(row) => `/admin/content/article-categories/${row.id}`}
       onDelete={handleDelete}
-      emptyState={loadError ?? "Chưa có danh mục bài viết nào."}
+      loadError={loadError}
+      emptyState="Chưa có danh mục bài viết nào."
     />
   );
 }

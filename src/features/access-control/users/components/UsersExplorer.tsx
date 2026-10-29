@@ -38,7 +38,8 @@ export function UsersExplorer() {
       createHref={hasPermission("users.create") ? "/admin/users/new" : undefined}
       createLabel="Thêm người dùng"
       editHref={(row) => `/admin/users/${row.id}`}
-      emptyState={loadError ?? "Chưa có người dùng nào."}
+      loadError={loadError}
+      emptyState="Chưa có người dùng nào."
     />
   );
 }

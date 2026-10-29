@@ -1,35 +1,28 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import type { PaymentStatus } from "@/features/orders";
+import type { DataExplorerLoadPage } from "@/shared/admin/templates/DataExplorer/DataExplorer";
 
-import { listPayments } from "../services/payment.service";
+import { listPaymentsPage } from "../services/payment.service";
 import type { ManagedPayment } from "../types/payment.types";
 
 export type PaymentStatusFilter = PaymentStatus | "all";
 
+/** Tải theo trang từ Backend (10 bản ghi/lượt); tìm kiếm và lọc trạng thái do Backend xử lý. */
 export function usePaymentsExplorer() {
-  const [payments, setPayments] = useState<ManagedPayment[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<PaymentStatusFilter>("all");
 
-  useEffect(() => {
-    let isMounted = true;
-    listPayments().then((data) => {
-      if (isMounted) {
-        setPayments(data);
-        setIsLoading(false);
-      }
-    });
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const loadPage = useCallback<DataExplorerLoadPage<ManagedPayment>>(
+    async (query, signal) => {
+      const page = await listPaymentsPage(
+        { ...query, status: statusFilter === "all" ? undefined : statusFilter },
+        signal,
+      );
+      return { items: page.items, totalItems: page.totalItems };
+    },
+    [statusFilter],
+  );
 
-  const filteredPayments = useMemo(() => {
-    if (statusFilter === "all") return payments;
-    return payments.filter((payment) => payment.status === statusFilter);
-  }, [payments, statusFilter]);
-
-  return { payments: filteredPayments, isLoading, statusFilter, setStatusFilter };
+  return { loadPage, statusFilter, setStatusFilter };
 }

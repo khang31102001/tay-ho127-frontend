@@ -4,6 +4,8 @@ import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { FileUp, LoaderCircle, Upload, X } from "lucide-react";
 
+import { adminButtonClassName, adminMenuItemClassName } from "../templates/formFieldClassName";
+
 import { ImportPreviewTable } from "./ImportPreviewTable";
 import { ImportResult } from "./ImportResult";
 import { parseCsv } from "./csv";
@@ -13,6 +15,8 @@ type ImportDialogProps<T> = {
   title: string;
   triggerLabel?: string;
   config: ImportConfig<T>;
+  /** "menu-item" khi đặt trong menu "Tiện ích" của DataExplorer. */
+  appearance?: "button" | "menu-item";
 };
 
 type ImportStep = "pick" | "preview" | "result";
@@ -21,7 +25,7 @@ type ImportStep = "pick" | "preview" | "result";
  * Dialog Import dùng chung cho mọi màn Admin — nhận `config` (cột, parse,
  * validate, cách lưu) từ domain, không tự biết business logic của domain nào.
  */
-export function ImportDialog<T>({ title, triggerLabel = "Nhập file", config }: ImportDialogProps<T>) {
+export function ImportDialog<T>({ title, triggerLabel = "Nhập file", config, appearance = "button" }: ImportDialogProps<T>) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<ImportStep>("pick");
   const [results, setResults] = useState<ImportRowResult<T>[]>([]);
@@ -121,7 +125,7 @@ export function ImportDialog<T>({ title, triggerLabel = "Nhập file", config }:
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 rounded-lg border border-brand-line bg-white px-4 py-2.5 text-[14px] font-bold text-brand-greenDark transition hover:bg-brand-green/5"
+        className={appearance === "menu-item" ? adminMenuItemClassName : adminButtonClassName.outline}
       >
         <Upload className="size-4" />
         {triggerLabel}

@@ -34,7 +34,8 @@ export function RolesExplorer() {
       createLabel="Thêm vai trò"
       editHref={(row) => `/admin/roles/${row.id}`}
       onDelete={hasPermission("roles.delete") ? handleDelete : undefined}
-      emptyState={loadError ?? "Chưa có vai trò nào."}
+      loadError={loadError}
+      emptyState="Chưa có vai trò nào."
     />
   );
 }

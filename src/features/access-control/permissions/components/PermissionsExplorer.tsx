@@ -52,7 +52,8 @@ export function PermissionsExplorer() {
       createLabel="Thêm quyền / nhóm"
       editHref={(row) => `/admin/permissions/${row.id}`}
       onDelete={hasPermission("permissions.delete") ? handleDelete : undefined}
-      emptyState={loadError ?? "Chưa có quyền nào."}
+      loadError={loadError}
+      emptyState="Chưa có quyền nào."
     />
   );
 }

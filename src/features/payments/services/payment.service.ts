@@ -1,7 +1,7 @@
 import type { PaymentStatus } from "@/features/orders";
-import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/core/api/admin-api";
+import { adminApi } from "@/core/api/admin-api";
 import { isApiError } from "@/core/api/api-error";
-import type { PaginatedResult } from "@/core/api/api-types";
+import type { PagedQuery, PaginatedResult } from "@/core/api/api-types";
 
 import type { ManagedPayment } from "../types/payment.types";
 
@@ -31,11 +31,15 @@ function toManagedPayment(dto: PaymentDto): ManagedPayment {
   };
 }
 
-export async function listPayments(): Promise<ManagedPayment[]> {
-  const page = await adminApi.get<PaginatedResult<PaymentDto>>("/sales/payments", {
-    params: { pageSize: ADMIN_LIST_PAGE_SIZE },
-  });
-  return page.items.map(toManagedPayment);
+export type PaymentPageQuery = PagedQuery & { status?: PaymentStatus };
+
+/** 1 trang thanh toán (mới nhất trước) — tìm theo mã đơn/phương thức và lọc trạng thái do Backend xử lý. */
+export async function listPaymentsPage(
+  query: PaymentPageQuery,
+  signal?: AbortSignal,
+): Promise<PaginatedResult<ManagedPayment>> {
+  const page = await adminApi.get<PaginatedResult<PaymentDto>>("/sales/payments", { params: query, signal });
+  return { ...page, items: page.items.map(toManagedPayment) };
 }
 
 /** null khi không tồn tại (Backend 404). */
