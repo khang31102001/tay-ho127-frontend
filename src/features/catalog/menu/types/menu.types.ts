@@ -62,6 +62,8 @@ export interface Product {
   price?: Price;
   imageUrl?: string | null;
   isActive?: boolean;
+  /** "Thứ tự" của món trong menu (Liên kết Menu-SP) — trang Thực đơn hiển thị tăng dần theo giá trị này. */
+  sortOrder?: number;
 }
 
 export interface Price {
