@@ -85,6 +85,11 @@
   --admin-success-text-rgb: 60 118 61; /* #3c763d */
   --admin-warning-text-rgb: 138 109 59; /* #8a6d3b */
 
+  /* Dấu ấn thương hiệu Tây Hồ trong Admin (trang đăng nhập): đỏ logo cho vạch nhấn/tagline, vàng gỗ cho lớp phủ ảnh.
+     Khai báo riêng vì trong /admin các biến --brand-* đã bị admin-theme.css trỏ sang màu Admin. */
+  --admin-accent-rgb: 237 28 36; /* #ed1c24 — trùng --brand-red của Site */
+  --admin-overlay-warm-rgb: 183 123 70; /* #b77b46 — trùng --brand-wood của Site */
+
   /* Kích thước & hiệu ứng. */
   --admin-radius: 4px;
   --admin-control-height: 36px;

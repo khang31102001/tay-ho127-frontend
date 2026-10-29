@@ -47,6 +47,8 @@ const config: Config= {
           dangerText: "rgb(var(--admin-danger-text-rgb) / <alpha-value>)",
           successText: "rgb(var(--admin-success-text-rgb) / <alpha-value>)",
           warningText: "rgb(var(--admin-warning-text-rgb) / <alpha-value>)",
+          accent: "rgb(var(--admin-accent-rgb) / <alpha-value>)",
+          overlayWarm: "rgb(var(--admin-overlay-warm-rgb) / <alpha-value>)",
         },
       },
       // Typography Admin: cỡ chữ thống nhất cho toolbar/bảng/form.
