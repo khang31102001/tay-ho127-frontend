@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 
-import { DataExplorer, type DataExplorerColumn } from "@/shared/admin/templates/DataExplorer/DataExplorer";
+import {
+  DataExplorer,
+  DataExplorerFilterSelect,
+  type DataExplorerColumn,
+} from "@/shared/admin/templates/DataExplorer/DataExplorer";
 import { MoneyDisplay } from "@/shared/components/MoneyDisplay";
 import { PAYMENT_STATUS_OPTIONS, PaymentStatusBadge } from "@/features/orders";
 
@@ -14,14 +18,13 @@ const STATUS_FILTER_OPTIONS: { value: PaymentStatusFilter; label: string }[] = [
   ...PAYMENT_STATUS_OPTIONS,
 ];
 
-const PAGE_SIZE = 10;
-
 const columns: DataExplorerColumn<ManagedPayment>[] = [
   { key: "orderCode", header: "Mã đơn" },
   { key: "paymentMethodLabel", header: "Phương thức" },
   {
     key: "amount",
     header: "Số tiền",
+    align: "right",
     render: (row) => <MoneyDisplay value={row.amount} />,
   },
   {
@@ -54,33 +57,26 @@ export function PaymentsExplorer() {
     return new URLSearchParams(window.location.search).get("search") ?? undefined;
   });
 
-  const { payments, isLoading, statusFilter, setStatusFilter } = usePaymentsExplorer();
+  const { loadPage, statusFilter, setStatusFilter } = usePaymentsExplorer();
 
   return (
     <DataExplorer<ManagedPayment>
       title="Quản lý thanh toán"
       columns={columns}
-      rows={payments}
-      isLoading={isLoading}
-      pageSize={PAGE_SIZE}
+      loadPage={loadPage}
       initialSearchTerm={initialSearchTerm}
       getRowId={(row) => row.id}
-      getSearchableText={(row) => `${row.orderCode} ${row.paymentMethodLabel} ${row.transactionId ?? ""}`}
       searchPlaceholder="Tìm theo mã đơn, phương thức..."
       editHref={(row) => `/admin/sales/payments/${row.id}`}
       emptyState="Chưa có giao dịch thanh toán nào."
-      toolbarActions={
-        <select
+      totalLabel="giao dịch"
+      filters={
+        <DataExplorerFilterSelect
+          ariaLabel="Lọc theo trạng thái thanh toán"
           value={statusFilter}
-          onChange={(event) => setStatusFilter(event.target.value as PaymentStatusFilter)}
-          className="h-10 rounded-lg border border-brand-line px-3 text-[13px] font-bold text-brand-greenDark outline-none transition focus:border-brand-green focus:ring-2 focus:ring-brand-green/20"
-        >
-          {STATUS_FILTER_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+          onChange={setStatusFilter}
+          options={STATUS_FILTER_OPTIONS}
+        />
       }
     />
   );

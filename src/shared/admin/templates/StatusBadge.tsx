@@ -25,12 +25,16 @@ export function StatusBadge({
 
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-1 text-[12px] font-bold ${
+      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-admin-xs font-semibold ${
         isActive
-          ? "bg-brand-green/10 text-brand-greenDark"
-          : "bg-brand-muted/10 text-brand-muted"
+          ? "border-admin-success/50 bg-admin-success/10 text-admin-successText"
+          : "border-admin-border bg-admin-subtle text-admin-textSecondary"
       }`}
     >
+      <span
+        aria-hidden="true"
+        className={`size-1.5 rounded-full ${isActive ? "bg-admin-success" : "bg-admin-muted"}`}
+      />
       {isActive ? activeLabel : inactiveLabel}
     </span>
   );

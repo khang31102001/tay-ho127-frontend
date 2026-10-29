@@ -48,6 +48,7 @@ const columns: DataExplorerColumn<ManagedMedia>[] = [
   {
     key: "size",
     header: "Dung lượng",
+    align: "right",
     render: (row) => formatFileSize(row.size),
   },
   {
@@ -58,23 +59,22 @@ const columns: DataExplorerColumn<ManagedMedia>[] = [
 ];
 
 export function MediaExplorer() {
-  const { mediaItems, isLoading, loadError, handleDelete } = useMediaExplorer();
+  const { loadPage, handleDelete } = useMediaExplorer();
   const { hasPermission } = useAdminAuth();
 
   return (
     <DataExplorer<ManagedMedia>
       title="Thư viện Media"
       columns={columns}
-      rows={mediaItems}
-      isLoading={isLoading}
+      loadPage={loadPage}
       getRowId={(row) => row.id}
-      getSearchableText={(row) => `${row.fileName} ${row.altText ?? ""}`}
-      searchPlaceholder="Tìm file..."
+      searchPlaceholder="Tìm theo tên file..."
       createHref={hasPermission("media.create") ? "/admin/catalog/media/new" : undefined}
       createLabel="Thêm media"
       editHref={(row) => `/admin/catalog/media/${row.id}`}
       onDelete={hasPermission("media.delete") ? handleDelete : undefined}
-      emptyState={loadError ?? "Chưa có file media nào."}
+      emptyState="Chưa có file media nào."
+      totalLabel="file"
     />
   );
 }

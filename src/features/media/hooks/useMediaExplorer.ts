@@ -1,19 +1,22 @@
 "use client";
 
-import { useAsyncData } from "@/shared/hooks/useAsyncData";
+import { useCallback } from "react";
+
+import type { DataExplorerLoadPage } from "@/shared/admin/templates/DataExplorer/DataExplorer";
 
 import type { ManagedMedia } from "../types/media.types";
-import { deleteLibraryMedia, listLibraryMedia } from "../services/media-library.service";
+import { deleteLibraryMedia, listLibraryMediaPage } from "../services/media-library.service";
 
+/** Tải theo trang từ Backend (10 file/lượt). Sau khi xóa, DataExplorer tự tải lại từ trang đầu. */
 export function useMediaExplorer() {
-  const { data, isLoading, error, reload } = useAsyncData(listLibraryMedia, [], {
-    fallbackError: "Không thể tải thư viện media.",
-  });
+  const loadPage = useCallback<DataExplorerLoadPage<ManagedMedia>>(async (query, signal) => {
+    const page = await listLibraryMediaPage(query, signal);
+    return { items: page.items, totalItems: page.totalItems };
+  }, []);
 
   async function handleDelete(media: ManagedMedia) {
     await deleteLibraryMedia(media.id);
-    await reload();
   }
 
-  return { mediaItems: data ?? [], isLoading, loadError: error, handleDelete };
+  return { loadPage, handleDelete };
 }

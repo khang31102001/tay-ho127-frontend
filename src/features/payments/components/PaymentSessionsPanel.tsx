@@ -52,7 +52,7 @@ export function PaymentSessionsPanel() {
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[720px] text-left text-[13px]">
             <thead>
-              <tr className="border-b border-brand-line text-[11px] uppercase tracking-wide text-brand-muted">
+              <tr className="border-b border-admin-border text-admin-sm font-bold text-admin-text">
                 <th className="py-2 pr-3">Mã tham chiếu</th>
                 <th className="py-2 pr-3">Khách hàng</th>
                 <th className="py-2 pr-3">Phương thức</th>

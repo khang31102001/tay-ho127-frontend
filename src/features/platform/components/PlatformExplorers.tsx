@@ -2,7 +2,7 @@
 
 import { DataExplorer, type DataExplorerColumn } from "@/shared/admin/templates/DataExplorer/DataExplorer";
 import { StatusBadge, statusFromIsActive } from "@/shared/admin/templates/StatusBadge";
-import { adminFieldInputClassName } from "@/shared/admin/templates/formFieldClassName";
+import { adminButtonClassName, adminControlClassName } from "@/shared/admin/templates/formFieldClassName";
 import { useAdminAuth } from "@/features/admin-auth";
 
 import type { AuditLogEntry, ManagedSystemSetting } from "../types/platform.types";
@@ -39,7 +39,8 @@ export function FiscalYearsExplorer() {
       createHref={hasPermission("fiscal-years.create") ? "/admin/system/fiscal-years/new" : undefined}
       createLabel="Thêm năm tài chính"
       editHref={(row) => `/admin/system/fiscal-years/${row.id}`}
-      emptyState={loadError ?? "Chưa có năm tài chính nào."}
+      loadError={loadError}
+      emptyState="Chưa có năm tài chính nào."
     />
   );
 }
@@ -69,7 +70,8 @@ export function SystemSettingsExplorer() {
       createLabel="Thêm cài đặt"
       editHref={(row) => `/admin/system/settings/${row.id}`}
       onDelete={hasPermission("system-settings.delete") ? handleDelete : undefined}
-      emptyState={loadError ?? "Chưa có cài đặt nào."}
+      loadError={loadError}
+      emptyState="Chưa có cài đặt nào."
     />
   );
 }
@@ -97,53 +99,54 @@ const auditLogColumns: DataExplorerColumn<AuditLogEntry>[] = [
 ];
 
 export function AuditLogsExplorer() {
-  const { entries, isLoading, loadError, draftFilter, updateDraftFilter, applyFilter } = useAuditLogsExplorer();
+  const { loadPage, draftFilter, updateDraftFilter, applyFilter } = useAuditLogsExplorer();
 
-  const filterBar = (
-    <div className="flex flex-wrap items-end gap-2">
+  const advancedFilters = (
+    <form
+      className="flex flex-wrap items-end gap-2"
+      onSubmit={(event) => {
+        event.preventDefault();
+        applyFilter();
+      }}
+    >
       <input
         type="text"
         placeholder="Đối tượng (vd. Organization)"
+        aria-label="Đối tượng"
         value={draftFilter.entityName ?? ""}
         onChange={(event) => updateDraftFilter("entityName", event.target.value)}
-        className={`${adminFieldInputClassName} w-52`}
+        className={`${adminControlClassName} w-52`}
       />
       <input
         type="date"
         aria-label="Từ ngày"
         value={draftFilter.fromDate ?? ""}
         onChange={(event) => updateDraftFilter("fromDate", event.target.value)}
-        className={`${adminFieldInputClassName} w-40`}
+        className={`${adminControlClassName} w-40`}
       />
       <input
         type="date"
         aria-label="Đến ngày"
         value={draftFilter.toDate ?? ""}
         onChange={(event) => updateDraftFilter("toDate", event.target.value)}
-        className={`${adminFieldInputClassName} w-40`}
+        className={`${adminControlClassName} w-40`}
       />
-      <button
-        type="button"
-        onClick={applyFilter}
-        className="rounded-lg border border-brand-line px-4 py-2.5 text-[13px] font-bold text-brand-greenDark hover:bg-brand-green/5"
-      >
+      <button type="submit" className={adminButtonClassName.primary}>
         Lọc
       </button>
-    </div>
+    </form>
   );
 
   return (
     <DataExplorer<AuditLogEntry>
       title="Nhật ký thay đổi"
       columns={auditLogColumns}
-      rows={entries}
-      isLoading={isLoading}
+      loadPage={loadPage}
       getRowId={(row) => row.id}
-      getSearchableText={(row) => `${row.action} ${row.entityName} ${row.entityId} ${row.changesJson ?? ""}`}
-      searchPlaceholder="Tìm trong kết quả..."
-      toolbarActions={filterBar}
-      pageSize={50}
-      emptyState={loadError ?? "Không có thay đổi nào khớp bộ lọc."}
+      searchPlaceholder="Tìm theo hành động, đối tượng..."
+      advancedFilters={advancedFilters}
+      emptyState="Không có thay đổi nào khớp bộ lọc."
+      totalLabel="thay đổi"
     />
   );
 }

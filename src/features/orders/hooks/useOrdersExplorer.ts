@@ -1,7 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { listOrders } from "../services/order.service";
+import { useCallback, useState } from "react";
+
+import type { DataExplorerLoadPage } from "@/shared/admin/templates/DataExplorer/DataExplorer";
+
+import { listOrdersPage } from "../services/order.service";
 import type { OrderStatus } from "../types/order-status";
 import type { PaymentStatus } from "../types/payment-status";
 import type { ManagedOrder } from "../types/order.types";
@@ -16,45 +19,47 @@ const DATE_FILTER_DAYS: Record<Exclude<OrderDateFilter, "all">, number> = {
   "30d": 30,
 };
 
-function isWithinDateFilter(createdAt: string, filter: OrderDateFilter): boolean {
-  if (filter === "all") return true;
-  const days = DATE_FILTER_DAYS[filter];
-  const threshold = Date.now() - days * 24 * 60 * 60 * 1000;
-  return new Date(createdAt).getTime() >= threshold;
+function dateFilterThreshold(filter: OrderDateFilter): number | null {
+  if (filter === "all") return null;
+  return Date.now() - DATE_FILTER_DAYS[filter] * 24 * 60 * 60 * 1000;
 }
 
+/**
+ * Danh sách đơn tải theo trang từ Backend (10 đơn/lượt): tìm kiếm + lọc trạng thái đơn/thanh toán chạy ở Backend.
+ * Backend chưa lọc được theo ngày, nhưng trả đơn MỚI NHẤT TRƯỚC — nên lọc ngày ở đây: bỏ đơn cũ hơn mốc và dừng
+ * tải thêm ngay khi gặp đơn cũ hơn mốc (mọi trang sau đều cũ hơn). Khi lọc ngày, tổng số không biết trước.
+ */
 export function useOrdersExplorer() {
-  const [orders, setOrders] = useState<ManagedOrder[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<OrderStatusFilter>("all");
   const [paymentFilter, setPaymentFilter] = useState<PaymentStatusFilter>("all");
   const [dateFilter, setDateFilter] = useState<OrderDateFilter>("all");
 
-  useEffect(() => {
-    let isMounted = true;
-    listOrders().then((data) => {
-      if (isMounted) {
-        setOrders(data);
-        setIsLoading(false);
-      }
-    });
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const loadPage = useCallback<DataExplorerLoadPage<ManagedOrder>>(
+    async (query, signal) => {
+      const page = await listOrdersPage(
+        {
+          ...query,
+          status: statusFilter === "all" ? undefined : statusFilter,
+          paymentStatus: paymentFilter === "all" ? undefined : paymentFilter,
+        },
+        signal,
+      );
 
-  const filteredOrders = useMemo(() => {
-    return orders.filter((order) => {
-      if (statusFilter !== "all" && order.orderStatus !== statusFilter) return false;
-      if (paymentFilter !== "all" && order.paymentStatus !== paymentFilter) return false;
-      if (!isWithinDateFilter(order.createdAt, dateFilter)) return false;
-      return true;
-    });
-  }, [orders, statusFilter, paymentFilter, dateFilter]);
+      const threshold = dateFilterThreshold(dateFilter);
+      if (threshold === null) return { items: page.items, totalItems: page.totalItems };
+
+      const items = page.items.filter((order) => new Date(order.createdAt).getTime() >= threshold);
+      const hasReachedOlderOrders = items.length < page.items.length;
+      return {
+        items,
+        hasMore: !hasReachedOlderOrders && query.page * query.pageSize < page.totalItems,
+      };
+    },
+    [statusFilter, paymentFilter, dateFilter],
+  );
 
   return {
-    orders: filteredOrders,
-    isLoading,
+    loadPage,
     statusFilter,
     setStatusFilter,
     paymentFilter,

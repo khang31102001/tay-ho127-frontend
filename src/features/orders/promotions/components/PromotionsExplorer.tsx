@@ -23,10 +23,11 @@ const columns: DataExplorerColumn<PromotionRow>[] = [
   { key: "code", header: "Mã" },
   { key: "name", header: "Tên chương trình" },
   { key: "type", header: "Loại giảm giá", render: (row) => PROMOTION_TYPE_LABEL[row.type] },
-  { key: "value", header: "Giá trị giảm", render: formatPromotionValue },
+  { key: "value", header: "Giá trị giảm", align: "right", render: formatPromotionValue },
   {
     key: "minimumOrderAmount",
     header: "Đơn tối thiểu",
+    align: "right",
     render: (row) => (row.minimumOrderAmount ? formatCurrency(row.minimumOrderAmount) : "—"),
   },
   { key: "startAt", header: "Ngày bắt đầu", render: (row) => formatDate(row.startAt) },
@@ -59,7 +60,8 @@ export function PromotionsExplorer() {
       createLabel="Thêm mã giảm giá"
       editHref={(row) => `/admin/catalog/promotions/${row.id}`}
       onDelete={handleDelete}
-      emptyState={loadError ?? "Chưa có mã giảm giá nào."}
+      loadError={loadError}
+      emptyState="Chưa có mã giảm giá nào."
     />
   );
 }

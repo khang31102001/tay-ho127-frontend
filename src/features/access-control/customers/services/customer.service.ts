@@ -1,6 +1,6 @@
 import type { EntityStatus } from "@/shared/admin/templates/StatusBadge";
-import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/core/api/admin-api";
-import type { PaginatedResult } from "@/core/api/api-types";
+import { adminApi } from "@/core/api/admin-api";
+import type { PagedQuery, PaginatedResult } from "@/core/api/api-types";
 
 import type { Gender, ManagedCustomer } from "../types/customer.types";
 
@@ -54,11 +54,18 @@ function toRequestBody(input: CustomerUpsertInput) {
   };
 }
 
-export async function listCustomers(): Promise<ManagedCustomer[]> {
+export type CustomerPageQuery = PagedQuery & { status?: EntityStatus };
+
+/** 1 trang khách hàng (mới tạo trước) — tìm theo tên/mã/SĐT/email và lọc trạng thái do Backend xử lý. */
+export async function listCustomersPage(
+  query: CustomerPageQuery,
+  signal?: AbortSignal,
+): Promise<PaginatedResult<ManagedCustomer>> {
   const page = await adminApi.get<PaginatedResult<CustomerDto>>("/customers", {
-    params: { pageSize: ADMIN_LIST_PAGE_SIZE, sortDirection: "desc" },
+    params: { sortDirection: "desc", ...query },
+    signal,
   });
-  return page.items.map(toManagedCustomer);
+  return { ...page, items: page.items.map(toManagedCustomer) };
 }
 
 export async function getCustomerById(id: string): Promise<ManagedCustomer> {

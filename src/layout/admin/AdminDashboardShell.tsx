@@ -43,7 +43,7 @@ export function AdminDashboardShell({ children }: AdminDashboardShellProps) {
 
   return (
     <AdminGuard>
-      <div className="flex min-h-svh bg-[#fafaf8]">
+      <div className="flex min-h-svh bg-admin-bg">
         <AdminSidebar
           isOpen={isMobileNavOpen}
           onClose={() => setIsMobileNavOpen(false)}

@@ -13,7 +13,7 @@ export function OrderItemsTable({ items }: OrderItemsTableProps) {
     <div className="overflow-x-auto rounded-lg border border-brand-line bg-white">
       <table className="w-full min-w-[520px] text-left text-[14px]">
         <thead>
-          <tr className="border-b border-brand-line bg-brand-cream/40 text-brand-greenDark">
+          <tr className="border-b border-admin-border bg-admin-tableHeader text-admin-text">
             <th className="px-4 py-3 font-bold">Sản phẩm</th>
             <th className="px-4 py-3 text-right font-bold">Đơn giá</th>
             <th className="px-4 py-3 text-right font-bold">SL</th>

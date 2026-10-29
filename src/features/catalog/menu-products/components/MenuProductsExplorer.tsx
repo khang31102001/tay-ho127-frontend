@@ -13,9 +13,10 @@ const columns: DataExplorerColumn<ManagedMenuProductRow>[] = [
   {
     key: "effectivePrice",
     header: "Giá áp dụng",
+    align: "right",
     render: (row) => formatCurrency(row.effectivePrice),
   },
-  { key: "sortOrder", header: "Thứ tự" },
+  { key: "sortOrder", header: "Thứ tự", align: "right" },
   {
     key: "isAvailable",
     header: "Tình trạng",
@@ -50,7 +51,8 @@ export function MenuProductsExplorer() {
       createLabel="Thêm liên kết"
       editHref={(row) => `/admin/catalog/menu-products/${row.id}`}
       onDelete={hasPermission("sales-menus.delete") ? handleDelete : undefined}
-      emptyState={loadError ?? "Chưa có liên kết nào."}
+      loadError={loadError}
+      emptyState="Chưa có liên kết nào."
     />
   );
 }

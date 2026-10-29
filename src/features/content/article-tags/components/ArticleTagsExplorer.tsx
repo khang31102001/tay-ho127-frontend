@@ -26,7 +26,8 @@ export function ArticleTagsExplorer() {
       createLabel="Thêm thẻ"
       editHref={(row) => `/admin/content/article-tags/${row.id}`}
       onDelete={handleDelete}
-      emptyState={loadError ?? "Chưa có thẻ nào."}
+      loadError={loadError}
+      emptyState="Chưa có thẻ nào."
     />
   );
 }

@@ -11,8 +11,8 @@ export function ImportPreviewTable<T>({ columns, results }: ImportPreviewTablePr
   return (
     <div className="max-h-80 overflow-auto rounded-lg border border-brand-line">
       <table className="w-full min-w-[560px] text-left text-[13px]">
-        <thead className="sticky top-0 bg-brand-cream/60">
-          <tr className="border-b border-brand-line text-brand-greenDark">
+        <thead className="sticky top-0 bg-admin-tableHeader">
+          <tr className="border-b border-admin-border text-admin-text">
             <th className="px-3 py-2 font-bold">#</th>
             <th className="px-3 py-2 font-bold">Trạng thái</th>
             {columns.map((column) => (

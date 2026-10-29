@@ -1,42 +1,46 @@
 /*
- * Giao diện Admin Portal: bảng màu trung tính kiểu "hệ thống quản trị" (slate + xanh dương) thay cho màu thương hiệu
- * (xanh lá / đỏ / kem) của User Site — dễ đọc, tương phản tốt, ít gây mỏi mắt khi làm việc lâu.
+ * Giao diện Admin Portal (phong cách ERP/POS): bảng màu lấy từ token `--admin-*` ở src/styles/tokens.css,
+ * thay cho màu thương hiệu (xanh lá / đỏ / kem) của User Site.
  *
- * Cách hoạt động: toàn bộ Admin dùng class Tailwind `brand-*` (đọc các CSS variable ở tokens.css). Thay vì sửa hàng trăm
- * component, file này chỉ GHI ĐÈ giá trị các variable đó khi trang có `[data-admin-theme]` (đặt ở app/admin/layout.tsx).
+ * Cách hoạt động: phần lớn Admin dùng class Tailwind `brand-*` (đọc các CSS variable ở tokens.css). Thay vì sửa hàng trăm
+ * component, file này chỉ GHI ĐÈ giá trị các variable đó về token admin khi trang có `[data-admin-theme]` (đặt ở app/admin/layout.tsx).
+ * Code Admin mới dùng thẳng class `admin-*` (tailwind.config.ts). Không khai báo mã màu ở đây — đổi màu Admin tại tokens.css.
  * Đặt trên `body` (chứ không trên wrapper) để popup/dialog render qua portal ra ngoài layout vẫn ăn cùng màu.
  * Trình duyệt chưa hỗ trợ :has() thì Admin giữ màu thương hiệu (vẫn dùng được).
  *
- * Vai trò các token ở Admin:
- *   red / redDark  → hành động chính (nút "Thêm mới", "Lưu") và hover của nó: xanh dương
- *   green          → điểm nhấn: mục đang chọn, viền focus, checkbox: xanh dương
- *   greenDark      → tiêu đề và chữ nhấn mạnh: slate đậm
- *   cream          → nền trang / hàng hover / header bảng: slate rất nhạt
- *   ink / muted    → chữ chính / chữ phụ (muted đủ đậm để đọc rõ trên nền nhạt)
- * Màu nguy hiểm/lỗi (xóa, báo lỗi) dùng red-* của Tailwind chứ không dùng brand nên không bị ảnh hưởng.
- * Đổi màu Admin tại đây — không cần sửa component.
+ * Vai trò các token brand-* ở Admin:
+ *   red / redDark  → hành động chính (nút "Thêm mới", "Lưu") và hover: admin primary / primary hover
+ *   green          → điểm nhấn: mục đang chọn, checkbox: admin primary
+ *   greenDark      → tiêu đề và chữ nhấn mạnh: admin text
+ *   cream          → nền phụ / hàng hover: admin subtle
+ *   wheat          → nền header bảng: admin table header
+ *   ink / muted    → chữ chính / chữ phụ: admin text / text secondary
+ *   line           → đường viền: admin border
  */
 body:has([data-admin-theme]) {
-  --brand-red: #2563eb;
-  --brand-red-rgb: 37 99 235;
-  --brand-red-dark: #1d4ed8;
-  --brand-red-dark-rgb: 29 78 216;
+  --brand-red: rgb(var(--admin-primary-rgb));
+  --brand-red-rgb: var(--admin-primary-rgb);
+  --brand-red-dark: rgb(var(--admin-primary-hover-rgb));
+  --brand-red-dark-rgb: var(--admin-primary-hover-rgb);
 
-  --brand-green: #2563eb;
-  --brand-green-rgb: 37 99 235;
-  --brand-green-dark: #1e293b;
-  --brand-green-dark-rgb: 30 41 59;
+  --brand-green: rgb(var(--admin-primary-rgb));
+  --brand-green-rgb: var(--admin-primary-rgb);
+  --brand-green-dark: rgb(var(--admin-text-rgb));
+  --brand-green-dark-rgb: var(--admin-text-rgb);
 
-  --brand-cream: #f1f5f9;
-  --brand-cream-rgb: 241 245 249;
-  --brand-wheat: #e2e8f0;
-  --brand-wheat-rgb: 226 232 240;
-  --brand-wood: #64748b;
-  --brand-wood-rgb: 100 116 139;
+  --brand-cream: rgb(var(--admin-subtle-rgb));
+  --brand-cream-rgb: var(--admin-subtle-rgb);
+  --brand-wheat: rgb(var(--admin-table-header-rgb));
+  --brand-wheat-rgb: var(--admin-table-header-rgb);
+  --brand-wood: rgb(var(--admin-muted-rgb));
+  --brand-wood-rgb: var(--admin-muted-rgb);
 
-  --brand-ink: #0f172a;
-  --brand-ink-rgb: 15 23 42;
-  --brand-muted: #475569;
-  --brand-muted-rgb: 71 85 105;
-  --brand-line: rgba(15, 23, 42, 0.14);
+  --brand-ink: rgb(var(--admin-text-rgb));
+  --brand-ink-rgb: var(--admin-text-rgb);
+  --brand-muted: rgb(var(--admin-text-secondary-rgb));
+  --brand-muted-rgb: var(--admin-text-secondary-rgb);
+  --brand-line: rgb(var(--admin-border-rgb));
+
+  background-color: rgb(var(--admin-bg-rgb));
+  color: rgb(var(--admin-text-rgb));
 }

@@ -1,6 +1,10 @@
 "use client";
 
-import { DataExplorer, type DataExplorerColumn } from "@/shared/admin/templates/DataExplorer/DataExplorer";
+import {
+  DataExplorer,
+  DataExplorerFilterSelect,
+  type DataExplorerColumn,
+} from "@/shared/admin/templates/DataExplorer/DataExplorer";
 import { StatusBadge } from "@/shared/admin/templates/StatusBadge";
 import { useAdminAuth } from "@/features/admin-auth";
 
@@ -12,8 +16,6 @@ const STATUS_FILTER_OPTIONS: { value: CustomerStatusFilter; label: string }[] = 
   { value: "active", label: "Hoạt động" },
   { value: "inactive", label: "Ngừng hoạt động" },
 ];
-
-const PAGE_SIZE = 10;
 
 const columns: DataExplorerColumn<ManagedCustomer>[] = [
   { key: "customerCode", header: "Mã KH" },
@@ -32,35 +34,28 @@ const columns: DataExplorerColumn<ManagedCustomer>[] = [
 ];
 
 export function CustomersExplorer() {
-  const { rows, statusFilter, setStatusFilter, isLoading, loadError } = useCustomersExplorer();
+  const { loadPage, statusFilter, setStatusFilter } = useCustomersExplorer();
   const { hasPermission } = useAdminAuth();
 
   return (
     <DataExplorer<ManagedCustomer>
       title="Quản lý khách hàng"
       columns={columns}
-      rows={rows}
-      isLoading={isLoading}
-      pageSize={PAGE_SIZE}
+      loadPage={loadPage}
       getRowId={(row) => row.id}
-      getSearchableText={(row) => `${row.fullName} ${row.phone} ${row.email ?? ""} ${row.customerCode}`}
       searchPlaceholder="Tìm theo tên, SĐT, email..."
       createHref={hasPermission("customers.create") ? "/admin/sales/customers/new" : undefined}
       createLabel="Thêm khách hàng"
       editHref={(row) => `/admin/sales/customers/${row.id}`}
-      emptyState={loadError ?? "Chưa có khách hàng nào."}
-      toolbarActions={
-        <select
+      emptyState="Chưa có khách hàng nào."
+      totalLabel="khách hàng"
+      filters={
+        <DataExplorerFilterSelect
+          ariaLabel="Lọc theo trạng thái"
           value={statusFilter}
-          onChange={(event) => setStatusFilter(event.target.value as CustomerStatusFilter)}
-          className="h-10 rounded-lg border border-brand-line px-3 text-[13px] font-bold text-brand-greenDark outline-none transition focus:border-brand-green focus:ring-2 focus:ring-brand-green/20"
-        >
-          {STATUS_FILTER_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+          onChange={setStatusFilter}
+          options={STATUS_FILTER_OPTIONS}
+        />
       }
     />
   );

@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Download, LoaderCircle } from "lucide-react";
 
+import { adminButtonClassName, adminMenuItemClassName } from "../templates/formFieldClassName";
+
 import { buildCsv, downloadCsv } from "./csv";
 import type { ExportColumn } from "./import-export.types";
 
@@ -11,6 +13,8 @@ type ExportButtonProps<T> = {
   fileName: string;
   columns: ExportColumn<T>[];
   rows: T[];
+  /** "menu-item" khi đặt trong menu "Tiện ích" của DataExplorer. */
+  appearance?: "button" | "menu-item";
 };
 
 /**
@@ -22,6 +26,7 @@ export function ExportButton<T>({
   fileName,
   columns,
   rows,
+  appearance = "button",
 }: ExportButtonProps<T>) {
   const [isExporting, setIsExporting] = useState(false);
 
@@ -49,7 +54,7 @@ export function ExportButton<T>({
       type="button"
       onClick={handleExport}
       disabled={isExporting || rows.length === 0}
-      className="inline-flex items-center gap-1.5 rounded-lg border border-brand-line bg-white px-4 py-2.5 text-[14px] font-bold text-brand-greenDark transition hover:bg-brand-green/5 disabled:cursor-not-allowed disabled:opacity-50"
+      className={appearance === "menu-item" ? adminMenuItemClassName : adminButtonClassName.outline}
     >
       {isExporting ? (
         <LoaderCircle className="size-4 animate-spin" />

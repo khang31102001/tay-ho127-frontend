@@ -19,6 +19,7 @@ const columns: DataExplorerColumn<ProductRow>[] = [
   {
     key: "price",
     header: "Giá",
+    align: "right",
     render: (row) => formatCurrency(row.price),
   },
   {
@@ -53,10 +54,14 @@ export function ProductsExplorer() {
       createLabel="Thêm sản phẩm"
       editHref={(row) => `/admin/catalog/products/${row.id}`}
       onDelete={hasPermission("products.delete") ? handleDelete : undefined}
-      emptyState={loadError ?? "Chưa có sản phẩm nào."}
-      toolbarActions={
+      loadError={loadError}
+      emptyState="Chưa có sản phẩm nào."
+      totalLabel="sản phẩm"
+      onRetry={reload}
+      utilities={
         <>
           <ExportButton
+            appearance="menu-item"
             label="Xuất file"
             fileName="san-pham.csv"
             columns={PRODUCT_EXPORT_COLUMNS}
@@ -65,6 +70,7 @@ export function ProductsExplorer() {
 
           {canImport && (
             <ImportDialog
+              appearance="menu-item"
               title="Nhập sản phẩm hàng loạt"
               triggerLabel="Nhập file"
               config={{

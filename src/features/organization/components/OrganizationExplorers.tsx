@@ -42,7 +42,8 @@ export function OrganizationsExplorer() {
       createHref={hasPermission("organizations.create") ? "/admin/organization/organizations/new" : undefined}
       createLabel="Thêm tổ chức"
       editHref={(row) => `/admin/organization/organizations/${row.id}`}
-      emptyState={loadError ?? "Chưa có tổ chức nào."}
+      loadError={loadError}
+      emptyState="Chưa có tổ chức nào."
     />
   );
 }
@@ -79,7 +80,8 @@ export function DepartmentsExplorer() {
       createHref={hasPermission("departments.create") ? "/admin/organization/departments/new" : undefined}
       createLabel="Thêm phòng ban"
       editHref={(row) => `/admin/organization/departments/${row.id}`}
-      emptyState={loadError ?? "Chưa có phòng ban nào."}
+      loadError={loadError}
+      emptyState="Chưa có phòng ban nào."
     />
   );
 }
@@ -114,7 +116,8 @@ export function BrandsExplorer() {
       createHref={hasPermission("brands.create") ? "/admin/organization/brands/new" : undefined}
       createLabel="Thêm chi nhánh"
       editHref={(row) => `/admin/organization/brands/${row.id}`}
-      emptyState={loadError ?? "Chưa có chi nhánh nào."}
+      loadError={loadError}
+      emptyState="Chưa có chi nhánh nào."
     />
   );
 }

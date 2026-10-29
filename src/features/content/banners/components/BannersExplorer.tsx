@@ -32,7 +32,7 @@ const columns: DataExplorerColumn<ManagedBanner>[] = [
     header: "Thời gian chạy",
     render: (row) => formatScheduleRange(row),
   },
-  { key: "displayOrder", header: "Thứ tự" },
+  { key: "displayOrder", header: "Thứ tự", align: "right" },
   {
     key: "isActive",
     header: "Trạng thái",
@@ -66,7 +66,8 @@ export function BannersExplorer() {
       createLabel="Thêm banner"
       editHref={(row) => `/admin/content/banners/${row.id}`}
       onDelete={handleDelete}
-      emptyState={loadError ?? "Chưa có banner nào."}
+      loadError={loadError}
+      emptyState="Chưa có banner nào."
     />
   );
 }

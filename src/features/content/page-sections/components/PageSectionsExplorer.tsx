@@ -97,7 +97,8 @@ export function PageSectionsExplorer({ pageId }: PageSectionsExplorerProps) {
           createLabel="Thêm section"
           editHref={(row) => `/admin/content/pages/${pageId}/sections/${row.id}`}
           onDelete={handleDelete}
-          emptyState={loadError ?? "Page này chưa có section nào."}
+          loadError={loadError}
+          emptyState="Page này chưa có section nào."
         />
       </div>
     </div>
