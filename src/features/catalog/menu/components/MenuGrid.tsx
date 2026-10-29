@@ -92,7 +92,7 @@ export default function MenuGrid({
   return (
     <section className="relative isolate w-full  pb-40 pt-24 " >
        <MenuBackgroundDecoration leftColor="#FF9418" rightColor="#F5C884" />
-      <Container className="mx-auto  px-5 md:px-0">
+      <Container>
         {/* Tiêu đề */}
         <h1 className="heading-1 mb-24 text-center text-brand-green">
           Hôm nay bạn muốn ăn gì?
@@ -195,7 +195,7 @@ export default function MenuGrid({
          * DANH SÁCH SẢN PHẨM
          * =============================================== */}
         {visibleItems.length > 0 ? (
-          <div className="grid gap-x-10 gap-y-8 sm:grid-cols-2 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-10">
             {visibleItems.map((item, index) => (
               <Reveal type="fade-up" delay={index * 0.06} duration={0.45} key={item.id} className="w-full">
                 <ProductCard item={item} />

@@ -1,13 +1,13 @@
 "use client";
 
 import { useRef } from "react";
-import Image from "next/image";
 import Link from "next/link";
 
 import { useCart, useFlyToCart } from "@/features/cart";
 import { formatCurrency } from "@/core/utils/format-currency";
 import type { UiProduct } from "../types/menu.types";
 import { CATEGORY_BADGE_CLASS } from "../constants/category-badge";
+import { ProtectedProductImage } from "./ProtectedProductImage";
 
 type CrossSellProductCardProps = {
   item: UiProduct;
@@ -54,13 +54,14 @@ export function CrossSellProductCard({ item }: CrossSellProductCardProps) {
         className="relative block h-[92px] overflow-hidden"
         aria-label={`Xem chi tiết ${item.name}`}
       >
-        <Image
+        <ProtectedProductImage
           ref={imageRef}
           src={item.image}
           alt={item.name}
           width={100}
           height={92}
-          className="h-full w-full object-cover transition-transform duration-500 ease-out hover:scale-105"
+          logoClassName="w-[34%]"
+          className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
         />
         <span
           className={`absolute right-1.5 top-1.5 rounded px-1.5 py-0.5 text-[9px] font-black text-white ${

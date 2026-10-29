@@ -3,13 +3,14 @@
 import { useRef } from "react";
 import { useCart, useFlyToCart } from "@/features/cart";
 import { useFavorites } from "@/features/favorites";
+import { ORDERING_ENABLED } from "@/core/config/features";
 import { formatCurrency } from "@/core/utils/format-currency";
 import { UiProduct } from "../types/menu.types";
-import Image from "next/image";
 import Link from "next/link";
 import { Star } from "lucide-react";
 import BestSellerBanner from "./BestSellerBanner";
 import { CATEGORY_BADGE_CLASS } from "../constants/category-badge";
+import { ProtectedProductImage } from "./ProtectedProductImage";
 
 type ProductCardProps = {
   item: UiProduct;
@@ -54,14 +55,15 @@ export function ProductCard({ item }: ProductCardProps) {
   return (
     <article className="relative flex h-full flex-col rounded-md border border-brand-red bg-brand-cream shadow-card">
       {/* <BestSellerBanner/> */}
-      <Link href={detailHref} className="relative block overflow-hidden h-[142px]" aria-label={`Xem chi tiết ${item.name}`}>
-        <Image
+      <Link href={detailHref} className="relative block aspect-[4/5] overflow-hidden" aria-label={`Xem chi tiết ${item.name}`}>
+        <ProtectedProductImage
           ref={imageRef}
           src={item.image}
           alt={item.name}
-          width={100}
-          height={142}
-          className="h-full w-full object-cover transition-transform duration-500 ease-out hover:scale-105"
+          width={400}
+          height={500}
+          sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw"
+          className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
         />
         <span
           className={`absolute right-2 top-2 rounded px-2 py-1 text-[10px] font-black text-white ${
@@ -122,6 +124,7 @@ export function ProductCard({ item }: ProductCardProps) {
             <span className="truncate text-[12px]">({item.ratingCount}) đánh giá</span>
           </div>
 
+          {ORDERING_ENABLED && (
           <div className="flex shrink-0 items-center gap-1.5">
             <button
               type="button"
@@ -132,6 +135,7 @@ export function ProductCard({ item }: ProductCardProps) {
               +
             </button>
           </div>
+          )}
         </div>
       </div>
     </article>
