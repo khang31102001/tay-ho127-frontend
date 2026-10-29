@@ -1,5 +1,5 @@
-import { MediaEditor } from "@/features/media";
+import { MediaBulkCreator } from "@/features/media";
 
 export default function AdminMediaCreatePage() {
-  return <MediaEditor />;
+  return <MediaBulkCreator />;
 }
