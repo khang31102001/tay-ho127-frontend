@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, Star } from "lucide-react";
 
@@ -8,6 +7,7 @@ import { formatCurrency } from "@/core/utils/format-currency";
 import type { ProductDetailData } from "../services/menu.service";
 import { CATEGORY_BADGE_CLASS } from "../constants/category-badge";
 import { ProductActions } from "./ProductActions";
+import { ProtectedProductImage } from "./ProtectedProductImage";
 import { RelatedProducts } from "./RelatedProducts";
 
 type ProductDetailProps = {
@@ -34,13 +34,14 @@ export function ProductDetail({ data }: ProductDetailProps) {
           <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
             {/* Ảnh sản phẩm */}
             <div className="relative aspect-square w-full overflow-hidden rounded-card border border-brand-line bg-white shadow-soft">
-              <Image
+              <ProtectedProductImage
                 src={product.image}
                 alt={product.name}
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover"
                 priority
+                logoClassName="w-[22%]"
               />
 
               <span
