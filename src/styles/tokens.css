@@ -42,3 +42,58 @@
   /* Font tiêu đề: ưu tiên Anton local, fallback Roboto để không lỗi layout. */
   --font-display: "PSAntonLocal", "RobotoLocal", Arial, sans-serif;
 }
+
+/*
+ * Token giao diện Admin Portal (phong cách ERP/POS) — nguồn màu/kích thước duy nhất cho mọi màn /admin/*.
+ * Khai báo ở :root cho Tailwind `admin.*` (tailwind.config.ts) đọc; User Site không dùng class admin-* nên không bị ảnh hưởng.
+ * Các token `brand-*` cũ trong Admin được ánh xạ về đây ở src/styles/admin-theme.css (chỉ nạp khi vào /admin).
+ * Biến `-rgb` để Tailwind dùng opacity dạng bg-admin-primary/10.
+ */
+:root {
+  /* Màu hành động chính: nút "Tạo mới", link, checkbox. */
+  --admin-primary-rgb: 51 122 183; /* #337ab7 */
+  --admin-primary-hover-rgb: 40 96 144; /* #286090 */
+  /* Nền nhạt của primary: hover dòng bảng, nền chip đang chọn. */
+  --admin-primary-light-rgb: 217 237 247; /* #d9edf7 */
+  --admin-primary-border-rgb: 188 232 241; /* #bce8f1 */
+  /* Dòng đang được chọn — khác hover để không nhầm khi rê chuột qua. */
+  --admin-row-selected-rgb: 236 244 251; /* #ecf4fb */
+
+  /* Nền trang và bề mặt (card, bảng, input). */
+  --admin-bg-rgb: 255 255 255;
+  --admin-surface-rgb: 255 255 255;
+  /* Nền phụ rất nhạt: khối nhóm, ô chỉ đọc. */
+  --admin-subtle-rgb: 245 245 245; /* #f5f5f5 */
+  --admin-table-header-rgb: 233 233 233; /* #e9e9e9 */
+  --admin-border-rgb: 217 222 227; /* #d9dee3 */
+
+  /* Chữ. */
+  --admin-text-rgb: 51 51 51; /* #333333 */
+  --admin-text-secondary-rgb: 102 102 102; /* #666666 */
+  --admin-muted-rgb: 153 153 153; /* #999999 */
+
+  /* Trạng thái tương tác. */
+  --admin-focus-rgb: 102 175 233; /* #66afe9 */
+  --admin-disabled-rgb: 238 238 238; /* #eeeeee */
+
+  /* Trạng thái nghiệp vụ. */
+  --admin-danger-rgb: 217 83 79; /* #d9534f */
+  --admin-success-rgb: 92 184 92; /* #5cb85c */
+  --admin-warning-rgb: 240 173 78; /* #f0ad4e */
+  /* Chữ đậm của từng trạng thái — dùng trên nền nhạt cùng màu để đủ tương phản (WCAG AA). */
+  --admin-danger-text-rgb: 169 68 66; /* #a94442 */
+  --admin-success-text-rgb: 60 118 61; /* #3c763d */
+  --admin-warning-text-rgb: 138 109 59; /* #8a6d3b */
+
+  /* Dấu ấn thương hiệu Tây Hồ trong Admin (trang đăng nhập): đỏ logo cho vạch nhấn/tagline, vàng gỗ cho lớp phủ ảnh.
+     Khai báo riêng vì trong /admin các biến --brand-* đã bị admin-theme.css trỏ sang màu Admin. */
+  --admin-accent-rgb: 237 28 36; /* #ed1c24 — trùng --brand-red của Site */
+  --admin-overlay-warm-rgb: 183 123 70; /* #b77b46 — trùng --brand-wood của Site */
+
+  /* Kích thước & hiệu ứng. */
+  --admin-radius: 4px;
+  --admin-control-height: 36px;
+  --admin-row-height: 48px;
+  --admin-shadow-dropdown: 0 6px 12px rgba(0, 0, 0, 0.175);
+  --admin-transition: 150ms;
+}

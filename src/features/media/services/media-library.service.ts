@@ -1,7 +1,7 @@
 import type { EntityStatus } from "@/shared/admin/templates/StatusBadge";
-import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/core/api/admin-api";
+import { adminApi } from "@/core/api/admin-api";
 import { ApiError, resolveErrorKind } from "@/core/api/api-error";
-import type { PaginatedResult } from "@/core/api/api-types";
+import type { PagedQuery, PaginatedResult } from "@/core/api/api-types";
 
 import type { ManagedMedia, MediaType } from "../types/media.types";
 
@@ -38,11 +38,16 @@ function toManagedMedia(dto: MediaDto): ManagedMedia {
 
 export type MediaUpsertInput = Pick<ManagedMedia, "fileName" | "url" | "type" | "altText" | "size">;
 
-export async function listLibraryMedia(): Promise<ManagedMedia[]> {
+/** 1 trang thư viện media (mới tải lên trước) — Backend tìm theo tên file. */
+export async function listLibraryMediaPage(
+  query: PagedQuery,
+  signal?: AbortSignal,
+): Promise<PaginatedResult<ManagedMedia>> {
   const page = await adminApi.get<PaginatedResult<MediaDto>>("/media", {
-    params: { pageSize: ADMIN_LIST_PAGE_SIZE, sortDirection: "desc" },
+    params: { sortDirection: "desc", ...query },
+    signal,
   });
-  return page.items.map(toManagedMedia);
+  return { ...page, items: page.items.map(toManagedMedia) };
 }
 
 export async function getLibraryMediaById(id: string): Promise<ManagedMedia> {

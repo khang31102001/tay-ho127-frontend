@@ -1,8 +1,9 @@
-import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/core/api/admin-api";
+import { adminApi } from "@/core/api/admin-api";
 import { isApiError } from "@/core/api/api-error";
-import type { PaginatedResult } from "@/core/api/api-types";
+import type { PagedQuery, PaginatedResult } from "@/core/api/api-types";
 
 import type { OrderStatus } from "../types/order-status";
+import type { PaymentStatus } from "../types/payment-status";
 import type { ManagedOrder } from "../types/order.types";
 import { type OrderDto, toManagedOrderSingle, toManagedOrders } from "./order-mapper";
 
@@ -15,11 +16,15 @@ import { type OrderDto, toManagedOrderSingle, toManagedOrders } from "./order-ma
  * - Hủy đơn cần thêm quyền orders.cancel (403 nếu thiếu); hủy đơn tự hủy thanh toán chưa thu và hoàn lại lượt dùng mã giảm
  *   giá, còn đơn đã thanh toán thì nhân viên hoàn tiền thủ công ở màn Thanh toán.
  */
-export async function listOrders(): Promise<ManagedOrder[]> {
-  const page = await adminApi.get<PaginatedResult<OrderDto>>("/sales/orders", {
-    params: { pageSize: ADMIN_LIST_PAGE_SIZE },
-  });
-  return toManagedOrders(page.items);
+export type OrderPageQuery = PagedQuery & { status?: OrderStatus; paymentStatus?: PaymentStatus };
+
+/** 1 trang đơn hàng (mới nhất trước) — tìm theo mã đơn/tên/SĐT và lọc trạng thái do Backend xử lý. */
+export async function listOrdersPage(
+  query: OrderPageQuery,
+  signal?: AbortSignal,
+): Promise<PaginatedResult<ManagedOrder>> {
+  const page = await adminApi.get<PaginatedResult<OrderDto>>("/sales/orders", { params: query, signal });
+  return { ...page, items: await toManagedOrders(page.items) };
 }
 
 /** null khi không tồn tại (Backend 404). */

@@ -1,6 +1,10 @@
 "use client";
 
-import { DataExplorer, type DataExplorerColumn } from "@/shared/admin/templates/DataExplorer/DataExplorer";
+import {
+  DataExplorer,
+  DataExplorerFilterSelect,
+  type DataExplorerColumn,
+} from "@/shared/admin/templates/DataExplorer/DataExplorer";
 import { PublishStatusBadge } from "@/shared/components/PublishStatusBadge";
 
 import { useArticlesExplorer, type ArticleRow, type ArticleStatusFilter } from "../hooks/useArticlesExplorer";
@@ -39,19 +43,16 @@ export function ArticlesExplorer() {
       createLabel="Thêm bài viết"
       editHref={(row) => `/admin/content/articles/${row.id}`}
       onDelete={handleDelete}
-      emptyState={loadError ?? "Chưa có bài viết nào."}
-      toolbarActions={
-        <select
+      loadError={loadError}
+      emptyState="Chưa có bài viết nào."
+      totalLabel="bài viết"
+      filters={
+        <DataExplorerFilterSelect
+          ariaLabel="Lọc theo trạng thái"
           value={statusFilter}
-          onChange={(event) => setStatusFilter(event.target.value as ArticleStatusFilter)}
-          className="h-10 rounded-lg border border-brand-line px-3 text-[13px] font-bold text-brand-greenDark outline-none transition focus:border-brand-green focus:ring-2 focus:ring-brand-green/20"
-        >
-          {STATUS_FILTER_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+          onChange={setStatusFilter}
+          options={STATUS_FILTER_OPTIONS}
+        />
       }
     />
   );

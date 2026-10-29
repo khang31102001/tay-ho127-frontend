@@ -58,7 +58,8 @@ export function NavigationMenusExplorer() {
       getSearchableText={(row) => `${row.name} ${row.code}`}
       searchPlaceholder="Tìm theo tên, code..."
       editHref={hasPermission("site-navigation.update") ? (row) => `${SITE_NAVIGATION_CONTAINERS_PATH}/${row.id}` : undefined}
-      emptyState={loadError ?? "Chưa có menu nào."}
+      loadError={loadError}
+      emptyState="Chưa có menu nào."
     />
   );
 }

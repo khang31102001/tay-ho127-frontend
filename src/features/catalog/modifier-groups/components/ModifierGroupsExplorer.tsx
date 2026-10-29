@@ -46,7 +46,8 @@ export function ModifierGroupsExplorer() {
       createLabel="Thêm nhóm"
       editHref={(row) => `/admin/catalog/modifier-groups/${row.id}`}
       onDelete={hasPermission("modifier-groups.delete") ? handleDelete : undefined}
-      emptyState={loadError ?? "Chưa có nhóm tùy chọn món nào."}
+      loadError={loadError}
+      emptyState="Chưa có nhóm tùy chọn món nào."
     />
   );
 }

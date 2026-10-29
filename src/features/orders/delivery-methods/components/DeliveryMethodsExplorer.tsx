@@ -12,7 +12,7 @@ const TYPE_LABEL = Object.fromEntries(
 ) as Record<string, string>;
 
 const columns: DataExplorerColumn<ManagedDeliveryMethod>[] = [
-  { key: "displayOrder", header: "Thứ tự" },
+  { key: "displayOrder", header: "Thứ tự", align: "right" },
   { key: "name", header: "Tên phương thức" },
   {
     key: "type",
@@ -22,6 +22,7 @@ const columns: DataExplorerColumn<ManagedDeliveryMethod>[] = [
   {
     key: "baseFee",
     header: "Phí",
+    align: "right",
     render: (row) => <MoneyDisplay value={row.baseFee} />,
   },
   {

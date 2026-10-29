@@ -9,7 +9,7 @@ import { useCategoriesExplorer, type CategoryRow } from "../hooks/useCategoriesE
 const columns: DataExplorerColumn<CategoryRow>[] = [
   { key: "name", header: "Tên danh mục" },
   { key: "parentName", header: "Danh mục cha" },
-  { key: "sortOrder", header: "Thứ tự" },
+  { key: "sortOrder", header: "Thứ tự", align: "right" },
   {
     key: "status",
     header: "Trạng thái",
@@ -34,7 +34,8 @@ export function CategoriesExplorer() {
       createLabel="Thêm danh mục"
       editHref={(row) => `/admin/catalog/categories/${row.id}`}
       onDelete={hasPermission("categories.delete") ? handleDelete : undefined}
-      emptyState={loadError ?? "Chưa có danh mục nào."}
+      loadError={loadError}
+      emptyState="Chưa có danh mục nào."
     />
   );
 }

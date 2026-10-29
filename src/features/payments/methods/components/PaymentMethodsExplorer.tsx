@@ -11,7 +11,7 @@ const GROUP_LABEL = Object.fromEntries(
 ) as Record<string, string>;
 
 const columns: DataExplorerColumn<ManagedPaymentMethod>[] = [
-  { key: "displayOrder", header: "Thứ tự" },
+  { key: "displayOrder", header: "Thứ tự", align: "right" },
   { key: "name", header: "Tên phương thức" },
   { key: "code", header: "Mã (code)" },
   {

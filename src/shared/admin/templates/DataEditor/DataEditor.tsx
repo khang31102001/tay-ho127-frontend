@@ -5,6 +5,8 @@ import type { ReactNode } from "react";
 
 import { StatusPopup } from "@/shared/components/StatusPopup";
 
+import { adminButtonClassName } from "../formFieldClassName";
+
 import { useDataEditor } from "./useDataEditor";
 
 export type DataEditorProps = {
@@ -60,37 +62,37 @@ export function DataEditor({
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="text-[20px] font-black text-brand-greenDark">{title}</h1>
+        <h1 className="text-admin-title font-bold text-admin-text">{title}</h1>
 
         <Link
           href={backHref}
-          className="text-[13px] font-bold text-brand-muted transition hover:text-brand-greenDark"
+          className="text-admin-sm font-semibold text-admin-primary transition-colors duration-admin hover:text-admin-primaryHover hover:underline"
         >
           ← Quay lại danh sách
         </Link>
       </div>
 
       {isLoading ? (
-        <div className="mt-4 rounded-lg border border-brand-line bg-white p-6 text-center text-brand-muted">
+        <div className="mt-4 rounded-admin border border-admin-border bg-admin-surface p-6 text-center text-admin-textSecondary">
           Đang tải dữ liệu...
         </div>
       ) : loadError ? (
-        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-6 text-center text-[14px] font-medium text-red-700">
+        <div role="alert" className="mt-4 rounded-admin border border-admin-danger/40 bg-admin-danger/10 p-6 text-center text-admin-base font-medium text-admin-dangerText">
           {loadError}
         </div>
       ) : (
         <form
           onSubmit={handleSubmit}
-          className="mt-4 space-y-4 rounded-lg border border-brand-line bg-white p-6"
+          className="mt-4 space-y-4 rounded-admin border border-admin-border bg-admin-surface p-6"
         >
           {children}
 
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-brand-line pt-5">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-admin-border pt-5">
             {onDelete ? (
               <button
                 type="button"
                 onClick={requestDelete}
-                className="text-[13px] font-bold text-red-600 hover:underline"
+                className="text-admin-sm font-semibold text-admin-danger hover:underline"
               >
                 Xóa
               </button>
@@ -101,7 +103,7 @@ export function DataEditor({
             <button
               type="submit"
               disabled={isSaving}
-              className="rounded-lg bg-brand-red px-6 py-2.5 text-[14px] font-black text-white transition hover:bg-brand-redDark disabled:cursor-not-allowed disabled:opacity-60"
+              className={`${adminButtonClassName.primary} px-6`}
             >
               {isSaving ? "Đang lưu..." : saveLabel}
             </button>

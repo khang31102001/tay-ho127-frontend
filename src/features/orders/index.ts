@@ -2,7 +2,7 @@ export { OrdersExplorer } from "./components/OrdersExplorer";
 export { OrderDetail } from "./components/OrderDetail";
 export { PaymentStatusBadge } from "./components/PaymentStatusBadge";
 
-export { listOrders, getOrderById, updateOrderStatus } from "./services/order.service";
+export { listOrdersPage, getOrderById, updateOrderStatus } from "./services/order.service";
 
 export { ORDER_STATUS_OPTIONS, ORDER_STATUS_LABEL } from "./types/order-status";
 export type { OrderStatus } from "./types/order-status";

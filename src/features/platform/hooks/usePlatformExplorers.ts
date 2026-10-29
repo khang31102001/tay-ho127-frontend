@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { listOrganizations } from "@/features/organization";
+import type { DataExplorerLoadPage } from "@/shared/admin/templates/DataExplorer/DataExplorer";
 import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
-import type { AuditLogFilter, ManagedFiscalYear, ManagedSystemSetting } from "../types/platform.types";
-import { deleteSystemSetting, listAuditLogs, listFiscalYears, listSystemSettings } from "../services/platform.service";
+import type { AuditLogEntry, AuditLogFilter, ManagedFiscalYear, ManagedSystemSetting } from "../types/platform.types";
+import { deleteSystemSetting, listAuditLogsPage, listFiscalYears, listSystemSettings } from "../services/platform.service";
 
 export type FiscalYearRow = ManagedFiscalYear & { organizationName: string };
 
@@ -37,19 +38,24 @@ export function useSystemSettingsExplorer() {
   return { settings: data ?? [], isLoading, loadError: error, handleDelete };
 }
 
-/** Bộ lọc áp dụng khi bấm "Lọc" (gọi lại Backend) — gõ trong ô tìm kiếm chỉ lọc tại chỗ trên kết quả đã tải. */
+/**
+ * Tải theo trang từ Backend (10 dòng/lượt). Bộ lọc nâng cao áp dụng khi bấm "Lọc"; ô tìm kiếm được Backend
+ * tìm theo hành động/đối tượng.
+ */
 export function useAuditLogsExplorer() {
   const [draftFilter, setDraftFilter] = useState<AuditLogFilter>({});
   const [appliedFilter, setAppliedFilter] = useState<AuditLogFilter>({});
 
-  const { data, isLoading, error } = useAsyncData(() => listAuditLogs(appliedFilter), [appliedFilter], {
-    fallbackError: "Không thể tải nhật ký thay đổi.",
-  });
+  const loadPage = useCallback<DataExplorerLoadPage<AuditLogEntry>>(
+    async (query, signal) => {
+      const page = await listAuditLogsPage({ ...query, ...appliedFilter }, signal);
+      return { items: page.items, totalItems: page.totalItems };
+    },
+    [appliedFilter],
+  );
 
   return {
-    entries: data ?? [],
-    isLoading,
-    loadError: error,
+    loadPage,
     draftFilter,
     updateDraftFilter: (field: keyof AuditLogFilter, value: string) =>
       setDraftFilter((previous) => ({ ...previous, [field]: value || undefined })),

@@ -32,7 +32,8 @@ export function PagesExplorer() {
       createLabel="Thêm page"
       editHref={(row) => `/admin/content/pages/${row.id}`}
       onDelete={handleDelete}
-      emptyState={loadError ?? "Chưa có page nào."}
+      loadError={loadError}
+      emptyState="Chưa có page nào."
     />
   );
 }

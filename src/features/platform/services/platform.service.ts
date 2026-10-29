@@ -1,5 +1,5 @@
 import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/core/api/admin-api";
-import type { PaginatedResult } from "@/core/api/api-types";
+import type { PagedQuery, PaginatedResult } from "@/core/api/api-types";
 
 import type {
   AuditLogEntry,
@@ -57,9 +57,10 @@ export function deleteSystemSetting(id: string): Promise<void> {
 
 // ---- Nhật ký thay đổi: /api/v1/audit-logs (chỉ đọc, mới nhất trước) ----
 
-export async function listAuditLogs(filter: AuditLogFilter): Promise<AuditLogEntry[]> {
-  const page = await adminApi.get<PaginatedResult<AuditLogEntry>>("/audit-logs", {
-    params: { pageSize: ADMIN_LIST_PAGE_SIZE, ...filter },
-  });
-  return page.items;
+/** 1 trang nhật ký (mới nhất trước) — Backend tìm theo hành động/đối tượng và lọc theo đối tượng + khoảng ngày. */
+export function listAuditLogsPage(
+  query: PagedQuery & AuditLogFilter,
+  signal?: AbortSignal,
+): Promise<PaginatedResult<AuditLogEntry>> {
+  return adminApi.get<PaginatedResult<AuditLogEntry>>("/audit-logs", { params: query, signal });
 }
