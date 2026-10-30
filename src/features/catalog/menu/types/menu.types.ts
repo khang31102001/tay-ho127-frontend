@@ -99,6 +99,9 @@ export type UiProduct = {
  */
 export type ProductDetail = Omit<UiProduct, "id" | "productId"> & {
   id: string;
+  /** Mô tả ngắn (chữ thường). */
   description?: string;
+  /** Mô tả chi tiết (HTML) — chỉ tải ở trang chi tiết, Site vẫn sanitize trước khi render. */
+  content?: string;
   modifierGroups: ManagedModifierGroup[];
 };

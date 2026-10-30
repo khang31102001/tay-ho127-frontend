@@ -19,3 +19,6 @@ export type ManagedArticle = {
 
 /** Dòng của danh sách Admin — Backend không trả `content` (HTML) ở danh sách. */
 export type ManagedArticleListItem = Omit<ManagedArticle, "content">;
+
+/** Giới hạn từ của nội dung bài viết — trùng với Article.MaxContentWords ở Backend. */
+export const ARTICLE_CONTENT_MAX_WORDS = 5000;

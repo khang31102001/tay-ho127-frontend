@@ -6,7 +6,7 @@
  * (DataExplorer/DataEditor + các Editor/Explorer) vào bundle JS công khai —
  * đã đo được ~18kB gzip dư ra trên cả 2 trang.
  */
-import { loadPublicCatalog } from "@/features/catalog/public";
+import { getPublicProductContent, loadPublicCatalog } from "@/features/catalog/public";
 import type { ManagedMenu } from "@/features/catalog/menus/types/menu.types";
 import type { ManagedMenuProduct } from "@/features/catalog/menu-products/types/menu-product.types";
 import type { ManagedProduct } from "@/features/catalog/products/types/product.types";
@@ -312,6 +312,7 @@ export async function getProductDetail(slug: string): Promise<ProductDetailData 
   const modifierGroups = managedProduct.modifierGroupIds
     .map((groupId) => allModifierGroups.find((group) => group.id === groupId))
     .filter((group): group is ManagedModifierGroup => group !== undefined);
+  const content = await getPublicProductContent(managedProduct.slug);
 
   const product: ProductDetail = {
     id: managedProduct.id,
@@ -325,6 +326,7 @@ export async function getProductDetail(slug: string): Promise<ProductDetailData 
     ratingCount: managedProduct.ratingCount ?? 0,
     image: resolveProductImage(managedProduct, mediaById),
     description: managedProduct.description,
+    content,
     modifierGroups,
   };
 

@@ -4,6 +4,8 @@ import { ChevronLeft, Star } from "lucide-react";
 import { Container } from "@/shared/ui/Container";
 import { Reveal } from "@/shared/components/Reveal";
 import { formatCurrency } from "@/core/utils/format-currency";
+import { sanitizeHtml } from "@/core/security/sanitize";
+import { RICH_TEXT_CONTENT_CLASS } from "@/shared/ui/rich-text-content";
 import type { ProductDetailData } from "../services/menu.service";
 import { CATEGORY_BADGE_CLASS } from "../constants/category-badge";
 import { ProductActions } from "./ProductActions";
@@ -101,6 +103,16 @@ export function ProductDetail({ data }: ProductDetailProps) {
             </div>
           </div>
         </Reveal>
+
+        {product.content && (
+          <section className="mt-14">
+            <h2 className="heading-3 text-brand-green">Mô tả chi tiết</h2>
+            <div
+              className={`${RICH_TEXT_CONTENT_CLASS} mt-6`}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.content) }}
+            />
+          </section>
+        )}
 
         <RelatedProducts items={relatedProducts} />
       </Container>

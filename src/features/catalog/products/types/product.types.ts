@@ -1,5 +1,8 @@
 import type { EntityStatus } from "@/shared/admin/templates/StatusBadge";
 
+/** Giới hạn từ của mô tả chi tiết — trùng với Product.MaxContentWords ở Backend. */
+export const PRODUCT_CONTENT_MAX_WORDS = 1000;
+
 export type ManagedProduct = {
   id: string;
   name: string;
@@ -7,7 +10,13 @@ export type ManagedProduct = {
   slug: string;
   categoryId: string;
   price: number;
+  /** Mô tả ngắn (chữ thường) — hiện dưới tên món và trong danh sách. */
   description?: string;
+  /**
+   * Mô tả chi tiết (HTML từ RichTextEditor). Chỉ có khi mở 1 sản phẩm — danh sách
+   * không trả trường này (undefined), và gửi undefined khi cập nhật = giữ nguyên.
+   */
+  content?: string;
   status: EntityStatus;
   /** Tham chiếu ManagedMedia.id, chọn từ Media Library. */
   mediaIds: string[];
