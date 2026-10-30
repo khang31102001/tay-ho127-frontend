@@ -65,13 +65,15 @@ export function ProductCard({ item }: ProductCardProps) {
           sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw"
           className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
         />
-        <span
-          className={`absolute right-2 top-2 rounded px-2 py-1 text-[10px] font-black text-white ${
-            CATEGORY_BADGE_CLASS[item.category] ?? "bg-brand-red"
-          }`}
-        >
-          {item.category}
-        </span>
+        {item.badge && (
+          <span
+            className={`absolute right-2 top-2 rounded px-2 py-1 text-[10px] font-black text-white ${
+              CATEGORY_BADGE_CLASS[item.badge] ?? "bg-brand-red"
+            }`}
+          >
+            {item.badge}
+          </span>
+        )}
       </Link>
 
       {/*

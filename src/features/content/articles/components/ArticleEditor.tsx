@@ -17,6 +17,7 @@ import { Tabs, type TabItem } from "@/shared/ui/Tabs";
 import { SeoFieldsForm } from "@/features/seo";
 
 import { useArticleEditor } from "../hooks/useArticleEditor";
+import { ARTICLE_CONTENT_MAX_WORDS } from "../types/article.types";
 
 type ArticleEditorProps = {
   id?: string;
@@ -129,6 +130,7 @@ export function ArticleEditor({ id }: ArticleEditorProps) {
             value={form.content}
             onChange={(html) => updateField("content", html)}
             placeholder="Nội dung bài viết..."
+            maxWords={ARTICLE_CONTENT_MAX_WORDS}
           />
         </div>
       </div>

@@ -4,7 +4,7 @@
  * đó đã tồn tại 1:1 trên `features/brand-profile` (ManagedBrandProfile/SocialLink) —
  * Organization/LocalBusiness/Restaurant schema (khi triển khai Phase Schema)
  * phải đọc thẳng từ Thông tin thương hiệu + Chi nhánh chính, không lưu bản sao ở đây. Xem
- * seo-architecture-analysis.md mục 8.1 (đã được xác nhận thu gọn).
+ * document/99-luu-tru/seo-architecture-analysis.md mục 8.1 (đã được xác nhận thu gọn).
  */
 export type ManagedSeoSettings = {
   /** Singleton — luôn là "seo-settings", chỉ có get/update, không có create/delete. */

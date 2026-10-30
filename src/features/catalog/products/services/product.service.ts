@@ -10,6 +10,7 @@ import type { ManagedProduct } from "../types/product.types";
  * - `slug` để trống khi tạo → Backend tự sinh từ tên; để trống khi sửa → giữ slug cũ.
  * - `mediaIds`/`modifierGroupIds` là danh sách CÓ THỨ TỰ, gửi lên thay thế toàn bộ.
  * - Xóa sản phẩm cũng gỡ nó khỏi mọi thực đơn (đơn hàng cũ giữ bản chụp riêng).
+ * - `content` (mô tả chi tiết, HTML) không có trong danh sách để nhẹ payload.
  */
 
 /** ProductResponse của Backend. */
@@ -21,6 +22,8 @@ type ProductDto = {
   price: number;
   oldPrice: number | null;
   description: string | null;
+  /** null ở danh sách — chỉ GET theo id mới trả nội dung. */
+  content: string | null;
   isActive: boolean;
   badge: string | null;
   rating: number | null;
@@ -38,6 +41,7 @@ function toManagedProduct(dto: ProductDto): ManagedProduct {
     price: dto.price,
     oldPrice: dto.oldPrice ?? undefined,
     description: dto.description ?? undefined,
+    content: dto.content ?? undefined,
     status: dto.isActive ? "active" : "inactive",
     badge: dto.badge ?? undefined,
     rating: dto.rating ?? undefined,
@@ -57,6 +61,8 @@ function toRequest(payload: ProductUpsertInput) {
     price: payload.price,
     oldPrice: payload.oldPrice ?? null,
     description: payload.description?.trim() || null,
+    // undefined (vd. CSV import dựng từ danh sách) → null = Backend giữ nguyên; "" = xóa.
+    content: payload.content ?? null,
     isActive: payload.status === "active",
     badge: payload.badge?.trim() || null,
     rating: payload.rating ?? null,

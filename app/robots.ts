@@ -20,7 +20,7 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
         userAgent: "*",
         allow: "/",
         // Danh sách disallow quản lý tại Admin > SEO > Cài đặt SEO
-        // (robotsDisallowPaths) — xem seo-architecture-analysis.md mục 8.3 cho
+        // (robotsDisallowPaths) — xem document/99-luu-tru/seo-architecture-analysis.md mục 8.3 cho
         // lý do từng path. Không hard-code ở đây nữa.
         disallow: settings.robotsDisallowPaths,
       },

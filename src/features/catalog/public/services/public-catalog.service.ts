@@ -160,3 +160,31 @@ export async function listPublicCategories(): Promise<ManagedCategory[]> {
 export async function getPublicModifierGroupById(id: string): Promise<ManagedModifierGroup | null> {
   return (await loadPublicCatalog()).modifierGroups.find((group) => group.id === id) ?? null;
 }
+
+/**
+ * Mô tả chi tiết (HTML đã sanitize ở Backend) của 1 sản phẩm — Backend
+ * GET /catalog/public/products/{slug}/content. Tách khỏi snapshot để trang danh
+ * sách không phải tải HTML của mọi món; chỉ trang chi tiết (Server Component)
+ * gọi hàm này. Không có / lỗi → undefined (trang vẫn hiện, chỉ thiếu phần này).
+ */
+export async function getPublicProductContent(slug: string): Promise<string | undefined> {
+  try {
+    const response = await fetchBackend(`/catalog/public/products/${encodeURIComponent(slug)}/content`, {
+      next: { revalidate: PUBLIC_CATALOG_REVALIDATE_SECONDS },
+    });
+
+    if (response.status === 404) {
+      return undefined;
+    }
+
+    if (!response.ok) {
+      throw new Error(`Public product content: HTTP ${response.status}`);
+    }
+
+    const body = (await response.json()) as { content: string | null };
+    return body.content ?? undefined;
+  } catch (error) {
+    console.error("Không tải được mô tả chi tiết sản phẩm từ Backend:", error);
+    return undefined;
+  }
+}

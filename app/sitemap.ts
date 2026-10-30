@@ -59,7 +59,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
 
   // Category và Content Page (Task 26) CHƯA có route public nào render
-  // (xem seo-architecture-analysis.md mục 2.6/2.7) — không thêm vào sitemap
+  // (xem document/99-luu-tru/seo-architecture-analysis.md mục 2.6/2.7) — không thêm vào sitemap
   // để tránh URL không tồn tại thật, không phải bỏ sót.
   return [...staticRoutes, ...productRoutes, ...articleRoutes];
 }

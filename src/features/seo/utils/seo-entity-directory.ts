@@ -9,7 +9,7 @@ import type { SeoEntityDefaults } from "../utils/resolve-seo-preview";
  * Danh mục các entity "SEO-able" hiện tại — chỉ Product/Category/Article +
  * Homepage (singleton). KHÔNG gồm "page" (CMS Page) vì Storefront chưa có
  * route public nào render ManagedPage/ManagedPageSection (xem
- * seo-architecture-analysis.md mục 2.7/8.4) — thêm join Page vào đây khi route
+ * document/99-luu-tru/seo-architecture-analysis.md mục 2.7/8.4) — thêm join Page vào đây khi route
  * đó tồn tại, không suy đoán trước.
  *
  * Product không có field `slug` riêng — `id` chính là slug trên URL (xem
