@@ -344,9 +344,11 @@ NODE_ENV=production
 
 ## Tài Liệu Khác
 
-- [Architecture Details](./ARCHITECTURE.md) - Chi tiết kiến trúc
-- [Feature Development Guide](./docs/FEATURE_DEVELOPMENT.md)
-- [API Integration Guide](./docs/API_INTEGRATION.md)
+Toàn bộ tài liệu dự án (FE + BE + vận hành) nằm ở thư mục `document/` cạnh repo này (`../document/README.md`):
+
+- [Kiến trúc Frontend](../document/01-frontend/ARCHITECTURE.md)
+- [Hướng dẫn phát triển Frontend](../document/01-frontend/DEVELOPMENT_GUIDE.md)
+- [CI/CD & deploy](../document/05-van-hanh/CI-CD.md)
 
 ## Đóng Góp
 

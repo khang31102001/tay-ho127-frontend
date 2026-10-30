@@ -2,7 +2,7 @@
  * "product"/"category"/"article" đã có Editor gắn tab SEO (Phase hiện tại).
  * "page" (CMS Page) và "homepage" (trang chủ) đã có chỗ trong dữ liệu/route
  * chuẩn bị sẵn nhưng CHƯA có UI join ở SEO List/Editor — Site cũng chưa có
- * route public cho CMS Page, xem seo-architecture-analysis.md mục 2.7/8.4.
+ * route public cho CMS Page, xem document/99-luu-tru/seo-architecture-analysis.md mục 2.7/8.4.
  */
 export type SeoEntityType = "product" | "category" | "article" | "page" | "homepage";
 
