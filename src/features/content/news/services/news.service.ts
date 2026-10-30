@@ -1,11 +1,16 @@
 // Import thẳng service của features/media (không qua barrel) — barrel của feature
 // Admin re-export cả Explorer/Editor UI, import qua đó sẽ kéo UI admin vào bundle Site.
 import { getPublicTaxonomy, getPublishedArticleBySlug, listPublishedArticles } from "@/features/content/public";
-import type { PublicArticleSummary, PublicTaxonomy } from "@/features/content/public";
+import type { PublicArticleSummary, PublicArticleTag, PublicTaxonomy } from "@/features/content/public";
 import { listMedia } from "@/features/media/services/public-media.service";
 import type { ManagedMedia } from "@/features/media/types/media.types";
 
-import type { NewsArticleSummaryView, NewsArticleView, NewsCategoryOption } from "../types/news.types";
+import type {
+  AdjacentNewsArticles,
+  NewsArticleSummaryView,
+  NewsArticleView,
+  NewsCategoryOption,
+} from "../types/news.types";
 
 type LookupMaps = {
   mediaById: Map<string, ManagedMedia>;
@@ -26,6 +31,9 @@ function toSummaryView(article: PublicArticleSummary, { mediaById, taxonomy }: L
   const category = article.categoryId
     ? taxonomy.categories.find((item) => item.id === article.categoryId)
     : undefined;
+  const tags = article.tagIds
+    .map((tagId) => taxonomy.tags.find((tag) => tag.id === tagId))
+    .filter((tag): tag is PublicArticleTag => Boolean(tag));
 
   return {
     id: article.id,
@@ -37,9 +45,8 @@ function toSummaryView(article: PublicArticleSummary, { mediaById, taxonomy }: L
     categoryId: article.categoryId,
     categoryName: category?.name ?? null,
     categorySlug: category?.slug ?? null,
-    tagNames: article.tagIds
-      .map((tagId) => taxonomy.tags.find((tag) => tag.id === tagId)?.name)
-      .filter((name): name is string => Boolean(name)),
+    tagNames: tags.map((tag) => tag.name),
+    tagSlugs: tags.map((tag) => tag.slug),
     author: article.authorName,
     publishedAt: article.publishedAt,
     updatedAt: article.updatedAt,
@@ -51,7 +58,12 @@ function toSummaryView(article: PublicArticleSummary, { mediaById, taxonomy }: L
 export async function listNewsCategories(): Promise<NewsCategoryOption[]> {
   const { categories } = await getPublicTaxonomy();
 
-  return categories.map((category) => ({ id: category.id, name: category.name, slug: category.slug }));
+  return categories.map((category) => ({
+    id: category.id,
+    name: category.name,
+    slug: category.slug,
+    parentId: category.parentId,
+  }));
 }
 
 /** Bài đã xuất bản, mới nhất trước — nguồn dữ liệu duy nhất cho /tin-tuc. */
@@ -84,4 +96,18 @@ export async function listRelatedNewsArticles(
   const rest = others.filter((article) => article.categoryId !== current.categoryId);
 
   return [...sameCategory, ...rest].slice(0, limit);
+}
+
+/**
+ * Bài liền kề để điều hướng "Bài trước / Bài tiếp theo" ở cuối bài. Gọi lại listNewsArticles()
+ * không tốn thêm request: fetch phía dưới dùng chung cache 60 giây của Next.
+ */
+export async function getAdjacentNewsArticles(current: NewsArticleSummaryView): Promise<AdjacentNewsArticles> {
+  const all = await listNewsArticles();
+  const index = all.findIndex((article) => article.id === current.id);
+  if (index === -1) {
+    return { newer: null, older: null };
+  }
+
+  return { newer: all[index - 1] ?? null, older: all[index + 1] ?? null };
 }

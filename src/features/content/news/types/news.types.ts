@@ -16,6 +16,8 @@ export type NewsArticleSummaryView = {
   categoryName: string | null;
   categorySlug: string | null;
   tagNames: string[];
+  /** Slug thẻ — dùng để nhận bài "nổi bật" (thẻ FEATURED_TAG_SLUG) mà không phụ thuộc tên hiển thị. */
+  tagSlugs: string[];
   author: string;
   publishedAt: string | null;
   updatedAt: string | null;
@@ -32,4 +34,14 @@ export type NewsCategoryOption = {
   id: string;
   name: string;
   slug: string;
+  /** Danh mục dạng cây (tối đa 3 cấp) — trang danh mục gom cả bài của danh mục con. */
+  parentId: string | null;
+};
+
+/** Bài liền trước/liền sau theo thời gian xuất bản (danh sách sắp mới nhất trước). */
+export type AdjacentNewsArticles = {
+  /** Bài mới hơn bài hiện tại. */
+  newer: NewsArticleSummaryView | null;
+  /** Bài cũ hơn bài hiện tại. */
+  older: NewsArticleSummaryView | null;
 };
