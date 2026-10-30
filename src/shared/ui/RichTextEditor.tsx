@@ -10,7 +10,6 @@ import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import {
   Bold,
-  ChevronDown,
   Code,
   Ellipsis,
   Eye,
@@ -41,6 +40,7 @@ import {
 import { cn } from "@/core/utils/cn";
 import { RICH_TEXT_CONTENT_CLASS } from "./rich-text-content";
 
+import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 type RichTextEditorProps = {
   value: string;
   /** Nhận HTML; chuỗi rỗng khi editor không còn nội dung. */
@@ -521,21 +521,18 @@ function EditorToolbar({ editor }: { editor: Editor }) {
         </ToolbarButton>
       </ToolbarGroup>
 
-      <div className="relative">
-        <select
-          aria-label="Kiểu đoạn"
-          value={getBlockType(editor)}
-          onChange={(event) => setBlockType(editor, event.target.value as BlockType)}
-          className="h-8 w-[130px] appearance-none rounded bg-slate-100 pl-2 pr-7 text-[14px] text-slate-800 outline-none transition hover:bg-slate-200 focus:ring-2 focus:ring-slate-300"
-        >
-          {BLOCK_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-4 -translate-y-1/2 text-slate-500" />
-      </div>
+      <AdminSelect
+        aria-label="Kiểu đoạn"
+        value={getBlockType(editor)}
+        onChange={(event) => setBlockType(editor, event.target.value as BlockType)}
+        className="h-8 w-[130px] rounded bg-slate-100 px-2 text-[14px] text-slate-800 outline-none transition hover:bg-slate-200 focus:ring-2 focus:ring-slate-300"
+      >
+        {BLOCK_OPTIONS.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </AdminSelect>
 
       <ToolbarGroup>
         <ToolbarButton label="Đậm (Ctrl+B)" isActive={editor.isActive("bold")} onClick={() => chain().toggleBold().run()}>

@@ -11,6 +11,7 @@ import { BranchContactFields } from "./BranchContactFields";
 import { OrganizationSelect } from "./OrganizationSelect";
 import { useBrandEditor, useDepartmentEditor, useOrganizationEditor } from "../hooks/useOrganizationEditors";
 
+import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 const codeInputClassName = `${adminFieldInputClassName} font-mono disabled:bg-brand-line/30`;
 
 function CodeNameFields({
@@ -98,14 +99,14 @@ export function DepartmentEditor({ id }: { id?: string }) {
         />
         <label className={adminFieldLabelClassName}>
           Phòng ban cha
-          <select value={form.parentId} onChange={(event) => updateField("parentId", event.target.value)} className={adminFieldInputClassName}>
+          <AdminSelect value={form.parentId} onChange={(event) => updateField("parentId", event.target.value)} className={adminFieldInputClassName}>
             <option value="">(Không — phòng ban gốc)</option>
             {parentOptions.map((department) => (
               <option key={department.id} value={department.id}>
                 {department.name}
               </option>
             ))}
-          </select>
+          </AdminSelect>
         </label>
       </div>
 

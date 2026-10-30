@@ -19,6 +19,7 @@ import { SeoFieldsForm } from "@/features/seo";
 import { useArticleEditor } from "../hooks/useArticleEditor";
 import { ARTICLE_CONTENT_MAX_WORDS } from "../types/article.types";
 
+import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 type ArticleEditorProps = {
   id?: string;
 };
@@ -146,7 +147,7 @@ export function ArticleEditor({ id }: ArticleEditorProps) {
       <div className="grid gap-4 sm:grid-cols-2">
         <label className={adminFieldLabelClassName}>
           Danh mục
-          <select
+          <AdminSelect
             value={form.categoryId ?? ""}
             onChange={(event) =>
               updateField("categoryId", event.target.value === "" ? null : event.target.value)
@@ -160,7 +161,7 @@ export function ArticleEditor({ id }: ArticleEditorProps) {
                 {category.name}
               </option>
             ))}
-          </select>
+          </AdminSelect>
         </label>
 
         <label className={adminFieldLabelClassName}>
@@ -210,7 +211,7 @@ export function ArticleEditor({ id }: ArticleEditorProps) {
 
       <label className={adminFieldLabelClassName}>
         Trạng thái
-        <select
+        <AdminSelect
           value={form.status}
           onChange={(event) => updateField("status", event.target.value as PublishStatus)}
           className={adminFieldInputClassName}
@@ -218,7 +219,7 @@ export function ArticleEditor({ id }: ArticleEditorProps) {
           <option value="draft">Bản nháp</option>
           <option value="published">Xuất bản</option>
           <option value="archived">Lưu trữ</option>
-        </select>
+        </AdminSelect>
       </label>
       </div>
       )}

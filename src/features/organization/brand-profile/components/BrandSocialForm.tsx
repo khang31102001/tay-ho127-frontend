@@ -5,6 +5,7 @@ import { adminFieldInputClassName, adminFieldLabelClassName } from "@/shared/adm
 import { SOCIAL_PLATFORM_OPTIONS } from "../types/social-link.types";
 import type { SocialLink, SocialPlatform } from "../types/social-link.types";
 
+import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 type BrandSocialFormProps = {
   socialLinks: SocialLink[];
   onAdd: () => void;
@@ -37,7 +38,7 @@ export function BrandSocialForm({ socialLinks, onAdd, onUpdate, onRemove }: Bran
             >
               <div>
                 <span className="text-[12px] font-bold text-brand-muted">Nền tảng</span>
-                <select
+                <AdminSelect
                   value={link.platform}
                   onChange={(event) => onUpdate(link.id, { platform: event.target.value as SocialPlatform })}
                   className={adminFieldInputClassName}
@@ -47,7 +48,7 @@ export function BrandSocialForm({ socialLinks, onAdd, onUpdate, onRemove }: Bran
                       {option.label}
                     </option>
                   ))}
-                </select>
+                </AdminSelect>
               </div>
 
               <div>

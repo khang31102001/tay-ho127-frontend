@@ -7,6 +7,7 @@ import { MediaPicker } from "@/features/media/components/MediaPicker";
 import { usePaymentMethodEditor } from "../hooks/usePaymentMethodEditor";
 import { PAYMENT_METHOD_GROUP_OPTIONS, type PaymentMethodGroup } from "../types/payment-method.types";
 
+import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 type PaymentMethodEditorProps = {
   id?: string;
 };
@@ -71,7 +72,7 @@ export function PaymentMethodEditor({ id }: PaymentMethodEditorProps) {
       <div className="grid gap-4 sm:grid-cols-2">
         <label className={adminFieldLabelClassName}>
           Nhóm
-          <select
+          <AdminSelect
             value={form.group}
             onChange={(event) => updateField("group", event.target.value as PaymentMethodGroup)}
             className={adminFieldInputClassName}
@@ -81,7 +82,7 @@ export function PaymentMethodEditor({ id }: PaymentMethodEditorProps) {
                 {option.label}
               </option>
             ))}
-          </select>
+          </AdminSelect>
         </label>
 
         {(form.group === "card" || form.group === "e_wallet") && (

@@ -9,6 +9,7 @@ import {
 import { useRedirectEditor } from "../hooks/useRedirectEditor";
 import type { RedirectType } from "../types/redirect.types";
 
+import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 type RedirectEditorProps = {
   id?: string;
 };
@@ -65,26 +66,26 @@ export function RedirectEditor({ id }: RedirectEditorProps) {
       <div className="grid gap-4 sm:grid-cols-2">
         <label className={adminFieldLabelClassName}>
           Loại redirect
-          <select
+          <AdminSelect
             value={form.redirectType}
             onChange={(event) => updateField("redirectType", Number(event.target.value) as RedirectType)}
             className={adminFieldInputClassName}
           >
             <option value={301}>301 — Chuyển hướng vĩnh viễn</option>
             <option value={302}>302 — Chuyển hướng tạm thời</option>
-          </select>
+          </AdminSelect>
         </label>
 
         <label className={adminFieldLabelClassName}>
           Trạng thái
-          <select
+          <AdminSelect
             value={form.isActive ? "active" : "inactive"}
             onChange={(event) => updateField("isActive", event.target.value === "active")}
             className={adminFieldInputClassName}
           >
             <option value="active">Đang hoạt động</option>
             <option value="inactive">Tạm tắt</option>
-          </select>
+          </AdminSelect>
         </label>
       </div>
     </DataEditor>

@@ -14,6 +14,7 @@ import { SeoFieldsForm } from "@/features/seo";
 
 import { useCategoryEditor } from "../hooks/useCategoryEditor";
 
+import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 type CategoryEditorProps = {
   id?: string;
 };
@@ -72,7 +73,7 @@ export function CategoryEditor({ id }: CategoryEditorProps) {
             <div className="grid gap-4 sm:grid-cols-2">
               <label className={adminFieldLabelClassName}>
                 Danh mục cha (tùy chọn)
-                <select
+                <AdminSelect
                   value={form.parentId ?? ""}
                   onChange={(event) =>
                     updateField("parentId", event.target.value === "" ? null : event.target.value)
@@ -86,7 +87,7 @@ export function CategoryEditor({ id }: CategoryEditorProps) {
                       {category.name}
                     </option>
                   ))}
-                </select>
+                </AdminSelect>
               </label>
 
               <label className={adminFieldLabelClassName}>
@@ -102,14 +103,14 @@ export function CategoryEditor({ id }: CategoryEditorProps) {
 
             <label className={adminFieldLabelClassName}>
               Trạng thái
-              <select
+              <AdminSelect
                 value={form.status}
                 onChange={(event) => updateField("status", event.target.value as EntityStatus)}
                 className={adminFieldInputClassName}
               >
                 <option value="active">Hoạt động</option>
                 <option value="inactive">Ngừng hoạt động</option>
-              </select>
+              </AdminSelect>
             </label>
           </div>
         )}

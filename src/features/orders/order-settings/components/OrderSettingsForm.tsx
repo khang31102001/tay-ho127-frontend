@@ -9,6 +9,7 @@ import { StatusPopup } from "@/shared/components/StatusPopup";
 import { useOrderSettingsForm } from "../hooks/useOrderSettingsForm";
 import { ORDER_CODE_DATE_FORMAT_OPTIONS, type OrderCodeDateFormat } from "../types/order-settings.types";
 
+import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 /**
  * Cấu hình chung của đơn hàng (singleton): cách sinh mã đơn + thời gian giữ chỗ phiên thanh toán QR/ví. Số thứ tự trong mã do
  * Backend cấp bằng bộ đếm trong cơ sở dữ liệu (không trùng khi nhiều đơn cùng lúc); chỗ này chỉ chọn hình dạng của mã.
@@ -69,7 +70,7 @@ export function OrderSettingsForm() {
 
             <label className={adminFieldLabelClassName}>
               Phần ngày trong mã đơn
-              <select
+              <AdminSelect
                 value={form.orderCodeDateFormat}
                 onChange={(event) => updateField("orderCodeDateFormat", event.target.value as OrderCodeDateFormat)}
                 className={adminFieldInputClassName}
@@ -79,7 +80,7 @@ export function OrderSettingsForm() {
                     {option.label}
                   </option>
                 ))}
-              </select>
+              </AdminSelect>
             </label>
 
             <label className={adminFieldLabelClassName}>

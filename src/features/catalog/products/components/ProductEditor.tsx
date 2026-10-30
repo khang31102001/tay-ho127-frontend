@@ -17,6 +17,7 @@ import { SeoFieldsForm, StructuredDataSection } from "@/features/seo";
 import { useProductEditor } from "../hooks/useProductEditor";
 import { PRODUCT_CONTENT_MAX_WORDS } from "../types/product.types";
 
+import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 type ProductEditorProps = {
   id?: string;
 };
@@ -139,7 +140,7 @@ export function ProductEditor({ id }: ProductEditorProps) {
       <div className="grid gap-4 sm:grid-cols-2">
         <label className={adminFieldLabelClassName}>
           Danh mục
-          <select
+          <AdminSelect
             required
             value={form.categoryId}
             onChange={(event) => updateField("categoryId", event.target.value)}
@@ -154,7 +155,7 @@ export function ProductEditor({ id }: ProductEditorProps) {
                 {category.name}
               </option>
             ))}
-          </select>
+          </AdminSelect>
         </label>
 
         <label className={adminFieldLabelClassName}>
@@ -232,14 +233,14 @@ export function ProductEditor({ id }: ProductEditorProps) {
 
       <label className={adminFieldLabelClassName}>
         Trạng thái
-        <select
+        <AdminSelect
           value={form.status}
           onChange={(event) => updateField("status", event.target.value as EntityStatus)}
           className={adminFieldInputClassName}
         >
           <option value="active">Hoạt động</option>
           <option value="inactive">Ngừng hoạt động</option>
-        </select>
+        </AdminSelect>
       </label>
       </div>
       )}

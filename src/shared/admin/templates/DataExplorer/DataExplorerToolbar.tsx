@@ -6,6 +6,7 @@ import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 
 import { adminButtonClassName, adminControlClassName } from "../formFieldClassName";
 
+import { AdminSelect } from "../AdminSelect";
 type DataExplorerToolbarProps = {
   searchTerm: string;
   searchPlaceholder: string;
@@ -176,23 +177,17 @@ export function DataExplorerFilterSelect<TValue extends string>({
   ariaLabel,
 }: DataExplorerFilterSelectProps<TValue>) {
   return (
-    <div className="relative">
-      <select
-        value={value}
-        aria-label={ariaLabel}
-        onChange={(event) => onChange(event.target.value as TValue)}
-        className={`${adminControlClassName} min-w-[180px] cursor-pointer appearance-none pr-9 text-admin-primary`}
-      >
-        {options.map((option) => (
-          <option key={option.value} value={option.value} className="text-admin-text">
-            {option.label}
-          </option>
-        ))}
-      </select>
-      <ChevronDown
-        className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-admin-primary"
-        aria-hidden="true"
-      />
-    </div>
+    <AdminSelect
+      value={value}
+      aria-label={ariaLabel}
+      onChange={(event) => onChange(event.target.value as TValue)}
+      className={`${adminControlClassName} min-w-[180px] cursor-pointer text-admin-primary`}
+    >
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </AdminSelect>
   );
 }

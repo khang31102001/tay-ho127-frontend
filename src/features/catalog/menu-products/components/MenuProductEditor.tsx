@@ -10,6 +10,7 @@ import { formatCurrency } from "@/core/utils/format-currency";
 
 import { useMenuProductEditor } from "../hooks/useMenuProductEditor";
 
+import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 type MenuProductEditorProps = {
   id?: string;
 };
@@ -44,7 +45,7 @@ export function MenuProductEditor({ id }: MenuProductEditorProps) {
       <div className="grid gap-4 sm:grid-cols-2">
         <label className={adminFieldLabelClassName}>
           Thực đơn
-          <select
+          <AdminSelect
             required
             value={form.menuId}
             onChange={(event) => updateField("menuId", event.target.value)}
@@ -59,12 +60,12 @@ export function MenuProductEditor({ id }: MenuProductEditorProps) {
                 {menu.name}
               </option>
             ))}
-          </select>
+          </AdminSelect>
         </label>
 
         <label className={adminFieldLabelClassName}>
           Sản phẩm
-          <select
+          <AdminSelect
             required
             value={form.productId}
             onChange={(event) => updateField("productId", event.target.value)}
@@ -79,7 +80,7 @@ export function MenuProductEditor({ id }: MenuProductEditorProps) {
                 {product.name}
               </option>
             ))}
-          </select>
+          </AdminSelect>
         </label>
       </div>
 

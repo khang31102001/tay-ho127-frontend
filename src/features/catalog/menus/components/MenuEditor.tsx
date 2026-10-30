@@ -10,6 +10,7 @@ import { useAdminAuth } from "@/features/admin-auth";
 
 import { useMenuEditor } from "../hooks/useMenuEditor";
 
+import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 type MenuEditorProps = {
   id?: string;
 };
@@ -68,14 +69,14 @@ export function MenuEditor({ id }: MenuEditorProps) {
 
       <label className={adminFieldLabelClassName}>
         Trạng thái
-        <select
+        <AdminSelect
           value={form.status}
           onChange={(event) => updateField("status", event.target.value as EntityStatus)}
           className={adminFieldInputClassName}
         >
           <option value="active">Hoạt động</option>
           <option value="inactive">Ngừng hoạt động</option>
-        </select>
+        </AdminSelect>
       </label>
     </DataEditor>
   );

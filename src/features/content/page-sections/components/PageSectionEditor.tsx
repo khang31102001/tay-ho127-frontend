@@ -10,6 +10,7 @@ import { MediaPicker } from "@/features/media/components/MediaPicker";
 import { usePageSectionEditor } from "../hooks/usePageSectionEditor";
 import { SECTION_TYPE_OPTIONS, type SectionType } from "../types/page-section.types";
 
+import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 type PageSectionEditorProps = {
   pageId: string;
   id?: string;
@@ -41,7 +42,7 @@ export function PageSectionEditor({ pageId, id }: PageSectionEditorProps) {
     >
       <label className={adminFieldLabelClassName}>
         Loại section
-        <select
+        <AdminSelect
           value={form.sectionType}
           onChange={(event) => updateField("sectionType", event.target.value as SectionType)}
           className={adminFieldInputClassName}
@@ -51,7 +52,7 @@ export function PageSectionEditor({ pageId, id }: PageSectionEditorProps) {
               {option.label}
             </option>
           ))}
-        </select>
+        </AdminSelect>
       </label>
 
       <label className={adminFieldLabelClassName}>

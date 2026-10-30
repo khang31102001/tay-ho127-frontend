@@ -9,6 +9,7 @@ import { useAdminAuth } from "@/features/admin-auth";
 import { useModifierGroupEditor } from "../hooks/useModifierGroupEditor";
 import { MODIFIER_SELECTION_TYPE_OPTIONS, type ModifierSelectionType } from "../types/modifier-group.types";
 
+import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 type ModifierGroupEditorProps = {
   id?: string;
 };
@@ -55,7 +56,7 @@ export function ModifierGroupEditor({ id }: ModifierGroupEditorProps) {
       <div className="grid gap-4 sm:grid-cols-2">
         <label className={adminFieldLabelClassName}>
           Kiểu chọn
-          <select
+          <AdminSelect
             value={form.selectionType}
             onChange={(event) => updateField("selectionType", event.target.value as ModifierSelectionType)}
             className={adminFieldInputClassName}
@@ -65,7 +66,7 @@ export function ModifierGroupEditor({ id }: ModifierGroupEditorProps) {
                 {option.label}
               </option>
             ))}
-          </select>
+          </AdminSelect>
         </label>
 
         <label className="flex items-center gap-2.5 self-end pb-2.5 text-[13px] font-bold text-brand-greenDark">
