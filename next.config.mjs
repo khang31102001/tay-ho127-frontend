@@ -1,11 +1,23 @@
 /**
- * Host ảnh ngoài (CDN của Media Backend) được phép tối ưu qua <Image /> — cùng
- * biến với src/lib/image-hosts.ts, để 2 nơi luôn khớp nhau.
+ * Host ảnh được phép tối ưu qua <Image /> — cùng quy tắc với src/core/config/image-hosts.ts
+ * (file .mjs không import được TS nên lặp lại ở đây, 2 nơi phải luôn khớp nhau):
+ * domain của site (ảnh upload {site}/uploads/...) luôn được phép + host ngoài trong
+ * NEXT_PUBLIC_IMAGE_REMOTE_HOSTS. Domain mặc định khớp site.following.web (site-data.ts);
+ * `||` để build-arg rỗng trong CI vẫn rơi về mặc định (xem site-url.ts).
  */
-const remoteImageHosts = (process.env.NEXT_PUBLIC_IMAGE_REMOTE_HOSTS ?? "")
-  .split(",")
-  .map((host) => host.trim())
-  .filter(Boolean);
+const siteHost = new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://tayho127.com").hostname
+  .toLowerCase()
+  .replace(/^www\./, "");
+const remoteImageHosts = [
+  ...new Set([
+    siteHost,
+    `www.${siteHost}`,
+    ...(process.env.NEXT_PUBLIC_IMAGE_REMOTE_HOSTS ?? "")
+      .split(",")
+      .map((host) => host.trim().toLowerCase())
+      .filter(Boolean),
+  ]),
+];
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
