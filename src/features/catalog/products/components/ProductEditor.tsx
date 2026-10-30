@@ -10,10 +10,12 @@ import {
 import type { EntityStatus } from "@/shared/admin/templates/StatusBadge";
 import { useAdminAuth } from "@/features/admin-auth";
 import { MediaMultiPicker } from "@/features/media/components/MediaPicker";
+import { RichTextEditor } from "@/shared/ui/RichTextEditor";
 import { Tabs, type TabItem } from "@/shared/ui/Tabs";
 import { SeoFieldsForm, StructuredDataSection } from "@/features/seo";
 
 import { useProductEditor } from "../hooks/useProductEditor";
+import { PRODUCT_CONTENT_MAX_WORDS } from "../types/product.types";
 
 type ProductEditorProps = {
   id?: string;
@@ -31,6 +33,7 @@ export function ProductEditor({ id }: ProductEditorProps) {
     toggleModifierGroup,
     categoryOptions,
     mediaOptions,
+    isLoadingOptions,
     modifierGroupOptions,
     seo,
     seoSettings,
@@ -168,7 +171,7 @@ export function ProductEditor({ id }: ProductEditorProps) {
       </div>
 
       <label className={adminFieldLabelClassName}>
-        Mô tả (tùy chọn)
+        Mô tả ngắn (tùy chọn)
         <textarea
           value={form.description ?? ""}
           onChange={(event) => updateField("description", event.target.value)}
@@ -177,12 +180,25 @@ export function ProductEditor({ id }: ProductEditorProps) {
         />
       </label>
 
+      <div>
+        <span className={adminFieldLabelClassName}>Mô tả chi tiết (tùy chọn)</span>
+        <div className="mt-1.5">
+          <RichTextEditor
+            value={form.content ?? ""}
+            onChange={(html) => updateField("content", html)}
+            placeholder="Giới thiệu chi tiết món ăn: nguyên liệu, cách làm, cách thưởng thức..."
+            maxWords={PRODUCT_CONTENT_MAX_WORDS}
+          />
+        </div>
+      </div>
+
       <MediaMultiPicker
         label="Media (chọn từ thư viện)"
         mediaType="image"
         mediaOptions={mediaOptions}
         selectedIds={form.mediaIds}
         onChange={(mediaIds) => updateField("mediaIds", mediaIds)}
+        isLoading={isLoadingOptions}
       />
 
       <div>
