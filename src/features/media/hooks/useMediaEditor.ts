@@ -7,18 +7,9 @@ import type { EntityStatus } from "@/shared/admin/templates/StatusBadge";
 import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import type { MediaUpsertInput } from "../services/media-library.service";
-import { MEDIA_UPLOAD_MAX_BYTES, uploadLibraryMedia } from "../services/media-library.service";
-import {
-  createLibraryMedia,
-  deleteLibraryMedia,
-  getLibraryMediaById,
-  updateLibraryMedia,
-} from "../services/media-library.service";
+import { deleteLibraryMedia, getLibraryMediaById, updateLibraryMedia } from "../services/media-library.service";
 
 export type MediaFormValue = MediaUpsertInput;
-
-/** "url": nhập URL có sẵn; "upload": chọn file để Backend lưu. Sửa media luôn là "url" (không đổi file đã upload). */
-export type MediaSourceMode = "url" | "upload";
 
 const EMPTY_FORM: MediaFormValue = {
   fileName: "",
@@ -29,20 +20,17 @@ const EMPTY_FORM: MediaFormValue = {
 };
 
 type UseMediaEditorParams = {
-  id?: string;
+  id: string;
 };
 
+/** Sửa một media có sẵn (metadata/URL). Thêm mới — một hay nhiều — dùng MediaBulkCreator. */
 export function useMediaEditor({ id }: UseMediaEditorParams) {
   const router = useNavigationRouter();
-  const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<MediaFormValue>(EMPTY_FORM);
   const [status, setStatus] = useState<EntityStatus>("active");
-  const [sourceMode, setSourceMode] = useState<MediaSourceMode>("upload");
-  const [file, setFile] = useState<File | null>(null);
 
-  const existing = useAsyncData(() => getLibraryMediaById(id ?? ""), [id], {
-    enabled: isEditMode,
+  const existing = useAsyncData(() => getLibraryMediaById(id), [id], {
     fallbackError: "Không thể tải media.",
   });
 
@@ -58,30 +46,11 @@ export function useMediaEditor({ id }: UseMediaEditorParams) {
   }
 
   async function handleSave() {
-    if (isEditMode) {
-      await updateLibraryMedia(id, form);
-      return;
-    }
-
-    if (sourceMode === "url") {
-      await createLibraryMedia(form);
-      return;
-    }
-
-    if (!file) {
-      throw new Error("Vui lòng chọn file để tải lên.");
-    }
-    if (file.size > MEDIA_UPLOAD_MAX_BYTES) {
-      throw new Error(`File vượt quá giới hạn ${MEDIA_UPLOAD_MAX_BYTES / (1024 * 1024)}MB.`);
-    }
-
-    await uploadLibraryMedia(file, form.altText);
+    await updateLibraryMedia(id, form);
   }
 
   async function handleDelete() {
-    if (isEditMode) {
-      await deleteLibraryMedia(id);
-    }
+    await deleteLibraryMedia(id);
   }
 
   function goToExplore() {
@@ -91,14 +60,9 @@ export function useMediaEditor({ id }: UseMediaEditorParams) {
   return {
     form,
     status,
-    sourceMode,
-    setSourceMode,
-    file,
-    setFile,
     updateField,
     isLoading: existing.isLoading,
     loadError: existing.error,
-    isEditMode,
     handleSave,
     handleDelete,
     goToExplore,

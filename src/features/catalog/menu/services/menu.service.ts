@@ -178,6 +178,7 @@ export async function fetchMenu(): Promise<MenuResponse> {
       price: { amount: row.priceOverride ?? managedProduct.price },
       imageUrl: resolveProductImage(managedProduct, mediaById),
       isActive: managedProduct.status === "active",
+      sortOrder: row.sortOrder,
     });
   });
 

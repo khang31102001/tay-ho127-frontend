@@ -167,8 +167,13 @@ export default function MenuGrid({
         {/* =================================================
          * BỘ LỌC DANH MỤC
          * =============================================== */}
+        {/*
+         * TẠM ẨN: 4 nút lọc viết cứng (Món mặn/Món chay/Ăn kèm) đoán nhóm theo
+         * tên danh mục — sẽ thay bằng bộ lọc theo danh mục lấy từ DB. Giữ div
+         * để không đổi khoảng cách giữa ô tìm kiếm và danh sách món.
+         */}
         <div className="mb-14 flex flex-wrap gap-2">
-          {categories.map((category) => {
+          {/* {categories.map((category) => {
             const isActive =
               activeCategory === category;
 
@@ -188,7 +193,7 @@ export default function MenuGrid({
                 {category}
               </button>
             );
-          })}
+          })} */}
         </div>
 
         {/* =================================================

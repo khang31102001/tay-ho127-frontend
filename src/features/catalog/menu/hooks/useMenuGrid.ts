@@ -128,7 +128,28 @@ export function useMenuGrid(groups: MenuResponse["data"]["menu"]["groups"]) {
       });
     });
 
-    return mappedItems;
+    /**
+     * Cây groups → categories → subCategories gom món theo danh mục nên làm
+     * lệch thứ tự. Sắp lại theo "Thứ tự" của Liên kết Menu-SP (tăng dần) để
+     * trang Thực đơn hiện đúng thứ tự Admin đã đặt. Sort ổn định: món cùng
+     * thứ tự giữ nguyên vị trí tương đối.
+     */
+    const sortOrderByProductId = new Map<string, number>();
+    groups.forEach((group) =>
+      (group.categories ?? []).forEach((category) =>
+        (category.subCategories ?? []).forEach((subCategory) =>
+          (subCategory.products ?? []).forEach((product) =>
+            sortOrderByProductId.set(product.id, product.sortOrder ?? Number.MAX_SAFE_INTEGER),
+          ),
+        ),
+      ),
+    );
+
+    return mappedItems.sort(
+      (a, b) =>
+        (sortOrderByProductId.get(a.productId) ?? Number.MAX_SAFE_INTEGER) -
+        (sortOrderByProductId.get(b.productId) ?? Number.MAX_SAFE_INTEGER),
+    );
   }, [groups]);
 
   /* =======================================================
