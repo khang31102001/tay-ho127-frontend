@@ -7,7 +7,7 @@ import { cn } from "@/core/utils/cn";
 import { formatFileSize } from "@/core/utils/format-file-size";
 import { adminFieldLabelClassName } from "@/shared/admin/templates/formFieldClassName";
 
-import { useMediaBulkUpload } from "../hooks/useMediaBulkUpload";
+import type { useMediaBulkUpload } from "../hooks/useMediaBulkUpload";
 import { MEDIA_UPLOAD_ACCEPT, MEDIA_UPLOAD_MAX_BYTES } from "../services/media-library.service";
 import { MEDIA_ALT_TEXT_MAX_LENGTH } from "../utils/media-batch";
 
@@ -22,8 +22,13 @@ import {
   mediaBatchSecondaryButtonClassName,
 } from "./MediaBatchParts";
 
-/** Tab "Tải file lên": kéo-thả / chọn nhiều file, upload song song, theo dõi và thử lại từng file. */
-export function MediaUploadPanel() {
+type MediaUploadPanelProps = {
+  /** State do MediaBulkCreator giữ, để khóa việc đổi nơi lưu khi đang tải lên. */
+  upload: ReturnType<typeof useMediaBulkUpload>;
+};
+
+/** Bước tải file: kéo-thả / chọn nhiều file, upload song song, theo dõi và thử lại từng file. */
+export function MediaUploadPanel({ upload }: MediaUploadPanelProps) {
   const {
     items,
     summary,
@@ -36,7 +41,7 @@ export function MediaUploadPanel() {
     retryItem,
     retryFailed,
     clearFinished,
-  } = useMediaBulkUpload();
+  } = upload;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [sharedAltText, setSharedAltText] = useState("");

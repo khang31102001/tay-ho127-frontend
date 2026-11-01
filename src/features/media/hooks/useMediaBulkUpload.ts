@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import type { ManagedMedia, MediaType } from "../types/media.types";
+import type { ManagedMedia, MediaType, MediaUploadStorage } from "../types/media.types";
 import { uploadLibraryMedia } from "../services/media-library.service";
 import {
   MEDIA_BATCH_CONCURRENCY,
@@ -40,7 +40,8 @@ function canUpload(item: MediaUploadItem) {
   return !item.isRejected && (item.status === "pending" || item.status === "error");
 }
 
-export function useMediaBulkUpload() {
+/** `storage` = nơi lưu đang chọn; áp dụng cho mọi file gửi đi từ lúc đó (kể cả khi bấm thử lại). */
+export function useMediaBulkUpload(storage: MediaUploadStorage) {
   const [items, setItems] = useState<MediaUploadItem[]>([]);
   const nextKeyRef = useRef(0);
   const itemsRef = useRef(items);
@@ -113,7 +114,7 @@ export function useMediaBulkUpload() {
 
     await runWithConcurrency(targets, MEDIA_BATCH_CONCURRENCY, async (item) => {
       try {
-        const media = await uploadLibraryMedia(item.file, item.altText.trim() || undefined);
+        const media = await uploadLibraryMedia(item.file, storage, item.altText.trim() || undefined);
         updateItem(item.key, { status: "success", media, type: media.type });
       } catch (error) {
         updateItem(item.key, { status: "error", error: errorMessageOf(error, "Tải file thất bại.") });
