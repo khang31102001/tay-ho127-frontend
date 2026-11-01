@@ -9,6 +9,7 @@ export const SECTION_TYPE_OPTIONS = [
   { value: "highlight", label: "Sản phẩm nổi bật" },
   { value: "testimonial", label: "Đánh giá khách hàng" },
   { value: "cta", label: "Kêu gọi hành động (CTA)" },
+  { value: "story", label: "Câu chuyện thương hiệu" },
 ] as const;
 
 export type SectionType = (typeof SECTION_TYPE_OPTIONS)[number]["value"];
@@ -31,4 +32,6 @@ export type ManagedPageSection = {
   ctaUrl?: string;
   displayOrder: number;
   isVisible: boolean;
+  /** Ảnh phụ theo thứ tự (Backend: settings.galleryMediaIds) — vd. 2 ảnh cột trái của "Câu chuyện thương hiệu". */
+  galleryMediaIds: string[];
 };

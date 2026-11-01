@@ -6,7 +6,7 @@ import { getSiteUrl } from "./site-url";
  *   của Thư viện Media nằm ở {site}/uploads/...; không phụ thuộc biến build để ảnh upload khỏi
  *   "biến mất" khi CI quên truyền biến.
  * - Thêm các host ngoài (CDN) trong NEXT_PUBLIC_IMAGE_REMOTE_HOSTS (phân cách dấu phẩy, vd.
- *   "cdn.tayho127.vn,res.cloudinary.com").
+ *   "cdn.tayho127.vn,res.cloudinary.com"; host của bucket Vietnix = host trong S3_PUBLIC_BASE_URL của Backend).
  * next.config.mjs dựng images.remotePatterns theo CÙNG quy tắc — sửa ở đây thì sửa cả bên đó.
  *
  * <Image /> ném lỗi khi gặp host chưa khai báo, nên URL ảnh đưa vào Site phải

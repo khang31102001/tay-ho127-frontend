@@ -12,7 +12,7 @@ import { MediaUploadPanel } from "./MediaUploadPanel";
 import { MediaUrlImportPanel } from "./MediaUrlImportPanel";
 
 /**
- * Màn Thêm media, 2 bước: (1) chọn nơi lưu — Server, Cloudinary hoặc Liên kết ngoài; (2) tải nhiều file lên
+ * Màn Thêm media, 2 bước: (1) chọn nơi lưu — Server, Vietnix, Cloudinary hoặc Liên kết ngoài; (2) tải nhiều file lên
  * nơi đó, hoặc dán danh sách URL nếu chọn Liên kết ngoài. Backend chưa có API tạo hàng loạt nên mỗi file/URL
  * vẫn đi qua đúng API tạo một media hiện có (upload / POST /media). Sửa một media vẫn dùng MediaEditor.
  */
@@ -24,8 +24,8 @@ export function MediaBulkCreator() {
   const defaultStorage = storageOptions.data?.find((option) => option.isDefault && option.isAvailable)?.code ?? null;
   const storage = chosenStorage ?? defaultStorage;
 
-  const upload = useMediaBulkUpload(storage === "cloudinary" ? "cloudinary" : "local");
-  const isFileStorage = storage === "local" || storage === "cloudinary";
+  const upload = useMediaBulkUpload(storage && storage !== "external" ? storage : "local");
+  const isFileStorage = storage !== null && storage !== "external";
 
   return (
     <div>

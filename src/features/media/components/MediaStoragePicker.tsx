@@ -1,6 +1,6 @@
 "use client";
 
-import { Cloud, Link2, Server, type LucideIcon } from "lucide-react";
+import { Cloud, Database, Link2, Server, type LucideIcon } from "lucide-react";
 
 import { cn } from "@/core/utils/cn";
 import { MEDIA_STORAGE_LABELS, type MediaStorage, type MediaStorageOption } from "../types/media.types";
@@ -10,6 +10,11 @@ const STORAGE_CARDS: { value: MediaStorage; icon: LucideIcon; description: strin
     value: "local",
     icon: Server,
     description: "Lưu trên ổ đĩa VPS. Không phụ thuộc dịch vụ ngoài, nhưng tốn dung lượng và băng thông server.",
+  },
+  {
+    value: "s3",
+    icon: Database,
+    description: "Lưu lên Object Storage của Vietnix (máy chủ tại Việt Nam). Không tốn dung lượng và băng thông VPS.",
   },
   {
     value: "cloudinary",
@@ -36,7 +41,7 @@ type MediaStoragePickerProps = {
   disabled: boolean;
 };
 
-/** Bước 1 của màn Thêm media: chọn file được lưu ở đâu (Server, Cloudinary) hay chỉ nhập link ngoài. */
+/** Bước 1 của màn Thêm media: chọn file được lưu ở đâu (Server, Vietnix, Cloudinary) hay chỉ nhập link ngoài. */
 export function MediaStoragePicker({ value, onChange, options, isLoading, error, onRetry, disabled }: MediaStoragePickerProps) {
   function optionOf(storage: MediaStorage) {
     return options?.find((option) => option.code === storage);
@@ -62,7 +67,7 @@ export function MediaStoragePicker({ value, onChange, options, isLoading, error,
         </p>
       )}
 
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         {STORAGE_CARDS.map(({ value: storage, icon: Icon, description }) => {
           const reason = unavailableReason(storage);
           const isSelected = value === storage;
