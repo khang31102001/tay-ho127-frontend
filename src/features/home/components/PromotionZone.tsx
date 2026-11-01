@@ -1,6 +1,5 @@
 import Image from "next/image";
 import { Reveal } from "@/shared/components/Reveal";
-import { ButtonLink } from "@/shared/ui/ButtonLink";
 // Banner đang chạy lấy từ Backend (features/content-public); media import thẳng service
 // (không qua barrel @/features/media — barrel re-export UI Admin, xem menu.service.ts).
 import { listActiveBanners } from "@/features/content/public";
@@ -12,10 +11,11 @@ import { listMedia } from "@/features/media/services/public-media.service";
  */
 const FALLBACK_IMAGE = "/images/promotion-zone-3.png";
 const FALLBACK_ALT = "Ưu đãi bánh cuốn Tây Hồ";
-const FALLBACK_HEADING = "Hương vị truyền thống";
-const FALLBACK_CTA_LABEL = "Xem ưu đãi";
-const FALLBACK_CTA_URL = "/menu";
 
+/**
+ * Chỉ hiển thị ảnh banner: ảnh ưu đãi đã có sẵn chữ và giá, nên không đè tiêu đề/nút
+ * (heading/ctaLabel của Banner không dùng ở vị trí này).
+ */
 export async function PromotionZone() {
   const [banner] = await listActiveBanners("HOME_PROMOTION");
 
@@ -32,10 +32,6 @@ export async function PromotionZone() {
     }
   }
 
-  const heading = banner?.heading || FALLBACK_HEADING;
-  const ctaLabel = banner?.ctaLabel || FALLBACK_CTA_LABEL;
-  const ctaUrl = banner?.ctaUrl || FALLBACK_CTA_URL;
-
   return (
     <section className="relative min-h-svh overflow-hidden">
       <Reveal type="zoom-in" className="absolute inset-0" duration={1}>
@@ -47,20 +43,6 @@ export async function PromotionZone() {
           className="size-full object-cover"
         />
       </Reveal>
-
-      <div className="relative z-10 flex min-h-svh items-center justify-center">
-        <div className="text-center">
-          <Reveal type="fade-up" delay={0.15}>
-            <h2 className="text-brand-green text-5xl font-bold">{heading}</h2>
-          </Reveal>
-
-          <Reveal type="fade-up" delay={0.3}>
-            <ButtonLink href={ctaUrl} className="mt-8">
-              {ctaLabel}
-            </ButtonLink>
-          </Reveal>
-        </div>
-      </div>
     </section>
   );
 }
