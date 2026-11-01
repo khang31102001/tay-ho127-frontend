@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import {
   TopHero,
   StorySection,
+  getHomeStory,
   PromotionZone,
   FavoriteSection,
   ExperienceSection,
@@ -38,12 +39,12 @@ export async function generateMetadata(): Promise<Metadata> {
 // Server Component nên fetch dữ liệu "Món yêu thích" trước khi render, tránh
 // FavoriteSection (Client Component) phải tự fetch và gây giật hình lúc mount.
 export default async function HomePage() {
-  const [favoriteItems, brand] = await Promise.all([fetchFeaturedMenu(), getSiteBrand()]);
+  const [favoriteItems, brand, story] = await Promise.all([fetchFeaturedMenu(), getSiteBrand(), getHomeStory()]);
 
   return (
     <>
       <TopHero brand={brand} />
-      <StorySection />
+      <StorySection story={story} />
       <PromotionZone />
       <FavoriteSection items={favoriteItems} />
       <ExperienceSection />

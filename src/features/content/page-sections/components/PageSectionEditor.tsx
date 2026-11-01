@@ -5,12 +5,14 @@ import {
   adminFieldInputClassName,
   adminFieldLabelClassName,
 } from "@/shared/admin/templates/formFieldClassName";
-import { MediaPicker } from "@/features/media/components/MediaPicker";
+import { MediaMultiPicker, MediaPicker } from "@/features/media/components/MediaPicker";
 
 import { usePageSectionEditor } from "../hooks/usePageSectionEditor";
 import { SECTION_TYPE_OPTIONS, type SectionType } from "../types/page-section.types";
 
 import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
+const hintClassName = "mt-1 block text-[12px] font-normal text-brand-muted";
+
 type PageSectionEditorProps = {
   pageId: string;
   id?: string;
@@ -28,6 +30,7 @@ export function PageSectionEditor({ pageId, id }: PageSectionEditorProps) {
     handleDelete,
     goToExplore,
   } = usePageSectionEditor({ pageId, id });
+  const isStory = form.sectionType === "story";
 
   return (
     <DataEditor
@@ -73,6 +76,7 @@ export function PageSectionEditor({ pageId, id }: PageSectionEditorProps) {
           onChange={(event) => updateField("heading", event.target.value)}
           className={adminFieldInputClassName}
         />
+        {isStory && <span className={hintClassName}>Phần tiêu đề màu đỏ, vd. &quot;Hơn 6 thập kỷ&quot;.</span>}
       </label>
 
       <label className={adminFieldLabelClassName}>
@@ -83,6 +87,7 @@ export function PageSectionEditor({ pageId, id }: PageSectionEditorProps) {
           onChange={(event) => updateField("subheading", event.target.value)}
           className={adminFieldInputClassName}
         />
+        {isStory && <span className={hintClassName}>Phần tiêu đề màu xanh nối tiếp, vd. &quot;gìn giữ vị xưa&quot;.</span>}
       </label>
 
       <label className={adminFieldLabelClassName}>
@@ -90,18 +95,34 @@ export function PageSectionEditor({ pageId, id }: PageSectionEditorProps) {
         <textarea
           value={form.body ?? ""}
           onChange={(event) => updateField("body", event.target.value)}
-          rows={4}
+          rows={isStory ? 10 : 4}
           className={`${adminFieldInputClassName} h-auto resize-none py-2`}
         />
+        {isStory && <span className={hintClassName}>Mỗi đoạn văn cách nhau bằng một dòng trống.</span>}
       </label>
 
       <MediaPicker
         mediaType="image"
-        label="Ảnh minh họa (tùy chọn)"
+        label={isStory ? "Ảnh chính — ảnh dọc bên phải (tùy chọn)" : "Ảnh minh họa (tùy chọn)"}
         mediaOptions={mediaOptions}
         selectedId={form.mediaId ?? null}
         onChange={(mediaId) => updateField("mediaId", mediaId)}
       />
+
+      {isStory && (
+        <div>
+          <MediaMultiPicker
+            label="Ảnh phụ — 2 ảnh cột trái, theo thứ tự trên → dưới (tùy chọn)"
+            mediaType="image"
+            mediaOptions={mediaOptions}
+            selectedIds={form.galleryMediaIds}
+            onChange={(mediaIds) => updateField("galleryMediaIds", mediaIds)}
+          />
+          <span className={hintClassName}>
+            Bỏ trống ảnh nào thì trang chủ dùng ảnh mặc định ở vị trí đó. Ảnh dưới chỉ hiện từ màn hình tablet trở lên.
+          </span>
+        </div>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <label className={adminFieldLabelClassName}>

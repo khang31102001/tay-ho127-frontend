@@ -62,6 +62,25 @@ export type PublicBanner = {
   displayOrder: number;
 };
 
+/**
+ * Section ĐANG HIỂN THỊ của 1 page đã xuất bản (Backend đã lọc isVisible), theo displayOrder.
+ * `sectionKind`: "hero" | "introduction" | "promotion" | "highlight" | "testimonial" | "cta" | "story".
+ * `body` là văn bản thuần. `galleryMediaIds`: ảnh phụ theo thứ tự (rỗng nếu không có).
+ */
+export type PublicPageSection = {
+  id: string;
+  sectionKind: string;
+  eyebrow: string | null;
+  heading: string | null;
+  subheading: string | null;
+  body: string | null;
+  mediaId: string | null;
+  ctaLabel: string | null;
+  ctaUrl: string | null;
+  displayOrder: number;
+  galleryMediaIds: string[];
+};
+
 /** Page đã xuất bản — đủ để Navigation đổi tham chiếu page thành URL. `slug` là đường dẫn trang ("/", "/thuc-don"). */
 export type PublicPage = {
   id: string;

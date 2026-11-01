@@ -1,6 +1,7 @@
 import type {
   PublicArticle,
   PublicArticleSummary,
+  PublicPageSection,
   PublicTaxonomy,
 } from "../types/public-content.types";
 
@@ -75,6 +76,41 @@ export function parsePublicArticleList(data: unknown): PublicArticleSummary[] {
       return [parseSummaryFields(asObject(item, `Bài viết #${index}`), `Bài viết #${index}`)];
     } catch (error) {
       console.error("Bỏ qua bài viết sai định dạng từ Backend:", error);
+      return [];
+    }
+  });
+}
+
+/** Danh sách section của page: bỏ qua từng section hỏng (log) thay vì làm hỏng cả trang. */
+export function parsePublicPageSectionList(data: unknown): PublicPageSection[] {
+  if (!Array.isArray(data)) {
+    throw new Error("Danh sách section: không phải mảng");
+  }
+
+  return data.flatMap((item, index) => {
+    const what = `Section #${index}`;
+    try {
+      const raw = asObject(item, what);
+      const settings = typeof raw.settings === "object" && raw.settings !== null ? (raw.settings as Raw) : {};
+      const displayOrder = raw.displayOrder;
+
+      return [
+        {
+          id: str(raw, "id", what),
+          sectionKind: str(raw, "sectionKind", what),
+          eyebrow: strOrNull(raw, "eyebrow"),
+          heading: strOrNull(raw, "heading"),
+          subheading: strOrNull(raw, "subheading"),
+          body: strOrNull(raw, "body"),
+          mediaId: strOrNull(raw, "mediaId"),
+          ctaLabel: strOrNull(raw, "ctaLabel"),
+          ctaUrl: strOrNull(raw, "ctaUrl"),
+          displayOrder: typeof displayOrder === "number" ? displayOrder : 0,
+          galleryMediaIds: strArray(settings, "galleryMediaIds"),
+        },
+      ];
+    } catch (error) {
+      console.error("Bỏ qua section sai định dạng từ Backend:", error);
       return [];
     }
   });
