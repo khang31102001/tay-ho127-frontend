@@ -10,6 +10,7 @@ export const SECTION_TYPE_OPTIONS = [
   { value: "testimonial", label: "Đánh giá khách hàng" },
   { value: "cta", label: "Kêu gọi hành động (CTA)" },
   { value: "story", label: "Câu chuyện thương hiệu" },
+  { value: "award", label: "Giải thưởng / Thành tích" },
 ] as const;
 
 export type SectionType = (typeof SECTION_TYPE_OPTIONS)[number]["value"];
@@ -32,6 +33,6 @@ export type ManagedPageSection = {
   ctaUrl?: string;
   displayOrder: number;
   isVisible: boolean;
-  /** Ảnh phụ theo thứ tự (Backend: settings.galleryMediaIds) — vd. 2 ảnh cột trái của "Câu chuyện thương hiệu". */
+  /** Ảnh phụ theo thứ tự (Backend: settings.galleryMediaIds) — vd. 2 ảnh cột trái của "Câu chuyện thương hiệu", logo của "Giải thưởng / Thành tích". */
   galleryMediaIds: string[];
 };

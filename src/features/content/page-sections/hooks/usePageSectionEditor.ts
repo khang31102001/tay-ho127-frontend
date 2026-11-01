@@ -78,8 +78,9 @@ export function usePageSectionEditor({ pageId, id }: UsePageSectionEditorParams)
   }
 
   async function handleSave() {
-    // Ảnh phụ chỉ có ý nghĩa với "Câu chuyện thương hiệu" — đổi sang loại khác thì không lưu ảnh phụ còn sót lại trong form.
-    const payload = form.sectionType === "story" ? form : { ...form, galleryMediaIds: [] };
+    // Ảnh phụ chỉ có ý nghĩa với "Câu chuyện thương hiệu" và "Giải thưởng" — đổi sang loại khác thì không lưu ảnh phụ còn sót lại trong form.
+    const usesGallery = form.sectionType === "story" || form.sectionType === "award";
+    const payload = usesGallery ? form : { ...form, galleryMediaIds: [] };
 
     if (isEditMode) {
       await updateSection(id, payload);

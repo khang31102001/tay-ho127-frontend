@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import {
   useEffect,
   useRef,
@@ -9,6 +10,8 @@ import {
 
 import { Reveal } from "@/shared/components/Reveal";
 import { Container } from "@/shared/ui/Container";
+
+import type { HomeAward } from "../services/award.service";
 
 /* ============================================================
  * TYPES
@@ -138,7 +141,12 @@ function CountUp({
  * COMPONENT
  * ========================================================== */
 
-export function ExperienceSection() {
+type ExperienceSectionProps = {
+  /** Thẻ giải thưởng do Admin quản lý (section "Giải thưởng / Thành tích" của trang chủ) — xem getHomeAward(). */
+  award: HomeAward;
+};
+
+export function ExperienceSection({ award }: ExperienceSectionProps) {
   return (
     <section
       className="
@@ -294,8 +302,8 @@ export function ExperienceSection() {
     {/* Michelin Guide book — ẩn ở mobile, hiện từ sm trở lên */}
 
     <Image
-      src="/images/michelin-guide.png"
-      alt="Michelin Guide Ho Chi Minh City"
+      src={award.images.feature.src}
+      alt={award.images.feature.alt}
       width={275}
       height={200}
       className="
@@ -324,8 +332,8 @@ export function ExperienceSection() {
       "
     >
       <Image
-        src="/images/michelin-2026.png"
-        alt="Michelin 2026"
+        src={award.images.badge.src}
+        alt={award.images.badge.alt}
         width={110}
         height={110}
         className="
@@ -337,45 +345,51 @@ export function ExperienceSection() {
         "
       />
 
-      <h3
-        className="
-          text-[16px]
-          font-black
-          italic
-          leading-[1.3]
-          text-brand-green
-          w-full
-          text-center
-          md:text-[19px]
-          md:leading-6
-        "
-      >
-        Bước chân đầu tiên mang bản sắc dân tộc
+      {award.heading && (
+        <h3
+          className="
+            text-[16px]
+            font-black
+            italic
+            leading-[1.3]
+            text-brand-green
+            w-full
+            text-center
+            md:text-[19px]
+            md:leading-6
+          "
+        >
+          {award.heading}
+        </h3>
+      )}
 
-        đến nền ẩm thực quốc tế.
-      </h3>
-
-      <p
-        className="
-          mt-2
-          line-clamp-3
-          text-[12px]
-          font-medium
-          leading-[1.35]
-          text-[#34402c]
-          text-justify
-          md:mt-3
-          md:line-clamp-4
-          md:text-[14px]
-          md:leading-[1.45]
-        "
-      >
-        Tháng 6/2026 đánh dấu một cột mốc đầy tự
-        hào khi Bánh Cuốn Tây Hồ 127 được Cẩm nang
-        MICHELIN Việt Nam trao danh hiệu Bib Gourmand,
-        ghi nhận hành trình bền bỉ gìn giữ và lan tỏa
-        hương vị truyền thống Việt Nam.
-      </p>
+      {award.description && (
+        <p
+          className="
+            mt-2
+            line-clamp-3
+            text-[12px]
+            font-medium
+            leading-[1.35]
+            text-[#34402c]
+            text-justify
+            md:mt-3
+            md:line-clamp-4
+            md:text-[14px]
+            md:leading-[1.45]
+          "
+        >
+          {award.description}
+        </p>
+      )}
+      {award.cta && (
+        <Link
+          href={award.cta.href}
+          className="focus-ring mt-2 inline-flex items-center text-[13px] font-bold text-brand-red underline-offset-4 hover:underline md:mt-3 md:text-[14px]"
+        >
+          {award.cta.label}
+        </Link>
+      )}
     </div>
   </div>
 </Reveal>

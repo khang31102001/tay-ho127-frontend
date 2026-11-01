@@ -31,6 +31,7 @@ export function PageSectionEditor({ pageId, id }: PageSectionEditorProps) {
     goToExplore,
   } = usePageSectionEditor({ pageId, id });
   const isStory = form.sectionType === "story";
+  const isAward = form.sectionType === "award";
 
   return (
     <DataEditor
@@ -77,6 +78,7 @@ export function PageSectionEditor({ pageId, id }: PageSectionEditorProps) {
           className={adminFieldInputClassName}
         />
         {isStory && <span className={hintClassName}>Phần tiêu đề màu đỏ, vd. &quot;Hơn 6 thập kỷ&quot;.</span>}
+        {isAward && <span className={hintClassName}>Tiêu đề in nghiêng màu xanh dưới logo. Bỏ trống thì không hiện.</span>}
       </label>
 
       <label className={adminFieldLabelClassName}>
@@ -99,11 +101,20 @@ export function PageSectionEditor({ pageId, id }: PageSectionEditorProps) {
           className={`${adminFieldInputClassName} h-auto resize-none py-2`}
         />
         {isStory && <span className={hintClassName}>Mỗi đoạn văn cách nhau bằng một dòng trống.</span>}
+        {isAward && (
+          <span className={hintClassName}>Đoạn mô tả ngắn — trang chủ chỉ hiện tối đa 3–4 dòng.</span>
+        )}
       </label>
 
       <MediaPicker
         mediaType="image"
-        label={isStory ? "Ảnh chính — ảnh dọc bên phải (tùy chọn)" : "Ảnh minh họa (tùy chọn)"}
+        label={
+          isStory
+            ? "Ảnh chính — ảnh dọc bên phải (tùy chọn)"
+            : isAward
+              ? "Ảnh lớn bên trái, vd. bìa sách MICHELIN (tùy chọn, ẩn trên điện thoại)"
+              : "Ảnh minh họa (tùy chọn)"
+        }
         mediaOptions={mediaOptions}
         selectedId={form.mediaId ?? null}
         onChange={(mediaId) => updateField("mediaId", mediaId)}
@@ -121,6 +132,19 @@ export function PageSectionEditor({ pageId, id }: PageSectionEditorProps) {
           <span className={hintClassName}>
             Bỏ trống ảnh nào thì trang chủ dùng ảnh mặc định ở vị trí đó. Ảnh dưới chỉ hiện từ màn hình tablet trở lên.
           </span>
+        </div>
+      )}
+
+      {isAward && (
+        <div>
+          <MediaPicker
+            mediaType="image"
+            label="Logo nhỏ phía trên tiêu đề, vd. logo MICHELIN 2026 (tùy chọn)"
+            mediaOptions={mediaOptions}
+            selectedId={form.galleryMediaIds[0] ?? null}
+            onChange={(mediaId) => updateField("galleryMediaIds", mediaId ? [mediaId] : [])}
+          />
+          <span className={hintClassName}>Bỏ trống ảnh nào thì trang chủ dùng ảnh mặc định ở vị trí đó.</span>
         </div>
       )}
 
