@@ -36,6 +36,7 @@ function buildEmptyForm(pageId: string, nextDisplayOrder: number): PageSectionFo
     ctaUrl: "",
     displayOrder: nextDisplayOrder,
     isVisible: true,
+    galleryMediaIds: [],
   };
 }
 
@@ -77,10 +78,13 @@ export function usePageSectionEditor({ pageId, id }: UsePageSectionEditorParams)
   }
 
   async function handleSave() {
+    // Ảnh phụ chỉ có ý nghĩa với "Câu chuyện thương hiệu" — đổi sang loại khác thì không lưu ảnh phụ còn sót lại trong form.
+    const payload = form.sectionType === "story" ? form : { ...form, galleryMediaIds: [] };
+
     if (isEditMode) {
-      await updateSection(id, form);
+      await updateSection(id, payload);
     } else {
-      await createSection(form);
+      await createSection(payload);
     }
   }
 

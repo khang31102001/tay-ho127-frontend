@@ -3,7 +3,7 @@ import { adminApi } from "@/core/api/admin-api";
 import { ApiError, resolveErrorKind } from "@/core/api/api-error";
 import type { PagedQuery, PaginatedResult } from "@/core/api/api-types";
 
-import type { ManagedMedia, MediaType } from "../types/media.types";
+import type { ManagedMedia, MediaStorage, MediaStorageOption, MediaType, MediaUploadStorage } from "../types/media.types";
 
 /**
  * Admin → Thư viện Media, gọi Backend /api/v1/media (quyền media.*).
@@ -20,6 +20,7 @@ type MediaDto = {
   altText: string | null;
   size: number;
   status: string;
+  storage: string;
   createdAtUtc: string;
   updatedAtUtc: string | null;
 };
@@ -33,6 +34,7 @@ function toManagedMedia(dto: MediaDto): ManagedMedia {
     altText: dto.altText ?? undefined,
     size: dto.size,
     status: dto.status.toLowerCase() as EntityStatus,
+    storage: dto.storage.toLowerCase() as MediaStorage,
   };
 }
 
@@ -69,6 +71,14 @@ export function deleteLibraryMedia(id: string): Promise<void> {
   return adminApi.delete<void>(`/media/${id}`);
 }
 
+type MediaStorageOptionDto = { code: string; isAvailable: boolean; isDefault: boolean };
+
+/** Nơi lưu chọn được khi upload (Server / Vietnix / Cloudinary) — nơi chưa có khóa trên server thì isAvailable = false. */
+export async function getMediaStorageOptions(): Promise<MediaStorageOption[]> {
+  const options = await adminApi.get<MediaStorageOptionDto[]>("/media/storage-options");
+  return options.map((option) => ({ ...option, code: option.code.toLowerCase() as MediaUploadStorage }));
+}
+
 /** Giới hạn khớp Backend (MediaStorage:MaxFileBytes mặc định 10MB) — chặn sớm để khỏi upload file chắc chắn bị từ chối. */
 export const MEDIA_UPLOAD_MAX_BYTES = 10 * 1024 * 1024;
 
@@ -81,9 +91,10 @@ const UPLOAD_TIMEOUT_MS = 60_000;
  * Upload file thật lên Backend (qua BFF app/api/admin/media/upload). Backend tự xác định loại, dung
  * lượng và URL. Không dùng adminApi vì nó luôn gửi JSON; ở đây gửi FormData để trình duyệt tự đặt boundary.
  */
-export async function uploadLibraryMedia(file: File, altText?: string): Promise<ManagedMedia> {
+export async function uploadLibraryMedia(file: File, storage: MediaUploadStorage, altText?: string): Promise<ManagedMedia> {
   const formData = new FormData();
   formData.append("file", file);
+  formData.append("storage", storage);
   if (altText) {
     formData.append("altText", altText);
   }

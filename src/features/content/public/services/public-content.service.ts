@@ -5,9 +5,15 @@ import type {
   PublicArticleSummary,
   PublicBanner,
   PublicPage,
+  PublicPageSection,
   PublicTaxonomy,
 } from "../types/public-content.types";
-import { parsePublicArticle, parsePublicArticleList, parsePublicTaxonomy } from "../utils/parse-public-content";
+import {
+  parsePublicArticle,
+  parsePublicArticleList,
+  parsePublicPageSectionList,
+  parsePublicTaxonomy,
+} from "../utils/parse-public-content";
 
 /**
  * Nội dung đang công khai cho Customer Site — Backend GET /api/v1/content/public/*
@@ -85,6 +91,20 @@ export async function listActiveBanners(placement: string): Promise<PublicBanner
   } catch (error) {
     console.error("Không tải được banner từ Backend:", error);
     return [];
+  }
+}
+
+/**
+ * Section đang hiển thị của page đã xuất bản tại đường dẫn `pageSlug` ("/" = trang chủ), theo thứ tự.
+ * null nếu page không có / chưa xuất bản HOẶC Backend lỗi — nơi gọi dùng nội dung mặc định.
+ */
+export async function listPublishedPageSections(pageSlug: string): Promise<PublicPageSection[] | null> {
+  try {
+    const sections = await getJson<unknown>(`/content/public/page-sections?pageSlug=${encodeURIComponent(pageSlug)}`);
+    return sections === null ? null : parsePublicPageSectionList(sections);
+  } catch (error) {
+    console.error("Không tải được section của page từ Backend:", error);
+    return null;
   }
 }
 
