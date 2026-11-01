@@ -1,7 +1,15 @@
 import type { Metadata } from "next";
 
-import { ContactInfoCard, ContactMap } from "@/features/contact";
-import { NewsHero } from "@/features/content/news";
+import { fetchFeaturedMenu } from "@/features/catalog/menu";
+import {
+  ContactFaq,
+  ContactFeaturedDishes,
+  ContactHero,
+  ContactInfoCard,
+  ContactMap,
+  ContactVisitIntro,
+  buildContactFaq,
+} from "@/features/contact";
 import { getSiteUrl } from "@/core/config/site-url";
 import { site } from "@/core/config/site-data";
 // Import thẳng service (không qua barrel @/features/organization/brand-profile) — barrel đó re-export UI Admin.
@@ -13,6 +21,7 @@ import { Container } from "@/shared/ui/Container";
 import { JsonLd } from "@/shared/components/JsonLd";
 
 const PATH = "/lien-he";
+const FEATURED_DISH_LIMIT = 4;
 
 /** Mô tả ghép từ địa chỉ chi nhánh chính (Admin nhập) — không ghi cứng địa chỉ vào code. */
 function buildContactDescription(brandName: string, address: string): string {
@@ -20,10 +29,16 @@ function buildContactDescription(brandName: string, address: string): string {
   return `Địa chỉ, giờ mở cửa, số điện thoại và bản đồ đường đến ${brandName}${location}. Gọi đặt bàn, nhắn Zalo hoặc đặt món trên ShopeeFood.`;
 }
 
+/** Title chứa địa điểm như các trang địa điểm F&B ("Liên hệ & chỉ đường: 127 Đinh Tiên Hoàng, Tân Định"). */
+function buildContactTitle(addressLine: string, ward?: string): string {
+  const location = [addressLine, ward].map((part) => part?.trim()).filter(Boolean).join(", ");
+  return location ? `Liên hệ & chỉ đường: ${location}` : "Liên hệ & chỉ đường";
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const brand = await getSiteBrand();
   return buildMetadata({
-    title: "Liên hệ & chỉ đường",
+    title: buildContactTitle(brand.addressLine, brand.ward),
     description: buildContactDescription(brand.name, formatBrandAddress(brand)),
     path: PATH,
     image: site.assets.dishPhoto,
@@ -31,14 +46,19 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ContactPage() {
-  const brand = await getSiteBrand();
+  const [brand, menuItems] = await Promise.all([getSiteBrand(), fetchFeaturedMenu()]);
   const siteUrl = getSiteUrl();
+  const address = formatBrandAddress(brand);
+  const featuredDishes = menuItems.slice(0, FEATURED_DISH_LIMIT);
+  const lowestPrice = menuItems.length > 0 ? Math.min(...menuItems.map((item) => item.price)) : null;
+  const faqItems = buildContactFaq(brand, lowestPrice);
+
   const schemas = [
     {
       "@context": "https://schema.org",
       "@type": "ContactPage",
       name: `Liên hệ ${brand.name}`,
-      description: buildContactDescription(brand.name, formatBrandAddress(brand)),
+      description: buildContactDescription(brand.name, address),
       url: `${siteUrl}${PATH}`,
     },
     buildBreadcrumbListSchema(siteUrl, [
@@ -50,11 +70,7 @@ export default async function ContactPage() {
   return (
     <>
       <JsonLd data={schemas} />
-      <NewsHero
-        badge="Liên hệ"
-        title="Liên hệ & chỉ đường"
-        description="Ghé quán ăn sáng, gọi đặt bàn hoặc đặt món mang về: mọi thông tin để tìm tới Bánh Cuốn Tây Hồ 127."
-      />
+      <ContactHero brand={brand} />
 
       <section className="section-padding bg-brand-cream">
         <Container>
@@ -64,6 +80,10 @@ export default async function ContactPage() {
           </div>
         </Container>
       </section>
+
+      <ContactVisitIntro brandName={brand.name} address={address} />
+      <ContactFeaturedDishes items={featuredDishes} />
+      <ContactFaq items={faqItems} />
     </>
   );
 }

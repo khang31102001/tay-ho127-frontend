@@ -39,7 +39,14 @@ type RestaurantInput = {
   addressRegion?: string;
   openTime: string;
   closeTime: string;
+  /** Link Google Maps của địa chỉ chi nhánh chính. */
+  mapUrl?: string;
+  /** URL trang Thực đơn. */
+  menuUrl?: string;
 };
+
+/** Ẩm thực quán phục vụ — cố định theo thương hiệu (bánh cuốn Bắc), không phải dữ liệu chi nhánh. */
+const RESTAURANT_CUISINES = ["Vietnamese", "Bánh cuốn"];
 
 /** Task 6: "Restaurant / FoodEstablishment" — dùng @type Restaurant (subtype hợp lệ của FoodEstablishment trong schema.org). */
 export function buildRestaurantSchema(input: RestaurantInput): JsonLdObject {
@@ -50,6 +57,9 @@ export function buildRestaurantSchema(input: RestaurantInput): JsonLdObject {
     url: input.url,
     image: input.imageUrl || undefined,
     telephone: input.phone || undefined,
+    servesCuisine: RESTAURANT_CUISINES,
+    hasMap: input.mapUrl || undefined,
+    hasMenu: input.menuUrl || undefined,
     address: {
       "@type": "PostalAddress",
       streetAddress: input.streetAddress,
