@@ -31,6 +31,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${siteUrl}/`, changeFrequency: "weekly", priority: 1 },
     { url: `${siteUrl}/thuc-don`, changeFrequency: "daily", priority: 0.9 },
     { url: `${siteUrl}/tin-tuc`, changeFrequency: "daily", priority: 0.7 },
+    { url: `${siteUrl}/gioi-thieu`, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${siteUrl}/lien-he`, changeFrequency: "monthly", priority: 0.8 },
   ];
   const staticRoutes = allStaticRoutes.filter(
     (route) => !(route.url === `${siteUrl}/` && noindexKeys.has(seoMetadataRowId("homepage", null))),
