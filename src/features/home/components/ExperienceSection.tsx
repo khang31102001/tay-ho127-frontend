@@ -370,10 +370,10 @@ export function ExperienceSection() {
           md:leading-[1.45]
         "
       >
-        Tháng 5/2026 đánh dấu một cột mốc đầy tự
-        hào khi Bánh Cuốn Tây Hồ 127 vinh dự được
-        trao ngôi sao Michelin đầu tiên, ghi nhận
-        hành trình bền bỉ gìn giữ và lan tỏa
+        Tháng 6/2026 đánh dấu một cột mốc đầy tự
+        hào khi Bánh Cuốn Tây Hồ 127 được Cẩm nang
+        MICHELIN Việt Nam trao danh hiệu Bib Gourmand,
+        ghi nhận hành trình bền bỉ gìn giữ và lan tỏa
         hương vị truyền thống Việt Nam.
       </p>
     </div>
