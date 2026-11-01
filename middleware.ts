@@ -28,7 +28,23 @@ function publicOrigin(request: NextRequest): string {
   return `${protocol}://${host}`;
 }
 
+/**
+ * www.tayho127.com → tayho127.com (301): 2 bản cùng nội dung chia đôi uy tín SEO. Canonical đã trỏ về bản không www,
+ * redirect làm Google gộp hẳn. Trả null khi host không có "www.".
+ */
+function wwwToApexRedirect(request: NextRequest): NextResponse | null {
+  const origin = publicOrigin(request);
+  const url = new URL(origin);
+  if (!url.hostname.startsWith("www.")) return null;
+
+  url.hostname = url.hostname.slice("www.".length);
+  return NextResponse.redirect(new URL(`${request.nextUrl.pathname}${request.nextUrl.search}`, url.origin), 301);
+}
+
 export async function middleware(request: NextRequest) {
+  const apexRedirect = wwwToApexRedirect(request);
+  if (apexRedirect) return apexRedirect;
+
   // Đăng nhập khách / giỏ hàng / đặt món chưa mở ở môi trường này: gõ tay địa chỉ cũng về trang thực đơn.
   if (!ORDERING_ENABLED && isOrderingOnlyPath(request.nextUrl.pathname)) {
     return NextResponse.redirect(new URL("/thuc-don", publicOrigin(request)));
@@ -42,7 +58,7 @@ export async function middleware(request: NextRequest) {
 
   const destination = redirect.destinationUrl.startsWith("http")
     ? redirect.destinationUrl
-    : new URL(redirect.destinationUrl, request.url);
+    : new URL(redirect.destinationUrl, publicOrigin(request));
 
   return NextResponse.redirect(destination, redirect.redirectType);
 }
