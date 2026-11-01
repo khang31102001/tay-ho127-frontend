@@ -8,6 +8,25 @@ export const MEDIA_TYPE_OPTIONS: { value: MediaType; label: string }[] = [
   { value: "document", label: "Tài liệu" },
 ];
 
+/** Nơi chứa file — khớp MediaStorageProvider của Backend (viết thường). */
+export type MediaStorage = "local" | "cloudinary" | "external";
+
+/** Nơi lưu chọn được khi upload file; "external" chỉ là URL nhập tay, không upload. */
+export type MediaUploadStorage = Exclude<MediaStorage, "external">;
+
+export const MEDIA_STORAGE_LABELS: Record<MediaStorage, string> = {
+  local: "Server",
+  cloudinary: "Cloud (Cloudinary)",
+  external: "Liên kết ngoài",
+};
+
+/** GET /media/storage-options — server cho biết nơi nào đã cấu hình và nơi nào là mặc định. */
+export type MediaStorageOption = {
+  code: MediaUploadStorage;
+  isAvailable: boolean;
+  isDefault: boolean;
+};
+
 export type ManagedMedia = {
   id: string;
   fileName: string;
@@ -17,4 +36,6 @@ export type ManagedMedia = {
   /** Dung lượng (byte). */
   size: number;
   status: EntityStatus;
+  /** Chỉ có ở danh sách Admin; media đọc từ API public/mock không mang trường này. */
+  storage?: MediaStorage;
 };

@@ -8,7 +8,7 @@ import { StatusBadge } from "@/shared/admin/templates/StatusBadge";
 import { useAdminAuth } from "@/features/admin-auth";
 import { formatFileSize } from "@/core/utils/format-file-size";
 import { isNextImageCompatibleUrl } from "@/core/config/image-hosts";
-import { MEDIA_TYPE_OPTIONS, type ManagedMedia } from "../types/media.types";
+import { MEDIA_STORAGE_LABELS, MEDIA_TYPE_OPTIONS, type ManagedMedia } from "../types/media.types";
 
 import { useMediaExplorer } from "../hooks/useMediaExplorer";
 
@@ -44,6 +44,11 @@ const columns: DataExplorerColumn<ManagedMedia>[] = [
     key: "type",
     header: "Loại",
     render: (row) => mediaTypeLabel(row.type),
+  },
+  {
+    key: "storage",
+    header: "Nơi lưu",
+    render: (row) => (row.storage ? MEDIA_STORAGE_LABELS[row.storage] : "—"),
   },
   {
     key: "size",
