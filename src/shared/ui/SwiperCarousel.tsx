@@ -28,6 +28,12 @@ type SwiperCarouselProps = {
   rewind?: boolean;
   speed?: number;
   navigation?: boolean;
+  /**
+   * Vị trí nút prev/next: "side" = hai bên mép carousel (mặc định);
+   * "bottom" = hàng dưới cùng hai bên pagination — dùng trên mobile khi
+   * mép phải đã có nút nổi (FloatingActions) che mất nút next.
+   */
+  navigationPosition?: "side" | "bottom";
   pagination?: boolean;
   /** Căn giữa slide active thay vì bám mép trái — dùng cho carousel kiểu "focal point ở giữa". */
   centeredSlides?: boolean;
@@ -66,6 +72,7 @@ export function SwiperCarousel({
   rewind = false,
   speed = 500,
   navigation = false,
+  navigationPosition = "side",
   pagination = false,
   centeredSlides = false,
   loopAdditionalSlides,
@@ -83,6 +90,43 @@ export function SwiperCarousel({
   const prevClass = `swiper-prev-${uid}`;
   const nextClass = `swiper-next-${uid}`;
   const paginationClass = `swiper-pagination-${uid}`;
+
+  const isBottomNavigation = navigation && navigationPosition === "bottom";
+
+  const navButtonClass = `
+    z-10
+    flex h-10 w-10 shrink-0
+    items-center justify-center
+    rounded-full bg-white
+    text-current
+    shadow-md
+    transition
+    hover:scale-105
+    hover:bg-gray-50
+    active:scale-95
+    md:h-11 md:w-11
+  `;
+  const sideButtonClass = "absolute top-1/2 -translate-y-1/2";
+
+  const prevButton = (positionClass: string) => (
+    <button
+      type="button"
+      aria-label="Xem mục trước"
+      className={`${prevClass} ${navButtonClass} ${positionClass}`}
+    >
+      <ChevronLeftIcon className="h-6 w-6" strokeWidth={3.5} />
+    </button>
+  );
+
+  const nextButton = (positionClass: string) => (
+    <button
+      type="button"
+      aria-label="Xem mục tiếp theo"
+      className={`${nextClass} ${navButtonClass} ${positionClass}`}
+    >
+      <ChevronRightIcon className="h-6 w-6" strokeWidth={3.5} />
+    </button>
+  );
 
   return (
     <div className={`relative ${className}`}>
@@ -122,58 +166,29 @@ export function SwiperCarousel({
         ))}
       </Swiper>
 
-      {navigation && (
+      {navigation && !isBottomNavigation && (
         <>
-          <button
-            type="button"
-            aria-label="Xem mục trước"
-            className={`
-              ${prevClass}
-              absolute left-0 top-1/2 z-10
-              flex h-10 w-10
-              -translate-y-1/2
-              items-center justify-center
-              rounded-full bg-white
-              text-current
-              shadow-md
-              transition
-              hover:scale-105
-              hover:bg-gray-50
-              active:scale-95
-              md:h-11 md:w-11
-            `}
-          >
-            <ChevronLeftIcon className="h-6 w-6" strokeWidth={3.5} />
-          </button>
-
-          <button
-            type="button"
-            aria-label="Xem mục tiếp theo"
-            className={`
-              ${nextClass}
-              absolute right-0 top-1/2 z-10
-              flex h-10 w-10
-              -translate-y-1/2
-              items-center justify-center
-              rounded-full bg-white
-              text-current
-              shadow-md
-              transition
-              hover:scale-105
-              hover:bg-gray-50
-              active:scale-95
-              md:h-11 md:w-11
-            `}
-          >
-            <ChevronRightIcon className="h-6 w-6" strokeWidth={3.5} />
-          </button>
+          {prevButton(`${sideButtonClass} left-0`)}
+          {nextButton(`${sideButtonClass} right-0`)}
         </>
       )}
 
-      {pagination && (
-        <div
-          className={`${paginationClass} mt-6 flex flex-wrap items-center justify-center gap-2`}
-        />
+      {isBottomNavigation ? (
+        <div className="mt-6 flex items-center justify-center gap-3">
+          {prevButton("")}
+          {pagination && (
+            <div
+              className={`${paginationClass} flex min-w-0 flex-1 flex-wrap items-center justify-center gap-2`}
+            />
+          )}
+          {nextButton("")}
+        </div>
+      ) : (
+        pagination && (
+          <div
+            className={`${paginationClass} mt-6 flex flex-wrap items-center justify-center gap-2`}
+          />
+        )
       )}
     </div>
   );

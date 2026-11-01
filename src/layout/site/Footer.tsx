@@ -6,7 +6,10 @@ import { Container } from "@/shared/ui/Container";
 import { Logo } from "@/shared/ui/Logo";
 // Danh tính + liên hệ do Backend cấp (Admin → Tổ chức); Footer chỉ hiển thị, không giữ dữ liệu.
 import type { SiteBrand } from "@/features/organization/brand-profile/types/brand-profile.types";
-import type { SocialPlatform } from "@/features/organization/brand-profile/types/social-link.types";
+import {
+  SOCIAL_PLATFORM_LABEL,
+  type SocialPlatform,
+} from "@/features/organization/brand-profile/types/social-link.types";
 import {
   buildGoogleMapsUrl,
   formatBrandAddress,
@@ -71,7 +74,9 @@ const SOCIAL_ICONS: Partial<Record<SocialPlatform, LucideIcon>> = {
 function buildSocialItems(brand: SiteBrand): SocialItem[] {
   return getActiveSocialLinks(brand).map((link) => ({
     id: link.id,
-    label: link.url,
+    // Hiện tên nền tảng (Website, Zalo...) thay vì URL dài khó đọc;
+    // nền tảng lạ chưa có nhãn thì vẫn hiện URL.
+    label: SOCIAL_PLATFORM_LABEL[link.platform] ?? link.url,
     href: link.url,
     icon: SOCIAL_ICONS[link.platform] ?? Share2,
   }));
@@ -306,6 +311,7 @@ export function Footer({ navItems = [], brand }: FooterProps) {
 
                     <Link
                       href={item.href}
+                      title={item.href}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="

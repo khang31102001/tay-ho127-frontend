@@ -5,7 +5,13 @@ import type { MenuResponse } from "../types/menu.types";
 import { Reveal } from "@/shared/components/Reveal";
 import { Container } from "@/shared/ui/Container";
 import MenuBackgroundDecoration from "@/shared/ui/MenuBackgroundDecoration";
+import { SwiperCarousel } from "@/shared/ui/SwiperCarousel";
 import { categories, useMenuGrid, type MenuCategory } from "../hooks/useMenuGrid";
+
+/**
+ * Thời gian tự chuyển slide của carousel mobile (đồng bộ với FavoriteSection).
+ */
+const AUTO_PLAY_DELAY = 6_000;
 
 /**
  * Trả về màu của nút danh mục.
@@ -206,13 +212,50 @@ export default function MenuGrid({
          * DANH SÁCH SẢN PHẨM
          * =============================================== */}
         {visibleItems.length > 0 ? (
-          <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-10">
-            {visibleItems.map((item, index) => (
-              <Reveal type="fade-up" delay={index * 0.06} duration={0.45} key={item.id} className="w-full">
-                <ProductCard item={item} />
-              </Reveal>
-            ))}
-          </div>
+          <>
+            {/* Mobile: carousel 1 món/slide, giống "Món yêu thích" trang chủ.
+                Ẩn/hiện bằng breakpoint CSS thay vì matchMedia để HTML
+                server và client luôn khớp (không hydration mismatch). */}
+            <div className="sm:hidden">
+              <SwiperCarousel
+                /* Đổi key khi bộ lọc đổi để Swiper khởi tạo lại từ món đầu tiên. */
+                key={`${activeCategory}-${searchTerm}`}
+                slidesPerView={1}
+                spaceBetween={16}
+                autoplayDelay={AUTO_PLAY_DELAY}
+                loop={visibleItems.length > 1}
+                navigation
+                /* Nút prev/next xuống hàng dưới: mép phải mobile đã có
+                   cột nút nổi (FloatingActions) che mất nút next. */
+                navigationPosition="bottom"
+                pagination
+                className="
+                  text-brand-green
+
+                  [--swiper-pagination-bullet-inactive-color:rgb(var(--brand-green-rgb))]
+                  [--swiper-pagination-bullet-inactive-opacity:0.3]
+                  [--swiper-pagination-bullet-size:8px]
+                  [--swiper-pagination-color:rgb(var(--brand-green-rgb))]
+
+                  [&_.swiper-wrapper]:pt-3
+                  [&_.swiper-slide]:!h-auto
+                  [&_.swiper-slide]:self-stretch
+                "
+              >
+                {visibleItems.map((item) => (
+                  <ProductCard key={item.id} item={item} />
+                ))}
+              </SwiperCarousel>
+            </div>
+
+            <div className="hidden gap-x-6 gap-y-8 sm:grid sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-10">
+              {visibleItems.map((item, index) => (
+                <Reveal type="fade-up" delay={index * 0.06} duration={0.45} key={item.id} className="w-full">
+                  <ProductCard item={item} />
+                </Reveal>
+              ))}
+            </div>
+          </>
         ) : (
           /* Trạng thái không tìm thấy sản phẩm */
           <div className="rounded-lg border border-dashed border-gray-300 bg-white/60 px-5 py-12 text-center">
