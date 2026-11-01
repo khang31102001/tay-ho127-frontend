@@ -5,32 +5,28 @@ import { Reveal } from "@/shared/components/Reveal";
 import { listActiveBanners } from "@/features/content/public";
 import { listMedia } from "@/features/media/services/public-media.service";
 
-/**
- * Nội dung mặc định khi chưa có Banner nào đang chạy cho vị trí "HOME_PROMOTION"
- * (banner bị tắt, hết hạn, bị xóa, hoặc Backend không phản hồi) — để trang chủ không bao giờ trống.
- */
-const FALLBACK_IMAGE = "/images/promotion-zone-3.png";
 const FALLBACK_ALT = "Ưu đãi bánh cuốn Tây Hồ";
 
 /**
  * Chỉ hiển thị ảnh banner: ảnh ưu đãi đã có sẵn chữ và giá, nên không đè tiêu đề/nút
  * (heading/ctaLabel của Banner không dùng ở vị trí này).
+ * Không có Banner "HOME_PROMOTION" đang chạy (bị tắt, hết hạn, bị xóa, Backend không phản hồi)
+ * hoặc media của nó không còn hoạt động → ẩn cả mục, để Admin tắt banner là tắt được ưu đãi.
  */
 export async function PromotionZone() {
   const [banner] = await listActiveBanners("HOME_PROMOTION");
-
-  let imageUrl = FALLBACK_IMAGE;
-  let altText = FALLBACK_ALT;
-
-  if (banner?.desktopMediaId) {
-    const mediaList = await listMedia();
-    const media = mediaList.find((item) => item.id === banner.desktopMediaId);
-
-    if (media) {
-      imageUrl = media.url;
-      altText = banner.altText || media.altText || FALLBACK_ALT;
-    }
+  if (!banner?.desktopMediaId) {
+    return null;
   }
+
+  const mediaList = await listMedia();
+  const media = mediaList.find((item) => item.id === banner.desktopMediaId);
+  if (!media) {
+    return null;
+  }
+
+  const imageUrl = media.url;
+  const altText = banner.altText || media.altText || FALLBACK_ALT;
 
   return (
     <section className="relative min-h-svh overflow-hidden">
