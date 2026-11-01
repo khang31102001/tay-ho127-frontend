@@ -1,5 +1,5 @@
 import type { NewsCategorySection } from "../utils/news-selectors";
-import { NewsGrid } from "./NewsGrid";
+import { NewsArticleCollection } from "./NewsArticleCollection";
 import { NewsSectionHeading } from "./NewsSectionHeading";
 
 type NewsCategorySectionsProps = {
@@ -20,7 +20,7 @@ export function NewsCategorySections({ sections }: NewsCategorySectionsProps) {
             href={`/tin-tuc/danh-muc/${category.slug}`}
             linkLabel={total > articles.length ? `Xem tất cả (${total})` : "Xem chuyên mục"}
           />
-          <NewsGrid articles={articles} className="mt-6" />
+          <NewsArticleCollection articles={articles} className="mt-6" />
         </section>
       ))}
     </div>

@@ -38,6 +38,7 @@ function strArray(raw: Raw, key: string): string[] {
 
 function parseSummaryFields(raw: Raw, what: string): PublicArticleSummary {
   const readingTime = raw.readingTimeMinutes;
+  const featuredOrder = raw.featuredOrder;
 
   return {
     id: str(raw, "id", what),
@@ -51,6 +52,9 @@ function parseSummaryFields(raw: Raw, what: string): PublicArticleSummary {
     publishedAt: str(raw, "publishedAt", what),
     updatedAt: strOrNull(raw, "updatedAt") ?? str(raw, "publishedAt", what),
     readingTimeMinutes: typeof readingTime === "number" ? readingTime : 1,
+    // Backend bản cũ chưa có 2 field này → coi như không có bài nổi bật, không làm hỏng danh sách.
+    isFeatured: raw.isFeatured === true,
+    featuredOrder: typeof featuredOrder === "number" ? featuredOrder : null,
   };
 }
 

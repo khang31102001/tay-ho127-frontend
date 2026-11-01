@@ -21,6 +21,12 @@ const columns: DataExplorerColumn<ArticleRow>[] = [
   { key: "categoryName", header: "Danh mục" },
   { key: "authorName", header: "Tác giả" },
   {
+    key: "isFeatured",
+    header: "Nổi bật",
+    render: (row) =>
+      row.isFeatured ? `★${row.featuredOrder !== null ? ` ${row.featuredOrder}` : ""}` : "—",
+  },
+  {
     key: "status",
     header: "Trạng thái",
     render: (row) => <PublishStatusBadge status={row.status} />,
