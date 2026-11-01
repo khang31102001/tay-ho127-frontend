@@ -4,6 +4,7 @@ import {
   TopHero,
   StorySection,
   getHomeStory,
+  getHomeAward,
   PromotionZone,
   FavoriteSection,
   ExperienceSection,
@@ -39,7 +40,12 @@ export async function generateMetadata(): Promise<Metadata> {
 // Server Component nên fetch dữ liệu "Món yêu thích" trước khi render, tránh
 // FavoriteSection (Client Component) phải tự fetch và gây giật hình lúc mount.
 export default async function HomePage() {
-  const [favoriteItems, brand, story] = await Promise.all([fetchFeaturedMenu(), getSiteBrand(), getHomeStory()]);
+  const [favoriteItems, brand, story, award] = await Promise.all([
+    fetchFeaturedMenu(),
+    getSiteBrand(),
+    getHomeStory(),
+    getHomeAward(),
+  ]);
 
   return (
     <>
@@ -47,7 +53,7 @@ export default async function HomePage() {
       <StorySection story={story} />
       <PromotionZone />
       <FavoriteSection items={favoriteItems} />
-      <ExperienceSection />
+      <ExperienceSection award={award} />
       <TestimonialsSection />
     </>
   );

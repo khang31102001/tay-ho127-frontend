@@ -1,14 +1,7 @@
-// SERVER-ONLY: gọi Backend qua features/content/public + media công khai — chỉ dùng trong Server Component.
-// Import thẳng service media (không qua barrel) — barrel features/media re-export cả UI Admin.
-import { listPublishedPageSections, type PublicPageSection } from "@/features/content/public";
-import { listMedia } from "@/features/media/services/public-media.service";
-import type { ManagedMedia } from "@/features/media/types/media.types";
+// SERVER-ONLY — chỉ dùng trong Server Component (xem home-section.service.ts).
+import type { PublicPageSection } from "@/features/content/public";
 
-/** Ảnh đã đổi id → URL, sẵn sàng cho next/image. */
-export type HomeStoryImage = {
-  src: string;
-  alt: string;
-};
+import { findHomeSection, loadMediaById, resolveImage, type HomeImage } from "./home-section.service";
 
 /** Khối "Câu chuyện thương hiệu" của trang chủ, đã ghép với ảnh. */
 export type HomeStory = {
@@ -21,15 +14,14 @@ export type HomeStory = {
   cta: { label: string; href: string } | null;
   images: {
     /** Ảnh trên cột trái. */
-    top: HomeStoryImage;
+    top: HomeImage;
     /** Ảnh dưới cột trái (chỉ hiện từ sm trở lên). */
-    bottom: HomeStoryImage;
+    bottom: HomeImage;
     /** Ảnh dọc bên phải = ảnh chính của section. */
-    side: HomeStoryImage;
+    side: HomeImage;
   };
 };
 
-const HOME_PAGE_SLUG = "/";
 const STORY_SECTION_KIND = "story";
 
 const DEFAULT_IMAGES: HomeStory["images"] = {
@@ -62,22 +54,9 @@ function splitParagraphs(body: string | null): string[] {
     .filter(Boolean);
 }
 
-/** Ảnh không tìm thấy (id sai, media đã tắt, host chưa khai báo) → giữ ảnh mặc định của vị trí đó. */
-function resolveImage(
-  mediaId: string | null | undefined,
-  mediaById: Map<string, ManagedMedia>,
-  fallback: HomeStoryImage,
-): HomeStoryImage {
-  const media = mediaId ? mediaById.get(mediaId) : undefined;
-  return media ? { src: media.url, alt: media.altText || fallback.alt } : fallback;
-}
-
 async function toHomeStory(section: PublicPageSection): Promise<HomeStory> {
   const [topId, bottomId] = section.galleryMediaIds;
-  const hasImages = Boolean(section.mediaId || topId || bottomId);
-  const mediaById = hasImages
-    ? new Map((await listMedia()).map((media) => [media.id, media]))
-    : new Map<string, ManagedMedia>();
+  const mediaById = await loadMediaById([section.mediaId, topId, bottomId]);
 
   return {
     heading: section.heading ?? "",
@@ -97,8 +76,6 @@ async function toHomeStory(section: PublicPageSection): Promise<HomeStory> {
  * Cache 60 giây theo public-content.service: Admin sửa → trang chủ đổi trong tối đa 60 giây.
  */
 export async function getHomeStory(): Promise<HomeStory> {
-  const sections = await listPublishedPageSections(HOME_PAGE_SLUG);
-  const storySection = sections?.find((section) => section.sectionKind === STORY_SECTION_KIND);
-
+  const storySection = await findHomeSection(STORY_SECTION_KIND);
   return storySection ? toHomeStory(storySection) : DEFAULT_STORY;
 }
