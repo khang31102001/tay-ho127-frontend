@@ -50,7 +50,9 @@ export default async function ContactPage() {
   const siteUrl = getSiteUrl();
   const address = formatBrandAddress(brand);
   const featuredDishes = menuItems.slice(0, FEATURED_DISH_LIMIT);
-  const lowestPrice = menuItems.length > 0 ? Math.min(...menuItems.map((item) => item.price)) : null;
+  // Giá thấp nhất trong đúng các món đang hiển thị ở khối "Món được gọi nhiều nhất" — Menu-SP "mon-yeu-thich" còn có
+  // món phụ vài nghìn đồng, lấy cả danh sách sẽ ra câu trả lời sai.
+  const lowestPrice = featuredDishes.length > 0 ? Math.min(...featuredDishes.map((item) => item.price)) : null;
   const faqItems = buildContactFaq(brand, lowestPrice);
 
   const schemas = [
