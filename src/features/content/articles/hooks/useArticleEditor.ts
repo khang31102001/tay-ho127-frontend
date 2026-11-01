@@ -36,6 +36,8 @@ const EMPTY_FORM: ArticleFormValue = {
   tagIds: [],
   authorName: "",
   status: "draft",
+  isFeatured: false,
+  featuredOrder: null,
 };
 
 type UseArticleEditorParams = {

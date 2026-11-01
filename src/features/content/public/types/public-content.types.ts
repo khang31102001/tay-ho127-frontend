@@ -16,6 +16,10 @@ export type PublicArticleSummary = {
   publishedAt: string;
   updatedAt: string;
   readingTimeMinutes: number;
+  /** Admin tick "Hiển thị ở Tin nổi bật". */
+  isFeatured: boolean;
+  /** Thứ tự trong khối nổi bật (số nhỏ lên trước), null = xếp sau cùng. */
+  featuredOrder: number | null;
 };
 
 /** Bài viết đầy đủ — `content` là HTML đã được Backend sanitize khi lưu. */

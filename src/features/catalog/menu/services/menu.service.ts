@@ -14,8 +14,8 @@ import type { ManagedCategory } from "@/features/catalog/categories/types/catego
 import { listMedia } from "@/features/media/services/public-media.service";
 import type { ManagedMedia } from "@/features/media/types/media.types";
 import type { ManagedModifierGroup } from "@/features/catalog/modifier-groups/types/modifier-group.types";
-import { normalizeText } from "@/core/utils/normalize-text";
 
+import { resolveMenuCategoryBucket } from "../constants/category-badge";
 import type {
   Category,
   Menu,
@@ -79,24 +79,6 @@ function resolveProductImage(
 ): string {
   const media = product.mediaIds[0] ? mediaById.get(product.mediaIds[0]) : undefined;
   return media?.url ?? DEFAULT_PRODUCT_IMAGE;
-}
-
-/**
- * Quy về 1 trong 3 nút lọc trên site. PHẢI đồng bộ với thuật toán trong
- * `features/menu/hooks/useMenuGrid.ts` (không đổi ở đây nếu không đổi cả 2 nơi).
- */
-function resolveMenuCategoryBucket(categoryName: string): UiProduct["category"] {
-  const normalized = normalizeText(categoryName);
-
-  if (normalized.includes("chay")) {
-    return "Món chay";
-  }
-
-  if (normalized.includes("an kem") || normalized.includes("them")) {
-    return "Ăn kèm";
-  }
-
-  return "Món mặn";
 }
 
 /** Đi ngược categoryId (subCategory lá) lên category (giữa) để lấy tên dùng cho bộ lọc/badge. */

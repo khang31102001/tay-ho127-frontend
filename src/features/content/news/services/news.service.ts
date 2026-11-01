@@ -47,6 +47,8 @@ function toSummaryView(article: PublicArticleSummary, { mediaById, taxonomy }: L
     categorySlug: category?.slug ?? null,
     tagNames: tags.map((tag) => tag.name),
     tagSlugs: tags.map((tag) => tag.slug),
+    isFeatured: article.isFeatured,
+    featuredOrder: article.featuredOrder,
     author: article.authorName,
     publishedAt: article.publishedAt,
     updatedAt: article.updatedAt,
