@@ -2,7 +2,7 @@
 // — file này được gọi trực tiếp từ app/(site)/**, 2 barrel đó re-export cả UI
 // Admin (BrandProfileEditor, MediaExplorer/MediaEditor).
 import { getSiteBrand } from "@/features/organization/brand-profile/services/brand-public.service";
-import { getContactPhone } from "@/features/organization/brand-profile/utils/site-contact";
+import { buildGoogleMapsUrl, getContactPhone } from "@/features/organization/brand-profile/utils/site-contact";
 import { listMedia } from "@/features/media/services/public-media.service";
 import { getSiteUrl } from "@/core/config/site-url";
 
@@ -52,6 +52,8 @@ export async function resolveGlobalSchemas(): Promise<JsonLdObject[]> {
       addressRegion: brand.province,
       openTime: brand.openTime,
       closeTime: brand.closeTime,
+      mapUrl: buildGoogleMapsUrl(brand),
+      menuUrl: `${siteUrl}/thuc-don`,
     }),
     buildWebSiteSchema(siteUrl, brand.name),
   ];
