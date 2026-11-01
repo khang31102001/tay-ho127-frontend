@@ -1,4 +1,6 @@
 import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 import { Reveal } from "@/shared/components/Reveal";
 import { Container } from "@/shared/ui/Container";
@@ -235,6 +237,16 @@ export function StorySection() {
                 </Reveal>
               ))}
             </div>
+
+            <Reveal type="fade-up" delay={0.3} duration={0.55} once={false}>
+              <Link
+                href="/gioi-thieu"
+                className="focus-ring mt-6 inline-flex items-center gap-2 text-sm font-bold text-brand-red underline-offset-4 hover:underline sm:text-[15px]"
+              >
+                Đọc câu chuyện Tây Hồ 127
+                <ArrowRight size={16} aria-hidden="true" />
+              </Link>
+            </Reveal>
           </article>
         </div>
       </Container>
