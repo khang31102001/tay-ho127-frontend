@@ -9,6 +9,7 @@ import type { ManagedPageSection, SectionType } from "../types/page-section.type
  * - `body` là văn bản THUẦN (không phải HTML).
  * - `ctaUrl` chỉ nhận đường dẫn trong site ("/thuc-don") hoặc URL http(s) — scheme khác Backend trả 400.
  * - Backend gọi loại section là `sectionKind`; FE giữ tên `sectionType` ở model.
+ * - Ảnh phụ (`galleryMediaIds`, tối đa 6) nằm trong `settings` jsonb của Backend.
  */
 
 /** PageSectionResponse của Backend. */
@@ -25,6 +26,7 @@ type PageSectionDto = {
   ctaUrl: string | null;
   displayOrder: number;
   isVisible: boolean;
+  settings: { galleryMediaIds: string[] } | null;
 };
 
 export type PageSectionUpsertInput = Omit<ManagedPageSection, "id">;
@@ -43,6 +45,7 @@ function toManagedPageSection(dto: PageSectionDto): ManagedPageSection {
     ctaUrl: dto.ctaUrl ?? undefined,
     displayOrder: dto.displayOrder,
     isVisible: dto.isVisible,
+    galleryMediaIds: dto.settings?.galleryMediaIds ?? [],
   };
 }
 
@@ -58,6 +61,8 @@ function toRequest(payload: PageSectionUpsertInput) {
     ctaUrl: payload.ctaUrl || null,
     displayOrder: payload.displayOrder,
     isVisible: payload.isVisible,
+    // PUT thay toàn bộ section: không gửi settings = xóa ảnh phụ.
+    settings: payload.galleryMediaIds.length > 0 ? { galleryMediaIds: payload.galleryMediaIds } : null,
   };
 }
 
