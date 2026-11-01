@@ -6,6 +6,8 @@ import { LoadingProvider } from "@/providers/loading-provider";
 import FloatingActions from "@/layout/site/FloatingActions";
 import { NavigationOverlay } from "@/shared/components/loading/NavigationOverlay";
 import { JsonLd } from "@/shared/components/JsonLd";
+import { GoogleTagManager } from "@/shared/components/GoogleTagManager";
+import { getGtmId } from "@/core/config/analytics";
 // Import thẳng service (không qua barrel @/features/seo) — cùng lý do
 // navigationApi bên dưới (barrel re-export cả UI Admin).
 import { resolveGlobalSchemas } from "@/features/seo/services/seo-schema-resolver.service";
@@ -46,11 +48,13 @@ export default async function SiteLayout({ children }: SiteLayoutProps) {
     // duy nhất cho toàn bộ User Site — không lặp lại ở từng page con.
     resolveGlobalSchemas(),
   ]);
+  const gtmId = getGtmId();
 
   return (
     <LoadingProvider>
       <AppProviders>
         <JsonLd data={globalSchemas} />
+        {gtmId ? <GoogleTagManager gtmId={gtmId} /> : null}
 
         <div className="flex min-h-svh flex-col">
           <Header variant="dark" navItems={headerItems} />

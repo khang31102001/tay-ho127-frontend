@@ -2,6 +2,7 @@
 // — file này được gọi trực tiếp từ app/(site)/**, 2 barrel đó re-export cả UI
 // Admin (BrandProfileEditor, MediaExplorer/MediaEditor).
 import { getSiteBrand } from "@/features/organization/brand-profile/services/brand-public.service";
+import { getContactPhone } from "@/features/organization/brand-profile/utils/site-contact";
 import { listMedia } from "@/features/media/services/public-media.service";
 import { getSiteUrl } from "@/core/config/site-url";
 
@@ -29,13 +30,15 @@ export async function resolveGlobalSchemas(): Promise<JsonLdObject[]> {
   const mediaById = new Map(mediaList.map((media) => [media.id, media]));
   const logoUrl = brand.logoMediaId ? mediaById.get(brand.logoMediaId)?.url : undefined;
   const sameAs = brand.socialLinks.filter((link) => link.isActive).map((link) => link.url);
+  // Cùng số Site hiển thị (Header/Footer/nút gọi) và Google Maps — schema khác số trang làm Google mất tin cậy địa điểm.
+  const phone = getContactPhone(brand);
 
   return [
     buildOrganizationSchema({
       name: brand.name,
       url: siteUrl,
       logoUrl,
-      phone: brand.phone,
+      phone,
       email: brand.email,
       sameAs,
     }),
@@ -43,7 +46,7 @@ export async function resolveGlobalSchemas(): Promise<JsonLdObject[]> {
       name: brand.name,
       url: siteUrl,
       imageUrl: logoUrl,
-      phone: brand.phone,
+      phone,
       streetAddress: brand.addressLine,
       addressLocality: brand.district || brand.ward,
       addressRegion: brand.province,
