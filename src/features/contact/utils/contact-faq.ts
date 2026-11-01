@@ -14,8 +14,8 @@ export type ContactFaqItem = {
 };
 
 /**
- * Câu hỏi thường gặp của trang Liên hệ, trả lời bằng dữ liệu thật: chi nhánh chính (Admin) và giá thấp nhất trong
- * Menu-SP "mon-yeu-thich" (Catalog) — không lấy cả thực đơn, kẻo ra giá của đồ uống/món thêm. Thiếu dữ liệu cho câu nào thì bỏ câu đó — không trả lời chung chung.
+ * Câu hỏi thường gặp của trang Liên hệ, trả lời bằng dữ liệu thật: chi nhánh chính (Admin) và giá thấp nhất trong các
+ * món đang hiển thị ở khối "Món được gọi nhiều nhất" (Catalog). Thiếu dữ liệu cho câu nào thì bỏ câu đó.
  * Chưa có câu "gửi xe ở đâu" vì Backend chưa có trường này.
  */
 export function buildContactFaq(brand: SiteBrand, lowestPrice: number | null): ContactFaqItem[] {
@@ -26,12 +26,12 @@ export function buildContactFaq(brand: SiteBrand, lowestPrice: number | null): C
   const shopeeUrl = getSocialUrl(brand, "shopee");
   const opens = normalizeTime(brand.openTime);
   const closes = normalizeTime(brand.closeTime);
-  const hoursNote = brand.businessHoursNote?.trim();
 
   if (opens && closes) {
     items.push({
       question: `${brand.name} mở cửa mấy giờ?`,
-      answer: `Quán mở cửa từ ${opens} đến ${closes} tất cả các ngày trong tuần.${hoursNote ? ` ${hoursNote}` : ""}`,
+      // Không nối businessHoursNote: Admin hay ghi lại đúng ý "mở tất cả các ngày" → câu trả lời bị lặp.
+      answer: `Quán mở cửa từ ${opens} đến ${closes} tất cả các ngày trong tuần.`,
     });
   }
 
@@ -60,7 +60,7 @@ export function buildContactFaq(brand: SiteBrand, lowestPrice: number | null): C
   if (lowestPrice !== null) {
     items.push({
       question: "Một phần bánh cuốn giá bao nhiêu?",
-      answer: `Các món được gọi nhiều nhất có giá từ ${formatCurrency(lowestPrice)} một phần. Giá từng món, món thêm và đồ uống xem tại trang Thực đơn.`,
+      answer: `Các món bánh cuốn được gọi nhiều nhất có giá từ ${formatCurrency(lowestPrice)} một phần. Giá từng món, món thêm và đồ uống xem tại trang Thực đơn.`,
     });
   }
 
