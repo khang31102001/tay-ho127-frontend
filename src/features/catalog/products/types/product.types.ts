@@ -3,6 +3,12 @@ import type { EntityStatus } from "@/shared/admin/templates/StatusBadge";
 /** Giới hạn từ của mô tả chi tiết — trùng với Product.MaxContentWords ở Backend. */
 export const PRODUCT_CONTENT_MAX_WORDS = 1000;
 
+/** Độ dài tối đa của badge — trùng với ProductValidators (MaximumLength(64)) ở Backend. */
+export const PRODUCT_BADGE_MAX_LENGTH = 64;
+
+/** Gợi ý nhanh cho ô badge; Admin vẫn gõ nhãn khác được. */
+export const PRODUCT_BADGE_SUGGESTIONS = ["Bán chạy", "Mới", "Đặc biệt", "Khuyên dùng"];
+
 export type ManagedProduct = {
   id: string;
   name: string;
@@ -28,6 +34,6 @@ export type ManagedProduct = {
   ratingCount?: number;
   /** Giá gốc trước giảm giá, hiển thị gạch ngang cạnh `price` trên site. */
   oldPrice?: number;
-  /** Nhãn dùng để khớp tìm kiếm trên site (không hiển thị UI). */
+  /** Nhãn nổi bật (vd. "Bán chạy"): hiện trên thẻ món và trang chi tiết ở site, cũng dùng để khớp tìm kiếm. */
   badge?: string;
 };

@@ -79,7 +79,7 @@ export type UiProduct = {
   /** ManagedProduct.slug — đường dẫn trang chi tiết `/thuc-don/[slug]`. */
   slug: string;
   name: string;
-  category: "Món mặn" | "Món chay" | "Ăn kèm" | string;
+  category: "Món mặn" | "Món chay" | "Ăn kèm" | "Đồ uống" | string;
   price: number;
   oldPrice?: number;
   badge?: string;

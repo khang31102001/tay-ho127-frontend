@@ -15,7 +15,11 @@ import { Tabs, type TabItem } from "@/shared/ui/Tabs";
 import { SeoFieldsForm, StructuredDataSection } from "@/features/seo";
 
 import { useProductEditor } from "../hooks/useProductEditor";
-import { PRODUCT_CONTENT_MAX_WORDS } from "../types/product.types";
+import {
+  PRODUCT_BADGE_MAX_LENGTH,
+  PRODUCT_BADGE_SUGGESTIONS,
+  PRODUCT_CONTENT_MAX_WORDS,
+} from "../types/product.types";
 
 import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 type ProductEditorProps = {
@@ -170,6 +174,24 @@ export function ProductEditor({ id }: ProductEditorProps) {
           />
         </label>
       </div>
+
+      <label className={adminFieldLabelClassName}>
+        Badge — nhãn nổi bật trên Site (tùy chọn)
+        <input
+          type="text"
+          list="product-badge-suggestions"
+          maxLength={PRODUCT_BADGE_MAX_LENGTH}
+          value={form.badge ?? ""}
+          onChange={(event) => updateField("badge", event.target.value)}
+          placeholder="Vd. Bán chạy — để trống nếu không cần nhãn"
+          className={adminFieldInputClassName}
+        />
+        <datalist id="product-badge-suggestions">
+          {PRODUCT_BADGE_SUGGESTIONS.map((suggestion) => (
+            <option key={suggestion} value={suggestion} />
+          ))}
+        </datalist>
+      </label>
 
       <label className={adminFieldLabelClassName}>
         Mô tả ngắn (tùy chọn)
