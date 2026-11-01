@@ -73,7 +73,7 @@ export function deleteLibraryMedia(id: string): Promise<void> {
 
 type MediaStorageOptionDto = { code: string; isAvailable: boolean; isDefault: boolean };
 
-/** Nơi lưu chọn được khi upload (Server / Cloudinary) — Cloudinary chưa có khóa thì isAvailable = false. */
+/** Nơi lưu chọn được khi upload (Server / Vietnix / Cloudinary) — nơi chưa có khóa trên server thì isAvailable = false. */
 export async function getMediaStorageOptions(): Promise<MediaStorageOption[]> {
   const options = await adminApi.get<MediaStorageOptionDto[]>("/media/storage-options");
   return options.map((option) => ({ ...option, code: option.code.toLowerCase() as MediaUploadStorage }));
