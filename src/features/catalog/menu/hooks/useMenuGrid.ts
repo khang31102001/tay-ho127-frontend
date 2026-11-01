@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 
 import { normalizeText } from "@/core/utils/normalize-text";
+import { resolveMenuCategoryBucket } from "../constants/category-badge";
 import type { MenuResponse, UiProduct } from "../types/menu.types";
 
 /**
@@ -14,6 +15,7 @@ export const categories = [
   "Món mặn",
   "Món chay",
   "Ăn kèm",
+  "Đồ uống",
 ] as const;
 
 export type MenuCategory = (typeof categories)[number];
@@ -56,27 +58,7 @@ export function useMenuGrid(groups: MenuResponse["data"]["menu"]["groups"]) {
 
     groups.forEach((group) => {
       (group.categories ?? []).forEach((category) => {
-        /**
-         * Chuẩn hóa tên category để xác định:
-         * - Món mặn
-         * - Món chay
-         * - Ăn kèm
-         */
-        const normalizedCategoryName = normalizeText(
-          category.name ?? "",
-        );
-
-        let mappedCategory: UiProduct["category"] =
-          "Món mặn";
-
-        if (normalizedCategoryName.includes("chay")) {
-          mappedCategory = "Món chay";
-        } else if (
-          normalizedCategoryName.includes("an kem") ||
-          normalizedCategoryName.includes("them")
-        ) {
-          mappedCategory = "Ăn kèm";
-        }
+        const mappedCategory = resolveMenuCategoryBucket(category.name ?? "");
 
         /**
          * Lấy sản phẩm từ tất cả subCategories

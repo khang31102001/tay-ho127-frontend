@@ -33,6 +33,9 @@ function getCategoryButtonClass(
       case "Ăn kèm":
         return `${baseClass} border-orange-500 bg-orange-500 text-white`;
 
+      case "Đồ uống":
+        return `${baseClass} border-brand-ink bg-brand-ink text-white`;
+
       case "Tất cả":
       case "Món chay":
       default:
@@ -46,6 +49,9 @@ function getCategoryButtonClass(
 
     case "Ăn kèm":
       return `${baseClass} border-orange-500 bg-white text-orange-600`;
+
+    case "Đồ uống":
+      return `${baseClass} border-brand-ink bg-white text-brand-ink`;
 
     case "Tất cả":
     case "Món chay":
