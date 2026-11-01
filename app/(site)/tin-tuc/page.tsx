@@ -1,12 +1,12 @@
 import { Container } from "@/shared/ui/Container";
 import {
+  NewsArticleCollection,
   NewsCategorySections,
-  NewsFeaturedCarousel,
   NewsHero,
-  NewsLatestList,
   NewsListingSection,
   NewsSectionHeading,
   buildCategorySections,
+  listCategoriesWithArticles,
   listNewsArticles,
   listNewsCategories,
   pickFeaturedArticles,
@@ -19,20 +19,20 @@ export const metadata = buildMetadata({
   path: "/tin-tuc",
 });
 
-const FEATURED_LIMIT = 8;
-const LATEST_LIMIT = 6;
-const PER_CATEGORY_LIMIT = 3;
+/** Số bài tối đa mỗi khối — ≤ 4 bài hiện lưới, nhiều hơn chuyển sang swiper (NewsArticleCollection). */
+const SECTION_LIMIT = 8;
 
 /**
- * Bố cục kiểu cổng tin: Tin nổi bật (trượt ngang) → Tin mới (danh sách gọn) → từng danh mục →
- * Tất cả bài viết (lọc + "Xem thêm"). Mọi khối lấy từ cùng một danh sách đã tải.
+ * Bố cục kiểu cổng tin: Tin nổi bật → Tin mới → từng danh mục → Tất cả bài viết (lọc + "Xem thêm").
+ * Mọi khối lấy từ cùng một danh sách đã tải; khối nào không có bài thì ẩn hẳn (không hiện tiêu đề rỗng).
  */
 export default async function NewsPage() {
   const [articles, categories] = await Promise.all([listNewsArticles(), listNewsCategories()]);
 
-  const featuredArticles = pickFeaturedArticles(articles, FEATURED_LIMIT);
-  const latestArticles = articles.slice(0, LATEST_LIMIT);
-  const categorySections = buildCategorySections(articles, categories, PER_CATEGORY_LIMIT);
+  const featuredArticles = pickFeaturedArticles(articles, SECTION_LIMIT);
+  const latestArticles = articles.slice(0, SECTION_LIMIT);
+  const categorySections = buildCategorySections(articles, categories, SECTION_LIMIT);
+  const filterCategories = listCategoriesWithArticles(articles, categories);
 
   return (
     <>
@@ -44,18 +44,16 @@ export default async function NewsPage() {
             <p className="text-brand-muted">Chưa có bài viết nào được xuất bản.</p>
           ) : (
             <div className="space-y-16">
-              <section aria-labelledby="news-featured">
-                <NewsSectionHeading id="news-featured" title="Tin nổi bật" />
-                <div className="mt-4">
-                  <NewsFeaturedCarousel articles={featuredArticles} />
-                </div>
-              </section>
+              {featuredArticles.length > 0 && (
+                <section aria-labelledby="news-featured">
+                  <NewsSectionHeading id="news-featured" title="Tin nổi bật" />
+                  <NewsArticleCollection articles={featuredArticles} className="mt-6" />
+                </section>
+              )}
 
               <section aria-labelledby="news-latest">
                 <NewsSectionHeading id="news-latest" title="Tin mới" href="#news-all" linkLabel="Xem thêm" />
-                <div className="mt-2">
-                  <NewsLatestList articles={latestArticles} />
-                </div>
+                <NewsArticleCollection articles={latestArticles} className="mt-6" />
               </section>
 
               <NewsCategorySections sections={categorySections} />
@@ -63,7 +61,7 @@ export default async function NewsPage() {
               <section id="news-all" aria-labelledby="news-all-heading" className="scroll-mt-28">
                 <NewsSectionHeading id="news-all-heading" title="Tất cả bài viết" />
                 <div className="mt-6">
-                  <NewsListingSection articles={articles} categories={categories} />
+                  <NewsListingSection articles={articles} categories={filterCategories} />
                 </div>
               </section>
             </div>

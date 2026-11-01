@@ -17,7 +17,7 @@ import { Tabs, type TabItem } from "@/shared/ui/Tabs";
 import { SeoFieldsForm } from "@/features/seo";
 
 import { useArticleEditor } from "../hooks/useArticleEditor";
-import { ARTICLE_CONTENT_MAX_WORDS } from "../types/article.types";
+import { ARTICLE_CONTENT_MAX_WORDS, ARTICLE_FEATURED_ORDER_MAX } from "../types/article.types";
 
 import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 type ArticleEditorProps = {
@@ -221,6 +221,36 @@ export function ArticleEditor({ id }: ArticleEditorProps) {
           <option value="archived">Lưu trữ</option>
         </AdminSelect>
       </label>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <label className="mt-1.5 flex h-10 items-center gap-2 text-[13px] font-bold text-brand-greenDark">
+          <input
+            type="checkbox"
+            checked={form.isFeatured}
+            onChange={(event) => updateField("isFeatured", event.target.checked)}
+            className="size-4 accent-brand-green"
+          />
+          Hiển thị ở Tin nổi bật
+        </label>
+
+        {form.isFeatured && (
+          <label className={adminFieldLabelClassName}>
+            Thứ tự nổi bật
+            <input
+              type="number"
+              min={0}
+              max={ARTICLE_FEATURED_ORDER_MAX}
+              value={form.featuredOrder ?? ""}
+              placeholder="Để trống = xếp sau cùng"
+              onChange={(event) =>
+                updateField("featuredOrder", event.target.value === "" ? null : Number(event.target.value))
+              }
+              className={adminFieldInputClassName}
+            />
+            <span className="mt-1 block text-[12px] font-normal text-brand-muted">Số nhỏ lên trước.</span>
+          </label>
+        )}
+      </div>
       </div>
       )}
     </DataEditor>

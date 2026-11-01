@@ -16,8 +16,12 @@ export type NewsArticleSummaryView = {
   categoryName: string | null;
   categorySlug: string | null;
   tagNames: string[];
-  /** Slug thẻ — dùng để nhận bài "nổi bật" (thẻ FEATURED_TAG_SLUG) mà không phụ thuộc tên hiển thị. */
+  /** Slug thẻ — dùng để loại thẻ cũ FEATURED_TAG_SLUG khỏi từ khóa SEO mà không phụ thuộc tên hiển thị. */
   tagSlugs: string[];
+  /** Admin tick "Hiển thị ở Tin nổi bật". */
+  isFeatured: boolean;
+  /** Thứ tự trong khối nổi bật (số nhỏ lên trước), null = xếp sau cùng. */
+  featuredOrder: number | null;
   author: string;
   publishedAt: string | null;
   updatedAt: string | null;

@@ -13,6 +13,7 @@ import type { ManagedArticle, ManagedArticleListItem } from "../types/article.ty
  * - `publishedAt` do Backend đặt lần đầu bài chuyển sang "published", không gửi lên.
  * - Danh sách không kèm `content` (nặng) — lấy theo id khi mở Editor.
  * - `tagIds` thay thế toàn bộ thẻ của bài.
+ * - `isFeatured`/`featuredOrder`: khối "Tin nổi bật" của Site; bỏ tick thì thứ tự bị xóa.
  */
 
 /** ArticleListItemResponse của Backend. */
@@ -26,6 +27,8 @@ type ArticleListItemDto = {
   tagIds: string[];
   authorName: string;
   status: ManagedArticle["status"];
+  isFeatured: boolean;
+  featuredOrder: number | null;
   publishedAt: string | null;
   createdAtUtc: string;
   updatedAtUtc: string | null;
@@ -47,6 +50,8 @@ function toManagedArticleListItem(dto: ArticleListItemDto): ManagedArticleListIt
     tagIds: dto.tagIds,
     authorName: dto.authorName,
     status: dto.status,
+    isFeatured: dto.isFeatured,
+    featuredOrder: dto.featuredOrder,
     publishedAt: dto.publishedAt,
     createdAt: dto.createdAtUtc,
     updatedAt: dto.updatedAtUtc ?? dto.createdAtUtc,
@@ -68,6 +73,8 @@ function toRequest(payload: ArticleUpsertInput) {
     tagIds: payload.tagIds,
     authorName: payload.authorName,
     status: payload.status,
+    isFeatured: payload.isFeatured,
+    featuredOrder: payload.isFeatured ? payload.featuredOrder : null,
   };
 }
 

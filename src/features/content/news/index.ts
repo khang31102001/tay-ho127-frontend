@@ -6,8 +6,7 @@ export { NewsGrid } from "./components/NewsGrid";
 export { NewsCard } from "./components/NewsCard";
 export { NewsMeta } from "./components/NewsMeta";
 export { NewsSectionHeading } from "./components/NewsSectionHeading";
-export { NewsFeaturedCarousel } from "./components/NewsFeaturedCarousel";
-export { NewsLatestList } from "./components/NewsLatestList";
+export { NewsArticleCollection } from "./components/NewsArticleCollection";
 export { NewsCategorySections } from "./components/NewsCategorySections";
 export { NewsBreadcrumb } from "./components/NewsBreadcrumb";
 export { ArticleHeader } from "./components/ArticleHeader";
@@ -30,6 +29,7 @@ export {
   FEATURED_TAG_SLUG,
   buildCategorySections,
   filterArticlesInCategory,
+  listCategoriesWithArticles,
   pickFeaturedArticles,
 } from "./utils/news-selectors";
 
