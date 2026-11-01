@@ -10,6 +10,7 @@ import { MediaPicker } from "@/features/media/components/MediaPicker";
 import { useBannerEditor } from "../hooks/useBannerEditor";
 import { BANNER_PLACEMENT_OPTIONS, type BannerPlacement } from "../types/banner.types";
 
+import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 type BannerEditorProps = {
   id?: string;
 };
@@ -124,7 +125,7 @@ export function BannerEditor({ id }: BannerEditorProps) {
 
       <label className={adminFieldLabelClassName}>
         Vị trí hiển thị (Placement)
-        <select
+        <AdminSelect
           value={form.placement}
           onChange={(event) => updateField("placement", event.target.value as BannerPlacement)}
           className={adminFieldInputClassName}
@@ -134,7 +135,7 @@ export function BannerEditor({ id }: BannerEditorProps) {
               {option.label}
             </option>
           ))}
-        </select>
+        </AdminSelect>
       </label>
 
       <div className="grid gap-4 sm:grid-cols-3">

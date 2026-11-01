@@ -10,6 +10,7 @@ import { NAVIGATION_TARGET_TYPE_OPTIONS, type NavigationScope, type NavigationTa
 import { NAVIGATION_ICON_NAMES } from "../utils/icon-registry";
 import { getNavigationPermission } from "../utils/navigation-scope";
 
+import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 type NavigationItemEditorProps = {
   scope: NavigationScope;
   /** Bắt buộc với scope "site"; scope "admin" tự tìm container sidebar. */
@@ -80,7 +81,7 @@ export function NavigationItemEditor({ scope, menuId, itemId }: NavigationItemEd
       <div className="grid gap-4 sm:grid-cols-2">
         <label className={adminFieldLabelClassName}>
           Thuộc mục cha (tùy chọn, tối đa 3 cấp)
-          <select
+          <AdminSelect
             value={form.parentId ?? ""}
             onChange={(event) => updateField("parentId", event.target.value || null)}
             className={adminFieldInputClassName}
@@ -91,7 +92,7 @@ export function NavigationItemEditor({ scope, menuId, itemId }: NavigationItemEd
                 {`${"— ".repeat(option.depth)}${option.label}`}
               </option>
             ))}
-          </select>
+          </AdminSelect>
         </label>
 
         <label className={adminFieldLabelClassName}>
@@ -132,7 +133,7 @@ export function NavigationItemEditor({ scope, menuId, itemId }: NavigationItemEd
         <>
           <label className={adminFieldLabelClassName}>
             Loại liên kết (Target Type)
-            <select
+            <AdminSelect
               value={form.targetType}
               onChange={(event) => updateField("targetType", event.target.value as NavigationTargetType)}
               className={adminFieldInputClassName}
@@ -142,13 +143,13 @@ export function NavigationItemEditor({ scope, menuId, itemId }: NavigationItemEd
                   {option.label}
                 </option>
               ))}
-            </select>
+            </AdminSelect>
           </label>
 
           {form.targetType === "page" ? (
             <label className={adminFieldLabelClassName}>
               Trang CMS (Page)
-              <select
+              <AdminSelect
                 value={form.targetId ?? ""}
                 onChange={(event) => updateField("targetId", event.target.value || null)}
                 className={adminFieldInputClassName}
@@ -159,7 +160,7 @@ export function NavigationItemEditor({ scope, menuId, itemId }: NavigationItemEd
                     {page.name} ({page.slug})
                   </option>
                 ))}
-              </select>
+              </AdminSelect>
             </label>
           ) : (
             <label className={adminFieldLabelClassName}>
@@ -179,7 +180,7 @@ export function NavigationItemEditor({ scope, menuId, itemId }: NavigationItemEd
       {isAdminScope && (
         <label className={adminFieldLabelClassName}>
           Icon (tùy chọn — hiển thị ở Admin Sidebar)
-          <select
+          <AdminSelect
             value={form.icon ?? ""}
             onChange={(event) => updateField("icon", event.target.value || null)}
             className={adminFieldInputClassName}
@@ -190,7 +191,7 @@ export function NavigationItemEditor({ scope, menuId, itemId }: NavigationItemEd
                 {name}
               </option>
             ))}
-          </select>
+          </AdminSelect>
         </label>
       )}
 

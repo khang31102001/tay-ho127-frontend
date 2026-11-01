@@ -13,6 +13,7 @@ import type { PublishStatus } from "@/shared/components/PublishStatusBadge";
 
 import { usePageEditor } from "../hooks/usePageEditor";
 
+import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 type PageEditorProps = {
   id?: string;
 };
@@ -75,7 +76,7 @@ export function PageEditor({ id }: PageEditorProps) {
 
       <label className={adminFieldLabelClassName}>
         Trạng thái
-        <select
+        <AdminSelect
           value={form.status}
           onChange={(event) => updateField("status", event.target.value as PublishStatus)}
           className={adminFieldInputClassName}
@@ -83,7 +84,7 @@ export function PageEditor({ id }: PageEditorProps) {
           <option value="draft">Bản nháp</option>
           <option value="published">Xuất bản</option>
           <option value="archived">Lưu trữ</option>
-        </select>
+        </AdminSelect>
       </label>
 
       {isEditMode && id && (

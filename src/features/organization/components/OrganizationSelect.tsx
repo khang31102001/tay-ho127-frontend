@@ -7,6 +7,7 @@ import {
 
 import type { ManagedOrganization } from "../types/organization.types";
 
+import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 type OrganizationSelectProps = {
   value: string;
   organizations: ManagedOrganization[];
@@ -31,7 +32,7 @@ export function OrganizationSelect({
   return (
     <label className={adminFieldLabelClassName}>
       {label}
-      <select
+      <AdminSelect
         required={required}
         disabled={disabled}
         value={value}
@@ -46,7 +47,7 @@ export function OrganizationSelect({
             {organization.name}
           </option>
         ))}
-      </select>
+      </AdminSelect>
     </label>
   );
 }

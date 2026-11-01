@@ -12,6 +12,7 @@ import { MEDIA_TYPE_OPTIONS, type MediaType } from "../types/media.types";
 
 import { useMediaEditor } from "../hooks/useMediaEditor";
 
+import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 type MediaEditorProps = {
   id: string;
 };
@@ -73,7 +74,7 @@ export function MediaEditor({ id }: MediaEditorProps) {
       <div className="grid gap-4 sm:grid-cols-2">
         <label className={adminFieldLabelClassName}>
           Loại file
-          <select
+          <AdminSelect
             value={form.type}
             onChange={(event) => updateField("type", event.target.value as MediaType)}
             className={adminFieldInputClassName}
@@ -83,7 +84,7 @@ export function MediaEditor({ id }: MediaEditorProps) {
                 {option.label}
               </option>
             ))}
-          </select>
+          </AdminSelect>
         </label>
 
         <label className={adminFieldLabelClassName}>

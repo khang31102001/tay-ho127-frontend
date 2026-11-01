@@ -10,6 +10,7 @@ import type { EntityStatus } from "@/shared/admin/templates/StatusBadge";
 
 import { useArticleCategoryEditor } from "../hooks/useArticleCategoryEditor";
 
+import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 type ArticleCategoryEditorProps = {
   id?: string;
 };
@@ -59,7 +60,7 @@ export function ArticleCategoryEditor({ id }: ArticleCategoryEditorProps) {
       <div className="grid gap-4 sm:grid-cols-2">
         <label className={adminFieldLabelClassName}>
           Danh mục cha (tùy chọn)
-          <select
+          <AdminSelect
             value={form.parentId ?? ""}
             onChange={(event) =>
               updateField("parentId", event.target.value === "" ? null : event.target.value)
@@ -73,7 +74,7 @@ export function ArticleCategoryEditor({ id }: ArticleCategoryEditorProps) {
                 {category.name}
               </option>
             ))}
-          </select>
+          </AdminSelect>
         </label>
 
         <label className={adminFieldLabelClassName}>
@@ -89,14 +90,14 @@ export function ArticleCategoryEditor({ id }: ArticleCategoryEditorProps) {
 
       <label className={adminFieldLabelClassName}>
         Trạng thái
-        <select
+        <AdminSelect
           value={form.status}
           onChange={(event) => updateField("status", event.target.value as EntityStatus)}
           className={adminFieldInputClassName}
         >
           <option value="active">Hoạt động</option>
           <option value="inactive">Ngừng hoạt động</option>
-        </select>
+        </AdminSelect>
       </label>
     </DataEditor>
   );

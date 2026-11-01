@@ -6,6 +6,7 @@ import { adminFieldInputClassName, adminFieldLabelClassName } from "@/shared/adm
 import { useDeliveryMethodEditor } from "../hooks/useDeliveryMethodEditor";
 import { DELIVERY_METHOD_TYPE_OPTIONS, type DeliveryMethodType } from "../types/delivery-method.types";
 
+import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 type DeliveryMethodEditorProps = {
   id?: string;
 };
@@ -61,7 +62,7 @@ export function DeliveryMethodEditor({ id }: DeliveryMethodEditorProps) {
 
       <label className={adminFieldLabelClassName}>
         Loại
-        <select
+        <AdminSelect
           value={form.type}
           onChange={(event) => updateField("type", event.target.value as DeliveryMethodType)}
           className={adminFieldInputClassName}
@@ -71,7 +72,7 @@ export function DeliveryMethodEditor({ id }: DeliveryMethodEditorProps) {
               {option.label}
             </option>
           ))}
-        </select>
+        </AdminSelect>
       </label>
 
       {form.type === "pickup" && (

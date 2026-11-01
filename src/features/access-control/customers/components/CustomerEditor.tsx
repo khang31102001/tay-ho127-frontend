@@ -14,6 +14,7 @@ import type { EntityStatus } from "@/shared/admin/templates/StatusBadge";
 import { useCustomerEditor } from "../hooks/useCustomerEditor";
 import { GENDER_OPTIONS, type Gender } from "../types/customer.types";
 
+import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 type CustomerEditorProps = {
   id?: string;
 };
@@ -93,7 +94,7 @@ export function CustomerEditor({ id }: CustomerEditorProps) {
 
         <label className={adminFieldLabelClassName}>
           Giới tính (tùy chọn)
-          <select
+          <AdminSelect
             value={form.gender ?? ""}
             onChange={(event) =>
               updateField("gender", event.target.value === "" ? undefined : (event.target.value as Gender))
@@ -106,7 +107,7 @@ export function CustomerEditor({ id }: CustomerEditorProps) {
                 {option.label}
               </option>
             ))}
-          </select>
+          </AdminSelect>
         </label>
       </div>
 
@@ -120,14 +121,14 @@ export function CustomerEditor({ id }: CustomerEditorProps) {
 
       <label className={adminFieldLabelClassName}>
         Trạng thái
-        <select
+        <AdminSelect
           value={form.status}
           onChange={(event) => updateField("status", event.target.value as EntityStatus)}
           className={adminFieldInputClassName}
         >
           <option value="active">Hoạt động</option>
           <option value="inactive">Ngừng hoạt động</option>
-        </select>
+        </AdminSelect>
       </label>
 
       {isEditMode && id && (

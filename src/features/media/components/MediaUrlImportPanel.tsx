@@ -22,6 +22,7 @@ import {
   mediaBatchSecondaryButtonClassName,
 } from "./MediaBatchParts";
 
+import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 const invalidInputClassName = "border-red-400 focus:border-red-500 focus:ring-red-200";
 
 function FieldError({ message }: { message?: string }) {
@@ -115,7 +116,7 @@ export function MediaUrlImportPanel() {
             </button>
             <label className={adminFieldLabelClassName}>
               Loại file chung
-              <select
+              <AdminSelect
                 value={sharedType}
                 onChange={(event) => setSharedType(event.target.value as MediaType)}
                 className={cn(mediaBatchCompactInputClassName, "mt-1.5 bg-white")}
@@ -125,7 +126,7 @@ export function MediaUrlImportPanel() {
                     {option.label}
                   </option>
                 ))}
-              </select>
+              </AdminSelect>
             </label>
             <button
               type="button"
@@ -192,7 +193,7 @@ export function MediaUrlImportPanel() {
                         <div className="grid grid-cols-2 gap-2">
                           <label className="block text-[12px] font-bold text-brand-greenDark">
                             Loại file
-                            <select
+                            <AdminSelect
                               value={row.type}
                               disabled={isLocked}
                               onChange={(event) => updateField(row.key, "type", event.target.value as MediaType)}
@@ -203,7 +204,7 @@ export function MediaUrlImportPanel() {
                                   {option.label}
                                 </option>
                               ))}
-                            </select>
+                            </AdminSelect>
                           </label>
                           <label className="block text-[12px] font-bold text-brand-greenDark">
                             Dung lượng (byte)

@@ -9,6 +9,7 @@ import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import { MenuProductsPicker } from "./MenuProductsPicker";
 
+import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 /**
  * Màn "Liên kết Thực đơn ↔ Sản phẩm": chọn thực đơn rồi gắn/bỏ/sắp xếp cả loạt
  * sản phẩm của nó trong MenuProductsPicker (thay form thêm từng liên kết một).
@@ -33,7 +34,7 @@ export function MenuProductsLinker() {
       <div className="mt-4 rounded-lg border border-brand-line bg-white p-6">
         <label className={adminFieldLabelClassName}>
           Thực đơn
-          <select
+          <AdminSelect
             value={menuId}
             onChange={(event) => setMenuId(event.target.value)}
             disabled={menus.isLoading}
@@ -48,7 +49,7 @@ export function MenuProductsLinker() {
                 {menu.name}
               </option>
             ))}
-          </select>
+          </AdminSelect>
         </label>
 
         {menus.error && <p className="mt-2 text-[13px] font-bold text-red-600">{menus.error}</p>}

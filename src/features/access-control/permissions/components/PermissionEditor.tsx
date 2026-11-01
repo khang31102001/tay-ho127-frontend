@@ -10,6 +10,7 @@ import { useAdminAuth } from "@/features/admin-auth";
 
 import { usePermissionEditor } from "../hooks/usePermissionEditor";
 
+import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 export function PermissionEditor({ id }: { id?: string }) {
   const { form, updateField, parentOptions, isLoading, loadError, isEditMode, handleSave, handleDelete, goToExplore } =
     usePermissionEditor({ id });
@@ -29,7 +30,7 @@ export function PermissionEditor({ id }: { id?: string }) {
     >
       <label className={adminFieldLabelClassName}>
         Loại
-        <select
+        <AdminSelect
           value={form.isGroup ? "group" : "permission"}
           disabled={isEditMode}
           onChange={(event) => updateField("isGroup", event.target.value === "group")}
@@ -37,7 +38,7 @@ export function PermissionEditor({ id }: { id?: string }) {
         >
           <option value="permission">Quyền (kiểm tra ở API, gán cho vai trò)</option>
           <option value="group">Nhóm (chỉ để gom quyền)</option>
-        </select>
+        </AdminSelect>
       </label>
 
       <label className={adminFieldLabelClassName}>
@@ -66,7 +67,7 @@ export function PermissionEditor({ id }: { id?: string }) {
 
       <label className={adminFieldLabelClassName}>
         {form.isGroup ? "Nhóm cha (để trống = nhóm gốc / module)" : "Thuộc nhóm"}
-        <select
+        <AdminSelect
           required={!form.isGroup}
           value={form.parentId ?? ""}
           onChange={(event) => updateField("parentId", event.target.value === "" ? null : event.target.value)}
@@ -78,7 +79,7 @@ export function PermissionEditor({ id }: { id?: string }) {
               {`${"— ".repeat(group.depth)}${group.name}`}
             </option>
           ))}
-        </select>
+        </AdminSelect>
       </label>
 
       <label className={adminFieldLabelClassName}>

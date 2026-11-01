@@ -1,5 +1,6 @@
 import { adminFieldInputClassName, adminFieldLabelClassName } from "./formFieldClassName";
 
+import { AdminSelect } from "./AdminSelect";
 type ActiveStatusFieldProps = {
   isActive: boolean;
   onChange: (isActive: boolean) => void;
@@ -11,14 +12,14 @@ export function ActiveStatusField({ isActive, onChange, inactiveLabel = "Ngừng
   return (
     <label className={adminFieldLabelClassName}>
       Trạng thái
-      <select
+      <AdminSelect
         value={isActive ? "active" : "inactive"}
         onChange={(event) => onChange(event.target.value === "active")}
         className={adminFieldInputClassName}
       >
         <option value="active">Hoạt động</option>
         <option value="inactive">{inactiveLabel}</option>
-      </select>
+      </AdminSelect>
     </label>
   );
 }

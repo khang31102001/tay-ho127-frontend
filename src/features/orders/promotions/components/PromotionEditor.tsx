@@ -9,6 +9,7 @@ import {
 import { usePromotionEditor } from "../hooks/usePromotionEditor";
 import type { PromotionStatus, PromotionType } from "../types/promotion.types";
 
+import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 type PromotionEditorProps = {
   id?: string;
 };
@@ -92,7 +93,7 @@ export function PromotionEditor({ id }: PromotionEditorProps) {
       <div className="grid gap-4 sm:grid-cols-3">
         <label className={adminFieldLabelClassName}>
           Loại giảm giá
-          <select
+          <AdminSelect
             value={form.type}
             onChange={(event) => updateField("type", event.target.value as PromotionType)}
             className={adminFieldInputClassName}
@@ -101,7 +102,7 @@ export function PromotionEditor({ id }: PromotionEditorProps) {
             <option value="fixed_amount">Giảm số tiền cố định</option>
             <option value="free_shipping">Miễn phí vận chuyển</option>
             <option value="product_discount">Giảm giá sản phẩm/danh mục</option>
-          </select>
+          </AdminSelect>
         </label>
 
         <label className={adminFieldLabelClassName}>
@@ -230,7 +231,7 @@ export function PromotionEditor({ id }: PromotionEditorProps) {
 
       <label className={adminFieldLabelClassName}>
         Trạng thái
-        <select
+        <AdminSelect
           value={form.status}
           onChange={(event) => updateField("status", event.target.value as PromotionStatus)}
           className={adminFieldInputClassName}
@@ -238,7 +239,7 @@ export function PromotionEditor({ id }: PromotionEditorProps) {
           <option value="draft">Nháp</option>
           <option value="active">Đang áp dụng</option>
           <option value="inactive">Ngừng áp dụng</option>
-        </select>
+        </AdminSelect>
       </label>
     </DataEditor>
   );
