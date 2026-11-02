@@ -209,6 +209,7 @@ export async function fetchFeaturedMenu(): Promise<UiProduct[]> {
       rating: managedProduct.rating ?? 0,
       ratingCount: managedProduct.ratingCount ?? 0,
       image: resolveProductImage(managedProduct, mediaById),
+      description: managedProduct.description,
     });
   });
 
@@ -249,6 +250,7 @@ export async function fetchCrossSellProducts(): Promise<UiProduct[]> {
       rating: managedProduct.rating ?? 0,
       ratingCount: managedProduct.ratingCount ?? 0,
       image: resolveProductImage(managedProduct, mediaById),
+      description: managedProduct.description,
     });
   });
 
@@ -345,6 +347,7 @@ export async function getProductDetail(slug: string): Promise<ProductDetailData 
       rating: candidate.rating ?? 0,
       ratingCount: candidate.ratingCount ?? 0,
       image: resolveProductImage(candidate, mediaById),
+      description: candidate.description,
     });
   }
 
