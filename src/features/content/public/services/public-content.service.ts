@@ -95,16 +95,25 @@ export async function listActiveBanners(placement: string): Promise<PublicBanner
 }
 
 /**
- * Section đang hiển thị của page đã xuất bản tại đường dẫn `pageSlug` ("/" = trang chủ), theo thứ tự.
- * null nếu page không có / chưa xuất bản HOẶC Backend lỗi — nơi gọi dùng nội dung mặc định.
+ * Lần đọc thành công gần nhất theo từng page, trong bộ nhớ tiến trình server. Site render động (force-dynamic) nên
+ * không có bản ISR cũ để dựa vào: Backend lỗi thoáng qua mà trả rỗng thì mọi khối "không có dữ liệu" sẽ biến mất.
  */
-export async function listPublishedPageSections(pageSlug: string): Promise<PublicPageSection[] | null> {
+const lastGoodSectionsByPageKey = new Map<string, PublicPageSection[] | null>();
+
+/**
+ * Section đang hiển thị của page đã xuất bản có mã `pageKey` ("home", "gioi-thieu"...), theo thứ tự Admin sắp.
+ * Tìm theo mã cố định chứ không theo id tự sinh hay đường dẫn (Admin đổi đường dẫn không làm Site mất nội dung).
+ * null nếu page không có / chưa xuất bản. Backend lỗi → kết quả thành công gần nhất (null nếu chưa từng có).
+ */
+export async function listPublishedPageSections(pageKey: string): Promise<PublicPageSection[] | null> {
   try {
-    const sections = await getJson<unknown>(`/content/public/page-sections?pageSlug=${encodeURIComponent(pageSlug)}`);
-    return sections === null ? null : parsePublicPageSectionList(sections);
+    const raw = await getJson<unknown>(`/content/public/page-sections?pageKey=${encodeURIComponent(pageKey)}`);
+    const sections = raw === null ? null : parsePublicPageSectionList(raw);
+    lastGoodSectionsByPageKey.set(pageKey, sections);
+    return sections;
   } catch (error) {
     console.error("Không tải được section của page từ Backend:", error);
-    return null;
+    return lastGoodSectionsByPageKey.get(pageKey) ?? null;
   }
 }
 

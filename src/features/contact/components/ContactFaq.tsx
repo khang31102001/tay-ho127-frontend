@@ -6,6 +6,9 @@ import type { ContactFaqItem } from "../utils/contact-faq";
 
 type ContactFaqProps = {
   items: ContactFaqItem[];
+  /** Nhãn nhỏ + tiêu đề (ô "faq" của trang Liên hệ) — rỗng thì không hiện. */
+  eyebrow: string;
+  heading: string;
 };
 
 /**
@@ -13,17 +16,21 @@ type ContactFaqProps = {
  * khớp thông tin đang hiển thị trên trang. Nội dung để khách đọc — không gắn FAQPage schema vì Google không còn hiển
  * thị FAQ rich result cho trang nhà hàng.
  */
-export function ContactFaq({ items }: ContactFaqProps) {
+export function ContactFaq({ items, eyebrow, heading }: ContactFaqProps) {
   if (items.length === 0) return null;
 
   return (
     <section aria-labelledby="contact-faq" className="section-padding bg-white">
       <Container>
         <div className="mx-auto max-w-[760px]">
-          <p className="text-center text-xs font-black uppercase tracking-[0.18em] text-brand-red">Hỏi nhanh</p>
-          <h2 id="contact-faq" className="heading-section mt-2 text-center text-brand-green">
-            Câu hỏi thường gặp
-          </h2>
+          {eyebrow && (
+            <p className="text-center text-xs font-black uppercase tracking-[0.18em] text-brand-red">{eyebrow}</p>
+          )}
+          {heading && (
+            <h2 id="contact-faq" className="heading-section mt-2 text-center text-brand-green">
+              {heading}
+            </h2>
+          )}
 
           <div className="mt-8 divide-y divide-brand-line rounded-[24px] border border-brand-line">
             {items.map((item) => (

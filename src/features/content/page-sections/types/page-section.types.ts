@@ -11,9 +11,19 @@ export const SECTION_TYPE_OPTIONS = [
   { value: "cta", label: "Kêu gọi hành động (CTA)" },
   { value: "story", label: "Câu chuyện thương hiệu" },
   { value: "award", label: "Giải thưởng / Thành tích" },
+  { value: "stats", label: "Số liệu" },
+  { value: "timeline", label: "Mốc thời gian" },
+  { value: "faq", label: "Câu hỏi thường gặp" },
+  { value: "core", label: "Nội dung chính của trang" },
 ] as const;
 
 export type SectionType = (typeof SECTION_TYPE_OPTIONS)[number]["value"];
+
+/** Loại section có danh sách dòng (`items`) — Backend chỉ nhận `items` ở các loại này. */
+export const LIST_SECTION_TYPES: readonly SectionType[] = ["stats", "timeline", "faq"];
+
+/** Loại section có ảnh phụ (`galleryMediaIds`). */
+export const GALLERY_SECTION_TYPES: readonly SectionType[] = ["story", "award"];
 
 /**
  * 1 khối nội dung thuộc về 1 Page (xem features/pages). Không tạo domain
@@ -23,6 +33,8 @@ export type SectionType = (typeof SECTION_TYPE_OPTIONS)[number]["value"];
 export type ManagedPageSection = {
   id: string;
   pageId: string;
+  /** Ô (slot) trên trang mà section lấp vào — xem page-templates.ts. null = section tự do, Site không hiển thị. */
+  sectionKey: string | null;
   sectionType: SectionType;
   eyebrow?: string;
   heading?: string;
@@ -35,4 +47,18 @@ export type ManagedPageSection = {
   isVisible: boolean;
   /** Ảnh phụ theo thứ tự (Backend: settings.galleryMediaIds) — vd. 2 ảnh cột trái của "Câu chuyện thương hiệu", logo của "Giải thưởng / Thành tích". */
   galleryMediaIds: string[];
+  /** Các dòng của section dạng danh sách (Backend: settings.items) — chỉ với stats / timeline / faq. */
+  items: PageSectionItem[];
+};
+
+/**
+ * 1 dòng của section dạng danh sách. Nghĩa từng ô tùy loại: stats (label = nhãn, title = giá trị "60+"),
+ * timeline (label = năm/mốc, title, text, ảnh), faq (title = câu hỏi, text = trả lời).
+ */
+export type PageSectionItem = {
+  label: string;
+  title: string;
+  text: string;
+  mediaId: string | null;
+  url: string;
 };

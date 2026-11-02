@@ -19,9 +19,11 @@ export function NewsHero({
   return (
     <section className="overflow-hidden bg-brand-ink bg-hero text-white">
       <Container className="flex flex-col items-center gap-4 py-14 text-center sm:py-16 md:py-20">
-        <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3.5 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-white/80 backdrop-blur-sm sm:px-4 sm:text-[11px] sm:tracking-[0.22em] md:text-xs">
-          {badge}
-        </span>
+        {badge && (
+          <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3.5 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-white/80 backdrop-blur-sm sm:px-4 sm:text-[11px] sm:tracking-[0.22em] md:text-xs">
+            {badge}
+          </span>
+        )}
 
         <h1 className="heading-xl text-[34px] sm:text-[40px] md:text-[48px]">{title}</h1>
 

@@ -63,12 +63,16 @@ export type PublicBanner = {
 };
 
 /**
- * Section ĐANG HIỂN THỊ của 1 page đã xuất bản (Backend đã lọc isVisible), theo displayOrder.
- * `sectionKind`: "hero" | "introduction" | "promotion" | "highlight" | "testimonial" | "cta" | "story".
- * `body` là văn bản thuần. `galleryMediaIds`: ảnh phụ theo thứ tự (rỗng nếu không có).
+ * Section ĐANG HIỂN THỊ của 1 page đã xuất bản (Backend đã lọc isVisible), theo displayOrder Admin đã sắp.
+ * `sectionKey`: ô (slot) trên trang mà section lấp vào ("hero", "story"...) — null = section tự do, Site không đặt.
+ * `sectionKind`: "hero" | "introduction" | "promotion" | "highlight" | "testimonial" | "cta" | "story" | "award" |
+ * "stats" | "timeline" | "faq" | "core".
+ * `body` là văn bản thuần. `galleryMediaIds`: ảnh phụ theo thứ tự (rỗng nếu không có). `items`: các dòng của
+ * section dạng danh sách (stats/timeline/faq), rỗng với loại khác.
  */
 export type PublicPageSection = {
   id: string;
+  sectionKey: string | null;
   sectionKind: string;
   eyebrow: string | null;
   heading: string | null;
@@ -79,6 +83,17 @@ export type PublicPageSection = {
   ctaUrl: string | null;
   displayOrder: number;
   galleryMediaIds: string[];
+  items: PublicPageSectionItem[];
+};
+
+/** 1 dòng của section dạng danh sách — nghĩa từng field tùy loại (stats: label = nhãn, title = giá trị "60+";
+ * timeline: label = năm/mốc; faq: title = câu hỏi, text = trả lời). */
+export type PublicPageSectionItem = {
+  label: string | null;
+  title: string | null;
+  text: string | null;
+  mediaId: string | null;
+  url: string | null;
 };
 
 /** Page đã xuất bản — đủ để Navigation đổi tham chiếu page thành URL. `slug` là đường dẫn trang ("/", "/thuc-don"). */
