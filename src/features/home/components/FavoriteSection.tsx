@@ -16,6 +16,13 @@ import MenuBackgroundDecoration from "@/shared/ui/MenuBackgroundDecoration";
  */
 const AUTO_PLAY_DELAY = 6_000;
 
+/**
+ * `sizes` cho ảnh card trong carousel: 1 / 2 (md) / 3 (lg) slide, trừ lề
+ * Container + px-12/sm:px-14 chừa chỗ nút prev/next + spaceBetween 24px.
+ */
+const FAVORITE_IMAGE_SIZES =
+  "(min-width: 1280px) 331px, (min-width: 1024px) calc((100vw - 288px) / 3), (min-width: 768px) calc((100vw - 200px) / 2), calc(100vw - 136px)";
+
 type FavoriteSectionProps = {
   /** Danh sách món "yêu thích" lấy từ Catalog (features/menu, fetchFeaturedMenu). */
   items: UiProduct[];
@@ -156,7 +163,7 @@ export function FavoriteSection({ items }: FavoriteSectionProps) {
             "
           >
             {favorites.map((item) => (
-              <ProductCard key={item.id} item={item} />
+              <ProductCard key={item.id} item={item} sizes={FAVORITE_IMAGE_SIZES} />
             ))}
           </SwiperCarousel>
         </Reveal>
