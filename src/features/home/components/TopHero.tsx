@@ -10,8 +10,9 @@ import {
   formatOpeningHours,
   getContactPhone,
 } from "@/features/organization/brand-profile/utils/site-contact";
-import { ORDERING_ENABLED } from "@/core/config/features";
 import { useScrollThreshold } from "@/shared/hooks/useScrollThreshold";
+
+import type { HomeHero } from "../services/hero.service";
 
 /* =================================================
  * TYPES
@@ -49,24 +50,18 @@ type HeroOrderField = {
  * DATA
  * =============================================== */
 
-const heroContent: HeroContentItem[] = [
-  {
-    id: "tay-ho-main",
-    eyebrow: "Bánh cuốn",
-    title: "TÂY HỒ",
-    description: [
-      "Từ bàn tay khéo léo,",
-      "mỗi phần bánh là một câu chuyện Việt.",
-    ],
-    // "Đặt ngay" thuộc luồng đặt món: chưa mở thì chỉ còn nút xem thực đơn (làm nút chính).
-    actions: ORDERING_ENABLED
-      ? [
-          { label: "Đặt ngay", href: "/thuc-don", variant: "primary" },
-          { label: "Xem thực đơn", href: "/thuc-don", variant: "outline" },
-        ]
-      : [{ label: "Xem thực đơn", href: "/thuc-don", variant: "primary" }],
-  },
-];
+/** Chữ + nút của hero lấy từ ô "hero" của trang chủ (Admin) — nút chính khi Admin nhập đủ nhãn và link. */
+function buildHeroContent(hero: HomeHero): HeroContentItem[] {
+  return [
+    {
+      id: "tay-ho-main",
+      eyebrow: hero.eyebrow,
+      title: hero.title,
+      description: hero.description,
+      actions: hero.cta ? [{ label: hero.cta.label, href: hero.cta.href, variant: "primary" }] : [],
+    },
+  ];
+}
 
 /** Địa chỉ / giờ mở cửa / SĐT của chi nhánh chính (Backend). Mục nào Admin chưa nhập thì không hiển thị. */
 function buildContactInformation(brand: SiteBrand): ContactInformationItem[] {
@@ -105,11 +100,14 @@ const heroOrderFields: HeroOrderField[] = [
  * =============================================== */
 
 type TopHeroProps = {
+  /** Chữ + nút do Admin quản lý (ô "hero" của trang chủ). */
+  hero: HomeHero;
   brand: SiteBrand;
 };
 
-export function TopHero({ brand }: TopHeroProps) {
+export function TopHero({ hero, brand }: TopHeroProps) {
   const isScrolled = useScrollThreshold();
+  const heroContent = buildHeroContent(hero);
   const contactInformation = buildContactInformation(brand);
 
   return (
@@ -333,6 +331,7 @@ export function TopHero({ brand }: TopHeroProps) {
               "
             >
               {/* Eyebrow */}
+              {content.eyebrow && (
               <p
                 className="
                   mb-4
@@ -348,6 +347,7 @@ export function TopHero({ brand }: TopHeroProps) {
               >
                 {content.eyebrow}
               </p>
+              )}
 
               {/* Title */}
               <h1

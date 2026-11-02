@@ -1,3 +1,6 @@
+import { Fragment, type ReactNode } from "react";
+
+import { listPageSlots, loadSlotContents, orderBlockKeys } from "@/features/content/public";
 import { Container } from "@/shared/ui/Container";
 import {
   NewsArticleCollection,
@@ -27,17 +30,22 @@ const SECTION_LIMIT = 8;
  * Mọi khối lấy từ cùng một danh sách đã tải; khối nào không có bài thì ẩn hẳn (không hiện tiêu đề rỗng).
  */
 export default async function NewsPage() {
-  const [articles, categories] = await Promise.all([listNewsArticles(), listNewsCategories()]);
+  const [articles, categories, slots] = await Promise.all([
+    listNewsArticles(),
+    listNewsCategories(),
+    listPageSlots("tin-tuc"),
+  ]);
+  const hero = (await loadSlotContents(slots)).get("hero");
 
   const featuredArticles = pickFeaturedArticles(articles, SECTION_LIMIT);
   const latestArticles = articles.slice(0, SECTION_LIMIT);
   const categorySections = buildCategorySections(articles, categories, SECTION_LIMIT);
   const filterCategories = listCategoriesWithArticles(articles, categories);
 
-  return (
-    <>
-      <NewsHero />
-
+  // Ô "hero" do Admin quản lý (mã trang "tin-tuc"); danh sách bài viết là khối lõi — luôn hiển thị.
+  const blockByKey: Record<string, ReactNode> = {
+    hero: hero?.heading && <NewsHero badge={hero.eyebrow} title={hero.heading} description={hero.paragraphs.join(" ")} />,
+    articles: (
       <section className="section-padding">
         <Container>
           {articles.length === 0 ? (
@@ -68,6 +76,14 @@ export default async function NewsPage() {
           )}
         </Container>
       </section>
+    ),
+  };
+
+  return (
+    <>
+      {orderBlockKeys(slots, ["articles"]).map((key) => (
+        <Fragment key={key}>{blockByKey[key]}</Fragment>
+      ))}
     </>
   );
 }

@@ -9,6 +9,7 @@ import type { ManagedPage } from "../types/page.types";
 const columns: DataExplorerColumn<ManagedPage>[] = [
   { key: "name", header: "Tên page" },
   { key: "slug", header: "Đường dẫn" },
+  { key: "pageKey", header: "Mã trang", render: (row) => row.pageKey ?? "—" },
   {
     key: "status",
     header: "Trạng thái",
