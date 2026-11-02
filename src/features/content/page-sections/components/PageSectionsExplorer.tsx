@@ -17,8 +17,19 @@ type PageSectionsExplorerProps = {
 };
 
 export function PageSectionsExplorer({ pageId }: PageSectionsExplorerProps) {
-  const { rows, pageName, isLoading, loadError, handleDelete, handleMoveUp, handleMoveDown } =
-    usePageSectionsExplorer({ pageId });
+  const {
+    rows,
+    pageName,
+    hasSlotTemplate,
+    missingSlots,
+    getSlotLabel,
+    isLoading,
+    loadError,
+    handleDelete,
+    handleMoveUp,
+    handleMoveDown,
+    handleToggleVisible,
+  } = usePageSectionsExplorer({ pageId });
 
   const columns: DataExplorerColumn<ManagedPageSection>[] = [
     {
@@ -29,7 +40,7 @@ export function PageSectionsExplorer({ pageId }: PageSectionsExplorerProps) {
 
         return (
           <div className="flex items-center gap-1">
-            <span className="w-5 text-center font-bold text-brand-ink">{row.displayOrder}</span>
+            <span className="w-5 text-center font-bold text-brand-ink">{index + 1}</span>
             <button
               type="button"
               aria-label="Đưa lên trên"
@@ -52,6 +63,16 @@ export function PageSectionsExplorer({ pageId }: PageSectionsExplorerProps) {
         );
       },
     },
+    ...(hasSlotTemplate
+      ? [
+          {
+            key: "sectionKey",
+            header: "Ô trên trang",
+            render: (row: ManagedPageSection) =>
+              getSlotLabel(row) ?? <span className="text-brand-muted">Tự do — Site không hiển thị</span>,
+          },
+        ]
+      : []),
     {
       key: "sectionType",
       header: "Loại section",
@@ -62,15 +83,18 @@ export function PageSectionsExplorer({ pageId }: PageSectionsExplorerProps) {
       key: "isVisible",
       header: "Hiển thị",
       render: (row) => (
-        <span
-          className={`inline-flex items-center rounded-full px-2.5 py-1 text-[12px] font-bold ${
+        <button
+          type="button"
+          onClick={() => handleToggleVisible(row)}
+          title={row.isVisible ? "Bấm để ẩn khỏi Site" : "Bấm để hiện trên Site"}
+          className={`inline-flex items-center rounded-full px-2.5 py-1 text-[12px] font-bold transition hover:opacity-80 ${
             row.isVisible
               ? "bg-brand-green/10 text-brand-greenDark"
               : "bg-brand-muted/10 text-brand-muted"
           }`}
         >
           {row.isVisible ? "Đang hiện" : "Đang ẩn"}
-        </span>
+        </button>
       ),
     },
   ];
@@ -84,6 +108,24 @@ export function PageSectionsExplorer({ pageId }: PageSectionsExplorerProps) {
         ← Quay lại {pageName ? `"${pageName}"` : "danh sách page"}
       </Link>
 
+      {!isLoading && missingSlots.length > 0 && (
+        <div className="mt-3 rounded-lg border border-dashed border-brand-muted/40 bg-white px-4 py-3 text-[13px]">
+          <p className="font-bold text-brand-ink">Ô chưa có nội dung — Site đang không hiển thị:</p>
+          <ul className="mt-2 flex flex-wrap gap-2">
+            {missingSlots.map((slot) => (
+              <li key={slot.key}>
+                <Link
+                  href={`/admin/content/pages/${pageId}/sections/new?slot=${slot.key}`}
+                  className="inline-flex items-center rounded-full bg-brand-green/10 px-3 py-1 font-bold text-brand-greenDark transition hover:bg-brand-green/20"
+                >
+                  + {slot.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <div className="mt-3">
         <DataExplorer<ManagedPageSection>
           title={pageName ? `Section của "${pageName}"` : "Section"}
@@ -91,7 +133,7 @@ export function PageSectionsExplorer({ pageId }: PageSectionsExplorerProps) {
           rows={rows}
           isLoading={isLoading}
           getRowId={(row) => row.id}
-          getSearchableText={(row) => `${row.heading ?? ""} ${row.sectionType}`}
+          getSearchableText={(row) => `${row.heading ?? ""} ${row.sectionType} ${row.sectionKey ?? ""}`}
           searchPlaceholder="Tìm section..."
           createHref={`/admin/content/pages/${pageId}/sections/new`}
           createLabel="Thêm section"

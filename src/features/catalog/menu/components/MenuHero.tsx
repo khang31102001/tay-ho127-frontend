@@ -2,12 +2,23 @@ import Image from "next/image";
 
 import { Container } from "@/shared/ui/Container";
 import { site } from "@/core/config/site-data";
+import type { SlotContent } from "@/features/content/public";
 
 /* ============================================================
  * MENU HERO
  * ========================================================== */
 
-export function MenuHero() {
+type MenuHeroProps = {
+  /** Ô "hero" của trang Thực đơn (Admin): eyebrow = badge, heading/subheading = 2 dòng tiêu đề, nội dung = mô tả. */
+  content: SlotContent;
+};
+
+const DEFAULT_IMAGE = { src: site.assets.heroPlatter, alt: "Mâm bánh cuốn Tây Hồ 127" };
+
+export function MenuHero({ content }: MenuHeroProps) {
+  const image = content.image ?? DEFAULT_IMAGE;
+  const description = content.paragraphs.join(" ");
+
   return (
     <section
       className="
@@ -48,6 +59,7 @@ export function MenuHero() {
           "
         >
           {/* Badge */}
+          {content.eyebrow && (
           <span
             className="
               inline-flex
@@ -72,8 +84,9 @@ export function MenuHero() {
               md:text-xs
             "
           >
-            Thực đơn Tây Hồ 127
+            {content.eyebrow}
           </span>
+          )}
 
           {/* Heading */}
           <h1
@@ -93,12 +106,17 @@ export function MenuHero() {
               lg:text-[52px]
             "
           >
-            Chọn món nhanh,
-            <br className="hidden sm:block" />
-            {" "}xem giá dễ dàng
+            {content.heading}
+            {content.subheading && (
+              <>
+                <br className="hidden sm:block" />
+                {" "}{content.subheading}
+              </>
+            )}
           </h1>
 
           {/* Description */}
+          {description && (
           <p
             className="
               mx-auto
@@ -119,10 +137,9 @@ export function MenuHero() {
               lg:mx-0
             "
           >
-            Khám phá thực đơn Bánh Cuốn Tây Hồ 127 với những món ăn
-            mang đậm hương vị truyền thống Việt Nam, được chuẩn bị
-            chỉn chu và minh bạch về giá.
+            {description}
           </p>
+          )}
         </div>
 
         {/* ====================================================
@@ -154,8 +171,8 @@ export function MenuHero() {
           />
 
           <Image
-            src={site.assets.heroPlatter}
-            alt="Mâm bánh cuốn Tây Hồ 127"
+            src={image.src}
+            alt={image.alt}
             width={1024}
             height={572}
             priority

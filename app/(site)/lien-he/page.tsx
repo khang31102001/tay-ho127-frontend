@@ -1,6 +1,8 @@
+import { Fragment, type ReactNode } from "react";
 import type { Metadata } from "next";
 
 import { fetchFeaturedMenu } from "@/features/catalog/menu";
+import { listPageSlots, loadSlotContents, orderBlockKeys } from "@/features/content/public";
 import {
   ContactFaq,
   ContactFeaturedDishes,
@@ -46,14 +48,23 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ContactPage() {
-  const [brand, menuItems] = await Promise.all([getSiteBrand(), fetchFeaturedMenu()]);
+  const [brand, menuItems, slots] = await Promise.all([getSiteBrand(), fetchFeaturedMenu(), listPageSlots("lien-he")]);
+  const contents = await loadSlotContents(slots);
   const siteUrl = getSiteUrl();
   const address = formatBrandAddress(brand);
   const featuredDishes = menuItems.slice(0, FEATURED_DISH_LIMIT);
   // Giá thấp nhất trong đúng các món đang hiển thị ở khối "Món được gọi nhiều nhất" — Menu-SP "mon-yeu-thich" còn có
   // món phụ vài nghìn đồng, lấy cả danh sách sẽ ra câu trả lời sai.
   const lowestPrice = featuredDishes.length > 0 ? Math.min(...featuredDishes.map((item) => item.price)) : null;
-  const faqItems = buildContactFaq(brand, lowestPrice);
+  const hero = contents.get("hero");
+  const visitIntro = contents.get("visit-intro");
+  const featuredDishesContent = contents.get("featured-dishes");
+  const faq = contents.get("faq");
+  // Câu hỏi sinh từ dữ liệu (địa chỉ/giờ/giá) trước, câu Admin thêm ở ô "faq" sau.
+  const faqItems = [
+    ...buildContactFaq(brand, lowestPrice),
+    ...(faq?.items ?? []).filter((item) => item.title && item.text).map((item) => ({ question: item.title, answer: item.text })),
+  ];
 
   const schemas = [
     {
@@ -69,11 +80,13 @@ export default async function ContactPage() {
     ]),
   ];
 
-  return (
-    <>
-      <JsonLd data={schemas} />
-      <ContactHero brand={brand} />
-
+  /**
+   * Trang Liên hệ = các ô theo thứ tự Admin sắp (mã trang "lien-he"). Thông tin liên hệ + bản đồ là khối lõi — luôn
+   * hiển thị; tên quán, địa chỉ, giờ, SĐT lấy từ Thông tin thương hiệu / Chi nhánh, không từ section.
+   */
+  const blockByKey: Record<string, ReactNode> = {
+    hero: hero && <ContactHero brand={brand} badge={hero.eyebrow} />,
+    "contact-info": (
       <section className="section-padding bg-brand-cream">
         <Container>
           <div className="grid gap-6 md:grid-cols-[0.9fr_1.1fr] md:gap-8">
@@ -82,10 +95,22 @@ export default async function ContactPage() {
           </div>
         </Container>
       </section>
+    ),
+    "visit-intro": visitIntro?.heading && (
+      <ContactVisitIntro brandName={brand.name} address={address} content={visitIntro} />
+    ),
+    "featured-dishes": featuredDishesContent && (
+      <ContactFeaturedDishes items={featuredDishes} content={featuredDishesContent} />
+    ),
+    faq: faq && <ContactFaq items={faqItems} eyebrow={faq.eyebrow} heading={faq.heading} />,
+  };
 
-      <ContactVisitIntro brandName={brand.name} address={address} />
-      <ContactFeaturedDishes items={featuredDishes} />
-      <ContactFaq items={faqItems} />
+  return (
+    <>
+      <JsonLd data={schemas} />
+      {orderBlockKeys(slots, ["contact-info"]).map((key) => (
+        <Fragment key={key}>{blockByKey[key]}</Fragment>
+      ))}
     </>
   );
 }

@@ -18,6 +18,8 @@ export type PageFormValue = PageUpsertInput;
 const EMPTY_FORM: PageFormValue = {
   name: "",
   slug: "",
+  pageKey: "",
+  sortOrder: 0,
   status: "draft",
 };
 
@@ -37,8 +39,8 @@ export function usePageEditor({ id }: UsePageEditorParams) {
 
   useEffect(() => {
     if (!existing.data) return;
-    const { name, slug, status } = existing.data;
-    setForm({ name, slug, status });
+    const { name, slug, pageKey, sortOrder, status } = existing.data;
+    setForm({ name, slug, pageKey: pageKey ?? "", sortOrder, status });
   }, [existing.data]);
 
   function updateField<K extends keyof PageFormValue>(field: K, value: PageFormValue[K]) {
