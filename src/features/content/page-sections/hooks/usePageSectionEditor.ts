@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import { getPageById } from "@/features/content/pages";
 import { useAsyncData } from "@/shared/hooks/useAsyncData";
 import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 
@@ -15,17 +16,21 @@ import {
   listSectionsByPageId,
   updateSection,
 } from "../services/page-section.service";
+import { getPageSlotTemplates } from "../types/page-templates";
 
 export type PageSectionFormValue = PageSectionUpsertInput;
 
 type UsePageSectionEditorParams = {
   pageId: string;
   id?: string;
+  /** Tạo mới cho 1 ô của trang (từ danh sách "Ô chưa có nội dung"). */
+  initialSlotKey?: string;
 };
 
 function buildEmptyForm(pageId: string, nextDisplayOrder: number): PageSectionFormValue {
   return {
     pageId,
+    sectionKey: null,
     sectionType: "introduction",
     eyebrow: "",
     heading: "",
@@ -37,31 +42,40 @@ function buildEmptyForm(pageId: string, nextDisplayOrder: number): PageSectionFo
     displayOrder: nextDisplayOrder,
     isVisible: true,
     galleryMediaIds: [],
+    items: [],
   };
 }
 
-export function usePageSectionEditor({ pageId, id }: UsePageSectionEditorParams) {
+export function usePageSectionEditor({ pageId, id, initialSlotKey }: UsePageSectionEditorParams) {
   const router = useNavigationRouter();
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<PageSectionFormValue>(buildEmptyForm(pageId, 1));
   const mediaOptionsData = useAsyncData(listMedia, [], { fallbackError: "Không thể tải thư viện media." });
+  const page = useAsyncData(() => getPageById(pageId), [pageId], { fallbackError: "Không thể tải page." });
   const existing = useAsyncData(() => getSectionById(pageId, id ?? ""), [pageId, id], {
     enabled: isEditMode,
     fallbackError: "Không thể tải section.",
   });
-  // Chế độ tạo mới: gợi ý displayOrder = lớn nhất hiện có + 1.
+  // Các section khác của page: gợi ý thứ tự khi tạo mới + biết ô nào đã có section.
   const siblings = useAsyncData(() => listSectionsByPageId(pageId), [pageId], {
-    enabled: !isEditMode,
     fallbackError: "Không thể tải danh sách section.",
   });
 
+  const slotTemplates = getPageSlotTemplates(page.data?.pageKey);
+  const takenSlotKeys = (siblings.data ?? [])
+    .filter((section) => section.id !== id && section.sectionKey)
+    .map((section) => section.sectionKey as string);
+  const currentSlot = slotTemplates.find((slot) => slot.key === form.sectionKey) ?? null;
+
   useEffect(() => {
-    if (isEditMode || !siblings.data) return;
+    if (isEditMode || !siblings.data || !page.data) return;
 
     const maxOrder = siblings.data.reduce((max, section) => Math.max(max, section.displayOrder), 0);
-    setForm(buildEmptyForm(pageId, maxOrder + 1));
-  }, [siblings.data, pageId, isEditMode]);
+    const emptyForm = buildEmptyForm(pageId, maxOrder + 10);
+    const slot = getPageSlotTemplates(page.data.pageKey).find((item) => item.key === initialSlotKey);
+    setForm(slot ? { ...emptyForm, sectionKey: slot.key, sectionType: slot.sectionType } : emptyForm);
+  }, [siblings.data, page.data, pageId, isEditMode, initialSlotKey]);
 
   useEffect(() => {
     if (!existing.data) return;
@@ -77,15 +91,21 @@ export function usePageSectionEditor({ pageId, id }: UsePageSectionEditorParams)
     setForm((previous) => ({ ...previous, [field]: value }));
   }
 
-  async function handleSave() {
-    // Ảnh phụ chỉ có ý nghĩa với "Câu chuyện thương hiệu" và "Giải thưởng" — đổi sang loại khác thì không lưu ảnh phụ còn sót lại trong form.
-    const usesGallery = form.sectionType === "story" || form.sectionType === "award";
-    const payload = usesGallery ? form : { ...form, galleryMediaIds: [] };
+  /** Chọn ô trên trang: loại section đi theo ô (Site render ô theo đúng loại đó). null = section tự do. */
+  function selectSlot(slotKey: string | null) {
+    const slot = slotTemplates.find((item) => item.key === slotKey);
+    setForm((previous) => ({
+      ...previous,
+      sectionKey: slot?.key ?? null,
+      sectionType: slot?.sectionType ?? previous.sectionType,
+    }));
+  }
 
+  async function handleSave() {
     if (isEditMode) {
-      await updateSection(id, payload);
+      await updateSection(id, form);
     } else {
-      await createSection(payload);
+      await createSection(form);
     }
   }
 
@@ -102,9 +122,13 @@ export function usePageSectionEditor({ pageId, id }: UsePageSectionEditorParams)
   return {
     form,
     updateField,
+    selectSlot,
+    slotTemplates,
+    takenSlotKeys,
+    currentSlot,
     mediaOptions: mediaOptionsData.data ?? [],
-    isLoading: existing.isLoading,
-    loadError: existing.error ?? siblings.error,
+    isLoading: existing.isLoading || page.isLoading,
+    loadError: existing.error ?? siblings.error ?? page.error,
     isEditMode,
     handleSave,
     handleDelete,

@@ -1,7 +1,9 @@
 // SERVER-ONLY — chỉ dùng trong Server Component (xem home-section.service.ts).
 import type { PublicPageSection } from "@/features/content/public";
 
-import { findHomeSection, loadMediaById, resolveImage, type HomeImage } from "./home-section.service";
+import { splitParagraphs } from "@/features/content/public";
+
+import { loadMediaById, resolveImage, toCta, type HomeImage } from "./home-section.service";
 
 /** Khối "Câu chuyện thương hiệu" của trang chủ, đã ghép với ảnh. */
 export type HomeStory = {
@@ -22,8 +24,7 @@ export type HomeStory = {
   };
 };
 
-const STORY_SECTION_KIND = "story";
-
+/** Ảnh của vị trí khi section chưa chọn ảnh / ảnh không còn dùng được. */
 const DEFAULT_IMAGES: HomeStory["images"] = {
   top: { src: "/images/banh-cuon-dish.jpg", alt: "Bánh cuốn Tây Hồ" },
   bottom: { src: "/images/banh-cuon-dish.jpg", alt: "Món ăn truyền thống của Tây Hồ" },
@@ -31,51 +32,26 @@ const DEFAULT_IMAGES: HomeStory["images"] = {
 };
 
 /**
- * Nội dung mặc định — dùng khi Backend chưa có section "story" trên trang chủ (Admin → Nội dung → Trang →
- * Trang chủ → Sections), page chưa xuất bản hoặc Backend lỗi, để trang chủ không bao giờ trống.
+ * Ô "story" của trang chủ (section "Câu chuyện thương hiệu"). null khi thiếu tiêu đề — trường bắt buộc — thì trang chủ
+ * không hiển thị khối này.
  */
-const DEFAULT_STORY: HomeStory = {
-  heading: "Hơn 6 thập kỷ",
-  subheading: "gìn giữ vị xưa",
-  paragraphs: [
-    "Bánh Cuốn Tây Hồ bắt đầu từ năm 1961, khi một tiệm bánh cuốn nhỏ mở bán cạnh đền thờ cụ Phan Châu Trinh ở Sài Gòn. Thực khách quen gọi quán theo hiệu \"Tây Hồ\" của cụ, và cái tên ấy theo quán về tới số 127 Đinh Tiên Hoàng hôm nay.",
-    "Hơn 60 năm qua, quán vẫn giữ cách làm truyền thống: bánh tráng mỏng từ bột gạo mỗi ngày, nhân thịt thơm ngon và nước chấm theo công thức gia truyền.",
-    "Năm 2026, Bánh Cuốn Tây Hồ 127 được Cẩm nang MICHELIN đưa vào danh sách Bib Gourmand, dành cho những quán ngon với giá hợp lý. Với chúng tôi, đó là lời nhắc tiếp tục giữ trọn hương vị đã làm nên tên quán.",
-  ],
-  cta: { label: "Đọc câu chuyện Tây Hồ 127", href: "/gioi-thieu" },
-  images: DEFAULT_IMAGES,
-};
+export async function toHomeStory(section: PublicPageSection): Promise<HomeStory | null> {
+  if (!section.heading) {
+    return null;
+  }
 
-/** Body là văn bản thuần: các đoạn cách nhau bằng dòng trống. */
-function splitParagraphs(body: string | null): string[] {
-  return (body ?? "")
-    .split(/\r?\n\s*\r?\n/)
-    .map((paragraph) => paragraph.trim())
-    .filter(Boolean);
-}
-
-async function toHomeStory(section: PublicPageSection): Promise<HomeStory> {
   const [topId, bottomId] = section.galleryMediaIds;
   const mediaById = await loadMediaById([section.mediaId, topId, bottomId]);
 
   return {
-    heading: section.heading ?? "",
+    heading: section.heading,
     subheading: section.subheading ?? "",
     paragraphs: splitParagraphs(section.body),
-    cta: section.ctaLabel && section.ctaUrl ? { label: section.ctaLabel, href: section.ctaUrl } : null,
+    cta: toCta(section),
     images: {
       top: resolveImage(topId, mediaById, DEFAULT_IMAGES.top),
       bottom: resolveImage(bottomId, mediaById, DEFAULT_IMAGES.bottom),
       side: resolveImage(section.mediaId, mediaById, DEFAULT_IMAGES.side),
     },
   };
-}
-
-/**
- * Câu chuyện thương hiệu trên trang chủ = section "story" đầu tiên (theo thứ tự) của page "/" do Admin quản lý.
- * Cache 60 giây theo public-content.service: Admin sửa → trang chủ đổi trong tối đa 60 giây.
- */
-export async function getHomeStory(): Promise<HomeStory> {
-  const storySection = await findHomeSection(STORY_SECTION_KIND);
-  return storySection ? toHomeStory(storySection) : DEFAULT_STORY;
 }

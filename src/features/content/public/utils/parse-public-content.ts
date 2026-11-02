@@ -2,6 +2,7 @@ import type {
   PublicArticle,
   PublicArticleSummary,
   PublicPageSection,
+  PublicPageSectionItem,
   PublicTaxonomy,
 } from "../types/public-content.types";
 
@@ -81,6 +82,30 @@ export function parsePublicArticleList(data: unknown): PublicArticleSummary[] {
   });
 }
 
+/** Dòng của section dạng danh sách; Backend cũ (chưa có `items`) → rỗng, dòng không phải object bị bỏ qua. */
+function parseSectionItems(value: unknown): PublicPageSectionItem[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((item) => {
+    if (typeof item !== "object" || item === null || Array.isArray(item)) {
+      return [];
+    }
+
+    const raw = item as Raw;
+    return [
+      {
+        label: strOrNull(raw, "label"),
+        title: strOrNull(raw, "title"),
+        text: strOrNull(raw, "text"),
+        mediaId: strOrNull(raw, "mediaId"),
+        url: strOrNull(raw, "url"),
+      },
+    ];
+  });
+}
+
 /** Danh sách section của page: bỏ qua từng section hỏng (log) thay vì làm hỏng cả trang. */
 export function parsePublicPageSectionList(data: unknown): PublicPageSection[] {
   if (!Array.isArray(data)) {
@@ -97,6 +122,7 @@ export function parsePublicPageSectionList(data: unknown): PublicPageSection[] {
       return [
         {
           id: str(raw, "id", what),
+          sectionKey: strOrNull(raw, "sectionKey"),
           sectionKind: str(raw, "sectionKind", what),
           eyebrow: strOrNull(raw, "eyebrow"),
           heading: strOrNull(raw, "heading"),
@@ -107,6 +133,7 @@ export function parsePublicPageSectionList(data: unknown): PublicPageSection[] {
           ctaUrl: strOrNull(raw, "ctaUrl"),
           displayOrder: typeof displayOrder === "number" ? displayOrder : 0,
           galleryMediaIds: strArray(settings, "galleryMediaIds"),
+          items: parseSectionItems(settings.items),
         },
       ];
     } catch (error) {

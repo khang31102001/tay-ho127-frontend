@@ -9,19 +9,29 @@ import { MediaMultiPicker, MediaPicker } from "@/features/media/components/Media
 
 import { usePageSectionEditor } from "../hooks/usePageSectionEditor";
 import { SECTION_TYPE_OPTIONS, type SectionType } from "../types/page-section.types";
+import { PageSectionItemsField } from "./PageSectionItemsField";
 
 import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 const hintClassName = "mt-1 block text-[12px] font-normal text-brand-muted";
 
+/** Giá trị <select> cho "section tự do" (không lấp ô nào). */
+const FREE_SLOT_VALUE = "";
+
 type PageSectionEditorProps = {
   pageId: string;
   id?: string;
+  /** Tạo mới cho 1 ô của trang (`?slot=` từ danh sách "Ô chưa có nội dung"). */
+  initialSlotKey?: string;
 };
 
-export function PageSectionEditor({ pageId, id }: PageSectionEditorProps) {
+export function PageSectionEditor({ pageId, id, initialSlotKey }: PageSectionEditorProps) {
   const {
     form,
     updateField,
+    selectSlot,
+    slotTemplates,
+    takenSlotKeys,
+    currentSlot,
     mediaOptions,
     isLoading,
     loadError,
@@ -29,9 +39,11 @@ export function PageSectionEditor({ pageId, id }: PageSectionEditorProps) {
     handleSave,
     handleDelete,
     goToExplore,
-  } = usePageSectionEditor({ pageId, id });
+  } = usePageSectionEditor({ pageId, id, initialSlotKey });
   const isStory = form.sectionType === "story";
   const isAward = form.sectionType === "award";
+  const isHero = form.sectionType === "hero";
+  const isStats = form.sectionType === "stats";
 
   return (
     <DataEditor
@@ -44,11 +56,36 @@ export function PageSectionEditor({ pageId, id }: PageSectionEditorProps) {
       onDelete={isEditMode ? handleDelete : undefined}
       onDeleted={goToExplore}
     >
+      {slotTemplates.length > 0 && (
+        <label className={adminFieldLabelClassName}>
+          Ô trên trang
+          <AdminSelect
+            value={form.sectionKey ?? FREE_SLOT_VALUE}
+            onChange={(event) => selectSlot(event.target.value || null)}
+            className={adminFieldInputClassName}
+          >
+            {slotTemplates.map((slot) => (
+              <option key={slot.key} value={slot.key} disabled={takenSlotKeys.includes(slot.key)}>
+                {slot.label}
+                {takenSlotKeys.includes(slot.key) ? " (đã có section)" : ""}
+              </option>
+            ))}
+            <option value={FREE_SLOT_VALUE}>— Tự do (Site không hiển thị) —</option>
+          </AdminSelect>
+          <span className={hintClassName}>
+            {currentSlot
+              ? currentSlot.hint
+              : "Section tự do chỉ lưu nội dung, trang Site không đặt nó ở đâu cả."}
+          </span>
+        </label>
+      )}
+
       <label className={adminFieldLabelClassName}>
         Loại section
         <AdminSelect
           value={form.sectionType}
           onChange={(event) => updateField("sectionType", event.target.value as SectionType)}
+          disabled={currentSlot !== null}
           className={adminFieldInputClassName}
         >
           {SECTION_TYPE_OPTIONS.map((option) => (
@@ -78,6 +115,10 @@ export function PageSectionEditor({ pageId, id }: PageSectionEditorProps) {
           className={adminFieldInputClassName}
         />
         {isStory && <span className={hintClassName}>Phần tiêu đề màu đỏ, vd. &quot;Hơn 6 thập kỷ&quot;.</span>}
+        {isHero && <span className={hintClassName}>Chữ lớn, vd. &quot;TÂY HỒ&quot;. Bỏ trống thì không hiện hero.</span>}
+        {isStats && (
+          <span className={hintClassName}>Tiêu đề xanh, vd. &quot;Hơn 60 năm đồng hành và phục vụ&quot;.</span>
+        )}
         {isAward && <span className={hintClassName}>Tiêu đề in nghiêng màu xanh dưới logo. Bỏ trống thì không hiện.</span>}
       </label>
 
@@ -104,7 +145,15 @@ export function PageSectionEditor({ pageId, id }: PageSectionEditorProps) {
         {isAward && (
           <span className={hintClassName}>Đoạn mô tả ngắn — trang chủ chỉ hiện tối đa 3–4 dòng.</span>
         )}
+        {(isHero || isStats) && <span className={hintClassName}>Mỗi dòng một câu.</span>}
       </label>
+
+      <PageSectionItemsField
+        sectionType={form.sectionType}
+        items={form.items}
+        mediaOptions={mediaOptions}
+        onChange={(items) => updateField("items", items)}
+      />
 
       <MediaPicker
         mediaType="image"
@@ -113,7 +162,9 @@ export function PageSectionEditor({ pageId, id }: PageSectionEditorProps) {
             ? "Ảnh chính — ảnh dọc bên phải (tùy chọn)"
             : isAward
               ? "Ảnh lớn bên trái, vd. bìa sách MICHELIN (tùy chọn, ẩn trên điện thoại)"
-              : "Ảnh minh họa (tùy chọn)"
+              : isStats
+                ? "Ảnh hoạt động phía trên số liệu (tùy chọn)"
+                : "Ảnh minh họa (tùy chọn)"
         }
         mediaOptions={mediaOptions}
         selectedId={form.mediaId ?? null}

@@ -12,43 +12,7 @@ import { Reveal } from "@/shared/components/Reveal";
 import { Container } from "@/shared/ui/Container";
 
 import type { HomeAward } from "../services/award.service";
-
-/* ============================================================
- * TYPES
- * ========================================================== */
-
-type StatItem = {
-  value: number;
-  suffix?: string;
-  label: string;
-};
-
-/* ============================================================
- * CONSTANTS
- * ========================================================== */
-
-const stats: StatItem[] = [
-  {
-    value: 60,
-    suffix: "+",
-    label: "Năm kinh nghiệm",
-  },
-  {
-    value: 50,
-    suffix: "+",
-    label: "Món ăn đa dạng",
-  },
-  {
-    value: 5000,
-    suffix: "+",
-    label: "Khách hàng hài lòng",
-  },
-  {
-    value: 50,
-    suffix: "+",
-    label: "Đánh giá 5 sao",
-  },
-];
+import type { HomeStats } from "../services/stats.service";
 
 /* ============================================================
  * COUNT UP
@@ -142,11 +106,18 @@ function CountUp({
  * ========================================================== */
 
 type ExperienceSectionProps = {
-  /** Thẻ giải thưởng do Admin quản lý (section "Giải thưởng / Thành tích" của trang chủ) — xem getHomeAward(). */
-  award: HomeAward;
+  /** Ảnh hoạt động + tiêu đề + số liệu (ô "stats" của trang chủ) — null thì không hiện phần này. */
+  stats: HomeStats | null;
+  /** Thẻ MICHELIN (ô "award" của trang chủ) — null thì không hiện thẻ. */
+  award: HomeAward | null;
 };
 
-export function ExperienceSection({ award }: ExperienceSectionProps) {
+/** Hai ô "stats" và "award" dùng chung một khối nền; không còn ô nào có dữ liệu thì không hiện cả khối. */
+export function ExperienceSection({ stats, award }: ExperienceSectionProps) {
+  if (!stats && !award) {
+    return null;
+  }
+
   return (
     <section
       className="
@@ -165,6 +136,8 @@ export function ExperienceSection({ award }: ExperienceSectionProps) {
       "
     >
       <Container className="flex flex-col gap-4 sm:gap-6 md:gap-8">
+        {stats && (
+        <>
         {/* ======================================================
          * ẢNH HOẠT ĐỘNG
          * ==================================================== */}
@@ -183,8 +156,8 @@ export function ExperienceSection({ award }: ExperienceSectionProps) {
             "
           >
             <Image
-              src="/images/active-img-1.png"
-              alt="Ảnh hoạt động Bánh Cuốn Tây Hồ 127"
+              src={stats.image.src}
+              alt={stats.image.alt}
               fill
               priority
               sizes="(max-width: 768px) 100vw, 1200px"
@@ -200,10 +173,11 @@ export function ExperienceSection({ award }: ExperienceSectionProps) {
         <div className="text-center">
           <Reveal type="fade-up" delay={0.05}>
             <h2 className="heading-section text-[24px] leading-tight text-brand-green">
-              Hơn 60 năm đồng hành và phục vụ
+              {stats.heading}
             </h2>
           </Reveal>
 
+          {stats.description.length > 0 && (
           <Reveal type="fade-up" delay={0.1}>
             <p
               className="
@@ -214,10 +188,14 @@ export function ExperienceSection({ award }: ExperienceSectionProps) {
                 md:text-[16px]
               "
             >
-              chúng tôi tự hào về chất lượng và sự tin tưởng
-              từ khách hàng
+              {stats.description.map((line) => (
+                <span key={line} className="block">
+                  {line}
+                </span>
+              ))}
             </p>
           </Reveal>
+          )}
 
           <div
             className="
@@ -229,7 +207,7 @@ export function ExperienceSection({ award }: ExperienceSectionProps) {
               md:gap-8
             "
           >
-            {stats.map((item, index) => (
+            {stats.items.map((item, index) => (
               <Reveal
                 key={item.label}
                 type="fade-up"
@@ -237,13 +215,17 @@ export function ExperienceSection({ award }: ExperienceSectionProps) {
               >
                 <div>
                   <div className="stat-number text-[30px] md:text-[48px]">
-                    <CountUp
-                      value={item.value}
-                      suffix={item.suffix}
-                      duration={
-                        item.value >= 1000 ? 1500 : 1000
-                      }
-                    />
+                    {item.value === null ? (
+                      item.text
+                    ) : (
+                      <CountUp
+                        value={item.value}
+                        suffix={item.suffix}
+                        duration={
+                          item.value >= 1000 ? 1500 : 1000
+                        }
+                      />
+                    )}
                   </div>
 
                   <p
@@ -264,9 +246,13 @@ export function ExperienceSection({ award }: ExperienceSectionProps) {
           </div>
         </div>
 
+        </>
+        )}
+
         {/* ======================================================
          * MICHELIN
          * ==================================================== */}
+        {award && (
 <Reveal type="fade-up" delay={0.18}>
   <div
     className="
@@ -393,6 +379,7 @@ export function ExperienceSection({ award }: ExperienceSectionProps) {
     </div>
   </div>
 </Reveal>
+        )}
 
       </Container>
     </section>

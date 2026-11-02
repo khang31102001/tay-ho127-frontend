@@ -14,6 +14,8 @@ import { getOpenStatus } from "../utils/opening-hours";
 
 type ContactHeroProps = {
   brand: SiteBrand;
+  /** Nhãn nhỏ phía trên tên quán (eyebrow của ô "hero" trang Liên hệ) — rỗng thì không hiện. */
+  badge: string;
 };
 
 const PRIMARY_ACTION_CLASS =
@@ -25,7 +27,7 @@ const SECONDARY_ACTION_CLASS =
  * Màn hình đầu trang Liên hệ: tên quán + địa chỉ (H1 chứa địa điểm — khách và Google tìm theo địa chỉ), trạng thái
  * mở cửa và các nút hành động, để không phải cuộn mới gọi/chỉ đường được. Mọi giá trị từ chi nhánh chính (Admin).
  */
-export function ContactHero({ brand }: ContactHeroProps) {
+export function ContactHero({ brand, badge }: ContactHeroProps) {
   const address = formatBrandAddress(brand);
   const phone = getContactPhone(brand);
   const telHref = toTelHref(phone);
@@ -37,9 +39,11 @@ export function ContactHero({ brand }: ContactHeroProps) {
   return (
     <section className="overflow-hidden bg-brand-ink bg-hero text-white">
       <Container className="flex flex-col items-center gap-4 py-14 text-center sm:py-16 md:py-20">
-        <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3.5 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-white/80 backdrop-blur-sm sm:text-[11px]">
-          Liên hệ & chỉ đường
-        </span>
+        {badge && (
+          <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3.5 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-white/80 backdrop-blur-sm sm:text-[11px]">
+            {badge}
+          </span>
+        )}
 
         <h1 className="heading-xl text-[30px] sm:text-[40px] md:text-[48px]">
           {brand.name}

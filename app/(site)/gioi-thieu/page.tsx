@@ -1,4 +1,7 @@
+import { Fragment, type ReactNode } from "react";
+
 import { AboutMichelin, AboutSignatureDish, AboutTimeline } from "@/features/about";
+import { listPageSlots, loadSlotContents, orderBlockKeys } from "@/features/content/public";
 import { NewsHero } from "@/features/content/news";
 import { getSiteUrl } from "@/core/config/site-url";
 import { site } from "@/core/config/site-data";
@@ -17,7 +20,27 @@ export const metadata = buildMetadata({
   image: site.assets.dishPhoto,
 });
 
-export default function AboutPage() {
+/**
+ * Trang Giới thiệu = các ô theo thứ tự Admin sắp (Admin → Nội dung → Trang → Giới thiệu → Sections, mã trang
+ * "gioi-thieu"). Ô ẩn / chưa có / thiếu tiêu đề thì không hiển thị.
+ */
+export default async function AboutPage() {
+  const slots = await listPageSlots("gioi-thieu");
+  const contents = await loadSlotContents(slots);
+  const hero = contents.get("hero");
+  const timeline = contents.get("timeline");
+  const signatureDish = contents.get("signature-dish");
+  const michelin = contents.get("michelin");
+
+  const blockByKey: Record<string, ReactNode> = {
+    hero: hero?.heading && (
+      <NewsHero badge={hero.eyebrow} title={hero.heading} description={hero.paragraphs.join(" ")} />
+    ),
+    timeline: timeline && <AboutTimeline content={timeline} />,
+    "signature-dish": signatureDish?.heading && <AboutSignatureDish content={signatureDish} />,
+    michelin: michelin?.heading && <AboutMichelin content={michelin} />,
+  };
+
   const siteUrl = getSiteUrl();
   const schemas = [
     {
@@ -36,14 +59,9 @@ export default function AboutPage() {
   return (
     <>
       <JsonLd data={schemas} />
-      <NewsHero
-        badge="Về Tây Hồ 127"
-        title="Câu chuyện Bánh Cuốn Tây Hồ"
-        description="Hơn 60 năm, ba thế hệ một gia đình giữ nghề bánh cuốn giữa Sài Gòn, từ tiệm nhỏ cạnh đền thờ cụ Phan Châu Trinh đến danh hiệu MICHELIN Bib Gourmand."
-      />
-      <AboutTimeline />
-      <AboutSignatureDish />
-      <AboutMichelin />
+      {orderBlockKeys(slots).map((key) => (
+        <Fragment key={key}>{blockByKey[key]}</Fragment>
+      ))}
     </>
   );
 }

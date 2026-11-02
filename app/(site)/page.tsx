@@ -1,14 +1,18 @@
+import { Fragment, type ReactNode } from "react";
 import type { Metadata } from "next";
 
 import {
   TopHero,
   StorySection,
-  getHomeStory,
-  getHomeAward,
   PromotionZone,
   FavoriteSection,
   ExperienceSection,
   TestimonialsSection,
+  listHomeSlots,
+  toHomeAward,
+  toHomeHero,
+  toHomeStats,
+  toHomeStory,
 } from "@/features/home";
 import { fetchFeaturedMenu } from "@/features/catalog/menu";
 // Import thẳng service server-only (không qua barrel — barrel re-export cả UI Admin "use client").
@@ -36,25 +40,46 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildMetadata(seoPayload);
 }
 
-// Trang chủ index: các section nối tiếp nhau theo scroll dọc thông thường.
-// Server Component nên fetch dữ liệu "Món yêu thích" trước khi render, tránh
-// FavoriteSection (Client Component) phải tự fetch và gây giật hình lúc mount.
+/**
+ * Trang chủ = các ô (slot) theo đúng thứ tự Admin sắp ở Admin → Nội dung → Trang → Trang chủ → Sections.
+ * Ô bị ẩn, chưa có section hoặc thiếu trường bắt buộc thì không hiển thị. Key các ô khai báo cho Admin ở
+ * features/content/page-sections/types/page-templates.ts (mã trang "home").
+ *
+ * "stats" và "award" cùng nằm trong một khối nền (ExperienceSection): khối hiện ở vị trí ô nào đứng trước.
+ * Dữ liệu "Món yêu thích" fetch ở server trước khi render, tránh FavoriteSection (Client Component) tự fetch.
+ */
 export default async function HomePage() {
-  const [favoriteItems, brand, story, award] = await Promise.all([
-    fetchFeaturedMenu(),
-    getSiteBrand(),
-    getHomeStory(),
-    getHomeAward(),
+  const [slots, brand, favoriteItems] = await Promise.all([listHomeSlots(), getSiteBrand(), fetchFeaturedMenu()]);
+  const sectionOf = (key: string) => slots.find((slot) => slot.key === key)?.section;
+
+  const heroSection = sectionOf("hero");
+  const storySection = sectionOf("story");
+  const statsSection = sectionOf("stats");
+  const awardSection = sectionOf("award");
+  const [story, stats, award] = await Promise.all([
+    storySection ? toHomeStory(storySection) : null,
+    statsSection ? toHomeStats(statsSection) : null,
+    awardSection ? toHomeAward(awardSection) : null,
   ]);
+  const hero = heroSection ? toHomeHero(heroSection) : null;
+  const experienceKey = slots.find((slot) => slot.key === "stats" || slot.key === "award")?.key;
+
+  const blockByKey: Record<string, ReactNode> = {
+    hero: hero && <TopHero hero={hero} brand={brand} />,
+    story: story && <StorySection story={story} />,
+    promotion: <PromotionZone />,
+    favorites: <FavoriteSection items={favoriteItems} />,
+    testimonials: <TestimonialsSection />,
+  };
+  if (experienceKey) {
+    blockByKey[experienceKey] = <ExperienceSection stats={stats} award={award} />;
+  }
 
   return (
     <>
-      <TopHero brand={brand} />
-      <StorySection story={story} />
-      <PromotionZone />
-      <FavoriteSection items={favoriteItems} />
-      <ExperienceSection award={award} />
-      <TestimonialsSection />
+      {slots.map((slot) => (
+        <Fragment key={slot.key}>{blockByKey[slot.key]}</Fragment>
+      ))}
     </>
   );
 }

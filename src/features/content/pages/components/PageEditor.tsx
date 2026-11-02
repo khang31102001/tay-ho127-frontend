@@ -74,6 +74,33 @@ export function PageEditor({ id }: PageEditorProps) {
         />
       )}
 
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className={adminFieldLabelClassName}>
+          Mã trang (page key)
+          <input
+            type="text"
+            value={form.pageKey}
+            onChange={(event) => updateField("pageKey", event.target.value)}
+            placeholder="vd. gioi-thieu"
+            className={adminFieldInputClassName}
+          />
+          <span className="mt-1 block text-[12px] font-normal text-brand-muted">
+            Mã cố định Site dùng để tìm trang (home, gioi-thieu, thuc-don, tin-tuc, lien-he). Chữ thường, nối bằng gạch
+            ngang. Đã có mã thì để trống = giữ nguyên.
+          </span>
+        </label>
+
+        <label className={adminFieldLabelClassName}>
+          Thứ tự
+          <input
+            type="number"
+            value={form.sortOrder}
+            onChange={(event) => updateField("sortOrder", Number(event.target.value) || 0)}
+            className={adminFieldInputClassName}
+          />
+        </label>
+      </div>
+
       <label className={adminFieldLabelClassName}>
         Trạng thái
         <AdminSelect

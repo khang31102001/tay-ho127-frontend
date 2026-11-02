@@ -9,6 +9,8 @@ import type { ManagedPage } from "../types/page.types";
  * - `slug` là ĐƯỜNG DẪN trang ("/" cho trang chủ, "/thuc-don", "/ve-chung-toi/lich-su"): chữ thường,
  *   mỗi đoạn nối bằng gạch ngang. Để trống khi tạo → Backend sinh từ tên; để trống khi sửa → giữ nguyên.
  *   Trùng đường dẫn → 409. Navigation dùng thẳng giá trị này làm URL.
+ * - `pageKey` là mã cố định Site dùng để tìm trang (duy nhất, chữ thường nối gạch ngang) — trùng → 409.
+ *   Để trống khi sửa → Backend giữ mã cũ (không xóa được mã mà Site đang dùng).
  * - `publishedAt` do Backend đặt lần đầu page chuyển sang "published", không gửi lên.
  * - Xóa page xóa luôn các section của nó.
  */
@@ -18,6 +20,8 @@ type PageDto = {
   id: string;
   name: string;
   slug: string;
+  pageKey?: string | null;
+  sortOrder?: number;
   status: ManagedPage["status"];
   publishedAt: string | null;
   createdAtUtc: string;
@@ -27,6 +31,8 @@ type PageDto = {
 export type PageUpsertInput = {
   name: string;
   slug: string;
+  pageKey: string;
+  sortOrder: number;
   status: ManagedPage["status"];
 };
 
@@ -35,6 +41,8 @@ function toManagedPage(dto: PageDto): ManagedPage {
     id: dto.id,
     name: dto.name,
     slug: dto.slug,
+    pageKey: dto.pageKey ?? null,
+    sortOrder: dto.sortOrder ?? 0,
     status: dto.status,
     publishedAt: dto.publishedAt,
     createdAt: dto.createdAtUtc,
@@ -43,7 +51,13 @@ function toManagedPage(dto: PageDto): ManagedPage {
 }
 
 function toRequest(payload: PageUpsertInput) {
-  return { name: payload.name, slug: payload.slug || null, status: payload.status };
+  return {
+    name: payload.name,
+    slug: payload.slug || null,
+    status: payload.status,
+    pageKey: payload.pageKey.trim() || null,
+    sortOrder: payload.sortOrder,
+  };
 }
 
 export async function listPages(): Promise<ManagedPage[]> {
