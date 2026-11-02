@@ -86,6 +86,8 @@ export type UiProduct = {
   rating: number;
   ratingCount: number;
   image: string;
+  /** Mô tả ngắn (chữ thường) — card Thực đơn cắt 1–2 dòng, ẩn trên điện thoại. */
+  description?: string;
 };
 
 /**

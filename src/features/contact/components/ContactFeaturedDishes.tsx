@@ -40,7 +40,7 @@ export function ContactFeaturedDishes({ items, content }: ContactFeaturedDishesP
           )}
         </div>
 
-        <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
+        <div className="mt-8 grid grid-cols-2 gap-x-3 gap-y-5 sm:gap-x-5 sm:gap-y-8 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-6">
           {items.map((item) => (
             <ProductCard key={item.productId} item={item} />
           ))}
