@@ -40,13 +40,21 @@ function toManagedMedia(dto: MediaDto): ManagedMedia {
 
 export type MediaUpsertInput = Pick<ManagedMedia, "fileName" | "url" | "type" | "altText" | "size">;
 
-/** 1 trang thư viện media (mới tải lên trước) — Backend tìm theo tên file. */
+/** Lọc danh sách thư viện theo trạng thái — Backend nhận "Active" | "Inactive". */
+export type LibraryMediaStatusFilter = EntityStatus | "all";
+
+/** 1 trang thư viện media (mới tải lên trước) — Backend tìm theo tên file, lọc theo trạng thái. */
 export async function listLibraryMediaPage(
-  query: PagedQuery,
+  query: PagedQuery & { status?: LibraryMediaStatusFilter },
   signal?: AbortSignal,
 ): Promise<PaginatedResult<ManagedMedia>> {
+  const { status, ...paging } = query;
   const page = await adminApi.get<PaginatedResult<MediaDto>>("/media", {
-    params: { sortDirection: "desc", ...query },
+    params: {
+      sortDirection: "desc",
+      ...paging,
+      ...(status && status !== "all" ? { status: status === "active" ? "Active" : "Inactive" } : {}),
+    },
     signal,
   });
   return { ...page, items: page.items.map(toManagedMedia) };
@@ -147,4 +155,38 @@ function extractProblemMessage(payload: unknown): string | null {
 
   const message = [firstFieldError, detail, title].find((value) => typeof value === "string" && value.trim() !== "");
   return typeof message === "string" ? message : null;
+}
+
+/** Một nơi đang dùng media (GET /media/{id}/usages, kết quả "inUse" khi xóa vĩnh viễn). */
+export type MediaUsage = {
+  module: string;
+  entityId: string;
+  entityName: string;
+  field: string;
+};
+
+export type MediaPurgeStatus = "deleted" | "inUse" | "notFound" | "failed";
+
+export type MediaPurgeResult = {
+  id: string;
+  status: MediaPurgeStatus;
+  fileName: string | null;
+  message: string | null;
+  usages: MediaUsage[];
+};
+
+/** Tối đa số media mỗi lần xóa vĩnh viễn — khớp PurgeMediaRequestValidator ở Backend. */
+export const MEDIA_PURGE_MAX_BATCH = 100;
+
+/** Những nơi còn dùng media (sản phẩm, bài viết, banner, section, thương hiệu, SEO, ...). */
+export function getMediaUsages(id: string): Promise<MediaUsage[]> {
+  return adminApi.get<MediaUsage[]>(`/media/${id}/usages`);
+}
+
+/**
+ * Xóa VĨNH VIỄN (file trên nơi lưu + bản ghi) — quyền media.purge, không hoàn tác được. Media đang được dùng
+ * bị Backend bỏ qua (status "inUse" kèm nơi dùng); kết quả trả theo từng id.
+ */
+export async function purgeLibraryMedia(ids: string[]): Promise<{ deletedCount: number; results: MediaPurgeResult[] }> {
+  return adminApi.post<{ deletedCount: number; results: MediaPurgeResult[] }>("/media/purge", { ids });
 }
