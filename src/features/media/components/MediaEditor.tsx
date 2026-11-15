@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { Trash2 } from "lucide-react";
+
 import { DataEditor } from "@/shared/admin/templates/DataEditor/DataEditor";
 import {
   adminFieldInputClassName,
@@ -11,6 +14,7 @@ import { formatFileSize } from "@/core/utils/format-file-size";
 import { MEDIA_TYPE_OPTIONS, type MediaType } from "../types/media.types";
 
 import { useMediaEditor } from "../hooks/useMediaEditor";
+import { MediaPurgeDialog } from "./MediaPurgeDialog";
 
 import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 type MediaEditorProps = {
@@ -20,6 +24,7 @@ type MediaEditorProps = {
 /** Sửa một media (metadata/URL — không đổi file đã upload). Thêm mới dùng MediaBulkCreator. */
 export function MediaEditor({ id }: MediaEditorProps) {
   const {
+    media,
     form,
     status,
     updateField,
@@ -30,6 +35,8 @@ export function MediaEditor({ id }: MediaEditorProps) {
     goToExplore,
   } = useMediaEditor({ id });
   const { hasPermission } = useAdminAuth();
+  const [isPurgeOpen, setIsPurgeOpen] = useState(false);
+  const [isPurged, setIsPurged] = useState(false);
 
   return (
     <DataEditor
@@ -109,6 +116,35 @@ export function MediaEditor({ id }: MediaEditorProps) {
           className={adminFieldInputClassName}
         />
       </label>
+
+      {media && hasPermission("media.purge") && (
+        <section className="rounded-lg border border-admin-danger/40 px-4 py-3">
+          <h3 className="text-[13px] font-bold text-admin-danger">Xóa vĩnh viễn</h3>
+          <p className="mt-1 text-[12px] text-brand-muted">
+            Xóa file khỏi nơi lưu (Server/Cloud) và khỏi thư viện để giải phóng dung lượng. Không thể hoàn tác; media
+            đang được dùng ở sản phẩm, bài viết, banner... phải được gỡ trước.
+          </p>
+          <button
+            type="button"
+            onClick={() => setIsPurgeOpen(true)}
+            className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-admin-danger px-3 py-1.5 text-[12px] font-bold text-admin-danger transition hover:bg-admin-danger/10"
+          >
+            <Trash2 className="size-4" aria-hidden="true" />
+            Xóa vĩnh viễn
+          </button>
+        </section>
+      )}
+
+      {isPurgeOpen && media && (
+        <MediaPurgeDialog
+          media={[media]}
+          onClose={() => {
+            setIsPurgeOpen(false);
+            if (isPurged) goToExplore();
+          }}
+          onFinished={(deletedIds) => setIsPurged(deletedIds.includes(media.id))}
+        />
+      )}
     </DataEditor>
   );
 }

@@ -12,6 +12,7 @@ import type { ManagedMenuProduct } from "@/features/catalog/menu-products/types/
 import type { ManagedProduct } from "@/features/catalog/products/types/product.types";
 import type { ManagedCategory } from "@/features/catalog/categories/types/category.types";
 import { listMedia } from "@/features/media/services/public-media.service";
+import { isNextImageCompatibleUrl } from "@/core/config/image-hosts";
 import type { ManagedMedia } from "@/features/media/types/media.types";
 import type { ManagedModifierGroup } from "@/features/catalog/modifier-groups/types/modifier-group.types";
 
@@ -77,6 +78,11 @@ function resolveProductImage(
   product: ManagedProduct,
   mediaById: Map<string, ManagedMedia>,
 ): string {
+  // Ưu tiên ảnh đại diện; media đó không có trong danh sách public (quá 200 dòng) thì dùng URL Backend trả kèm.
+  const thumbnail = product.thumbnailMediaId ? mediaById.get(product.thumbnailMediaId) : undefined;
+  if (thumbnail) return thumbnail.url;
+  if (product.thumbnailUrl && isNextImageCompatibleUrl(product.thumbnailUrl)) return product.thumbnailUrl;
+
   const media = product.mediaIds[0] ? mediaById.get(product.mediaIds[0]) : undefined;
   return media?.url ?? DEFAULT_PRODUCT_IMAGE;
 }

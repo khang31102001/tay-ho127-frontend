@@ -39,6 +39,9 @@ type PublicCatalogDto = {
     ratingCount: number | null;
     mediaIds: string[];
     modifierGroupIds: string[];
+    /** Ảnh đại diện (id media) + URL Backend tra từ Media; null khi chưa chọn hoặc media đã ẩn. */
+    thumbnailMediaId?: string | null;
+    thumbnailUrl?: string | null;
   }[];
   salesMenus: { id: string; code: string; name: string }[];
   salesMenuProducts: { id: string; salesMenuId: string; productId: string; priceOverride: number | null; sortOrder: number }[];
@@ -81,6 +84,8 @@ function toPublicCatalog(dto: PublicCatalogDto): PublicCatalog {
       oldPrice: product.oldPrice ?? undefined,
       description: product.description ?? undefined,
       status: "active",
+      thumbnailMediaId: product.thumbnailMediaId ?? undefined,
+      thumbnailUrl: product.thumbnailUrl ?? undefined,
       mediaIds: product.mediaIds,
       modifierGroupIds: product.modifierGroupIds,
       rating: product.rating ?? undefined,

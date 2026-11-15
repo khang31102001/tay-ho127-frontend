@@ -9,7 +9,7 @@ import {
 } from "@/shared/admin/templates/formFieldClassName";
 import type { EntityStatus } from "@/shared/admin/templates/StatusBadge";
 import { useAdminAuth } from "@/features/admin-auth";
-import { MediaMultiPicker } from "@/features/media/components/MediaPicker";
+import { MediaMultiPicker, MediaPicker } from "@/features/media/components/MediaPicker";
 import { RichTextEditor } from "@/shared/ui/RichTextEditor";
 import { Tabs, type TabItem } from "@/shared/ui/Tabs";
 import { SeoFieldsForm, StructuredDataSection } from "@/features/seo";
@@ -38,6 +38,8 @@ export function ProductEditor({ id }: ProductEditorProps) {
     toggleModifierGroup,
     categoryOptions,
     mediaOptions,
+    thumbnailMediaOptions,
+    addUploadedMedia,
     isLoadingOptions,
     modifierGroupOptions,
     seo,
@@ -78,7 +80,7 @@ export function ProductEditor({ id }: ProductEditorProps) {
               entityDefaults={{
                 title: form.name,
                 description: form.description ?? "",
-                imageMediaId: form.mediaIds[0] ?? null,
+                imageMediaId: form.thumbnailMediaId ?? form.mediaIds[0] ?? null,
               }}
               settings={seoSettings}
               previewUrl={isEditMode ? `/thuc-don/${id}` : null}
@@ -215,13 +217,28 @@ export function ProductEditor({ id }: ProductEditorProps) {
         </div>
       </div>
 
+      <MediaPicker
+        label="Ảnh đại diện"
+        hint="Một ảnh, hiển thị trên thẻ món và đầu trang chi tiết. Để trống thì dùng ảnh đầu tiên của danh sách ảnh."
+        mediaType="image"
+        mediaOptions={thumbnailMediaOptions}
+        selectedId={form.thumbnailMediaId ?? null}
+        onChange={(mediaId) => updateField("thumbnailMediaId", mediaId ?? undefined)}
+        isLoading={isLoadingOptions}
+        allowUpload
+        onMediaUploaded={addUploadedMedia}
+      />
+
       <MediaMultiPicker
-        label="Media (chọn từ thư viện)"
+        label="Danh sách ảnh"
+        hint="Thư viện ảnh của món, hiển thị theo thứ tự bên dưới (dùng nút mũi tên để sắp xếp)."
         mediaType="image"
         mediaOptions={mediaOptions}
         selectedIds={form.mediaIds}
         onChange={(mediaIds) => updateField("mediaIds", mediaIds)}
         isLoading={isLoadingOptions}
+        allowUpload
+        onMediaUploaded={addUploadedMedia}
       />
 
       <div>

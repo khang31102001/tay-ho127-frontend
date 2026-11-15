@@ -64,6 +64,16 @@ function isUsableOnSite(media: ManagedMedia): boolean {
   return media.type !== "image" || isNextImageCompatibleUrl(media.url);
 }
 
+const LIBRARY_MEDIA_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Media có bản ghi thật trong thư viện (id GUID của bảng media.media), khác với ảnh mẫu SEED_MEDIA
+ * (id "media-..."). Trường lưu khóa ngoại tới Media (vd. ảnh đại diện sản phẩm) chỉ nhận loại này.
+ */
+export function isLibraryMedia(media: Pick<ManagedMedia, "id">): boolean {
+  return LIBRARY_MEDIA_ID_PATTERN.test(media.id);
+}
+
 export async function listMedia(): Promise<ManagedMedia[]> {
   try {
     const backendMedia = (await fetchBackendPublicMedia()).map(toManagedMedia).filter(isUsableOnSite);
