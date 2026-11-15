@@ -24,7 +24,14 @@ export type ManagedProduct = {
    */
   content?: string;
   status: EntityStatus;
-  /** Tham chiếu ManagedMedia.id, chọn từ Media Library. */
+  /**
+   * Ảnh đại diện — id media (catalog.products.thumbnail_media_id). Không có = Site dùng ảnh đầu của `mediaIds`.
+   * Không lưu URL; URL đọc từ `thumbnailUrl` (Backend tra từ Media).
+   */
+  thumbnailMediaId?: string;
+  /** Chỉ đọc: URL ảnh đại diện do Backend tra từ Media. */
+  thumbnailUrl?: string;
+  /** Danh sách ảnh (catalog.product_media), có thứ tự — tham chiếu ManagedMedia.id, chọn từ Media Library. */
   mediaIds: string[];
   /** Tham chiếu ManagedModifierGroup.id (features/modifier-groups), chọn nhóm tùy chọn áp dụng cho món này — mảng rỗng = không có modifier. */
   modifierGroupIds: string[];
