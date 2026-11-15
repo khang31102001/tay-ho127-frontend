@@ -33,7 +33,7 @@ function productToEntry(product: ManagedProduct): SeoDirectoryEntry {
     defaults: {
       title: product.name,
       description: product.description ?? "",
-      imageMediaId: product.mediaIds[0] ?? null,
+      imageMediaId: product.thumbnailMediaId ?? product.mediaIds[0] ?? null,
     },
   };
 }
