@@ -58,6 +58,8 @@ export function useMediaEditor({ id }: UseMediaEditorParams) {
   }
 
   return {
+    /** Bản ghi đang mở (để xóa vĩnh viễn) — null khi chưa tải xong. */
+    media: existing.data ?? null,
     form,
     status,
     updateField,

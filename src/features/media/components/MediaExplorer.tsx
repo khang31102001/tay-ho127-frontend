@@ -1,9 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { FileText, Video } from "lucide-react";
+import { useState } from "react";
+import { FileText, Trash2, Video } from "lucide-react";
 
-import { DataExplorer, type DataExplorerColumn } from "@/shared/admin/templates/DataExplorer/DataExplorer";
+import {
+  DataExplorer,
+  DataExplorerFilterSelect,
+  type DataExplorerColumn,
+} from "@/shared/admin/templates/DataExplorer/DataExplorer";
+import { adminButtonClassName } from "@/shared/admin/templates/formFieldClassName";
 import { StatusBadge } from "@/shared/admin/templates/StatusBadge";
 import { useAdminAuth } from "@/features/admin-auth";
 import { formatFileSize } from "@/core/utils/format-file-size";
@@ -11,6 +17,14 @@ import { isNextImageCompatibleUrl } from "@/core/config/image-hosts";
 import { MEDIA_STORAGE_LABELS, MEDIA_TYPE_OPTIONS, type ManagedMedia } from "../types/media.types";
 
 import { useMediaExplorer } from "../hooks/useMediaExplorer";
+import type { LibraryMediaStatusFilter } from "../services/media-library.service";
+import { MediaPurgeDialog } from "./MediaPurgeDialog";
+
+const STATUS_FILTER_OPTIONS: { value: LibraryMediaStatusFilter; label: string }[] = [
+  { value: "all", label: "Tất cả trạng thái" },
+  { value: "active", label: "Hoạt động" },
+  { value: "inactive", label: "Ngừng hoạt động" },
+];
 
 function mediaTypeLabel(type: ManagedMedia["type"]) {
   return MEDIA_TYPE_OPTIONS.find((option) => option.value === type)?.label ?? type;
@@ -64,10 +78,13 @@ const columns: DataExplorerColumn<ManagedMedia>[] = [
 ];
 
 export function MediaExplorer() {
-  const { loadPage, handleDelete } = useMediaExplorer();
+  const { loadPage, handleDelete, statusFilter, setStatusFilter, reload } = useMediaExplorer();
   const { hasPermission } = useAdminAuth();
+  const [purgeTargets, setPurgeTargets] = useState<{ media: ManagedMedia[]; clearSelection: () => void } | null>(null);
+  const canPurge = hasPermission("media.purge");
 
   return (
+    <>
     <DataExplorer<ManagedMedia>
       title="Thư viện Media"
       columns={columns}
@@ -80,6 +97,40 @@ export function MediaExplorer() {
       onDelete={hasPermission("media.delete") ? handleDelete : undefined}
       emptyState="Chưa có file media nào."
       totalLabel="file"
+      filters={
+        <DataExplorerFilterSelect
+          ariaLabel="Lọc theo trạng thái"
+          value={statusFilter}
+          onChange={setStatusFilter}
+          options={STATUS_FILTER_OPTIONS}
+        />
+      }
+      bulkActions={
+        canPurge
+          ? (selectedRows, clearSelection) => (
+              <button
+                type="button"
+                onClick={() => setPurgeTargets({ media: selectedRows, clearSelection })}
+                className={adminButtonClassName.danger}
+              >
+                <Trash2 className="size-4" aria-hidden="true" />
+                Xóa vĩnh viễn ({selectedRows.length})
+              </button>
+            )
+          : undefined
+      }
     />
+
+    {purgeTargets && (
+      <MediaPurgeDialog
+        media={purgeTargets.media}
+        onClose={() => setPurgeTargets(null)}
+        onFinished={() => {
+          purgeTargets.clearSelection();
+          reload();
+        }}
+      />
+    )}
+    </>
   );
 }

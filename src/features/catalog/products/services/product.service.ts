@@ -9,6 +9,7 @@ import type { ManagedProduct } from "../types/product.types";
  *
  * - `slug` để trống khi tạo → Backend tự sinh từ tên; để trống khi sửa → giữ slug cũ.
  * - `mediaIds`/`modifierGroupIds` là danh sách CÓ THỨ TỰ, gửi lên thay thế toàn bộ.
+ * - `thumbnailMediaId` = ảnh đại diện (id media); Backend từ chối id không tồn tại / không phải ảnh.
  * - Xóa sản phẩm cũng gỡ nó khỏi mọi thực đơn (đơn hàng cũ giữ bản chụp riêng).
  * - `content` (mô tả chi tiết, HTML) không có trong danh sách để nhẹ payload.
  */
@@ -30,6 +31,8 @@ type ProductDto = {
   ratingCount: number | null;
   mediaIds: string[];
   modifierGroupIds: string[];
+  thumbnailMediaId: string | null;
+  thumbnailUrl: string | null;
 };
 
 function toManagedProduct(dto: ProductDto): ManagedProduct {
@@ -46,12 +49,14 @@ function toManagedProduct(dto: ProductDto): ManagedProduct {
     badge: dto.badge ?? undefined,
     rating: dto.rating ?? undefined,
     ratingCount: dto.ratingCount ?? undefined,
+    thumbnailMediaId: dto.thumbnailMediaId ?? undefined,
+    thumbnailUrl: dto.thumbnailUrl ?? undefined,
     mediaIds: dto.mediaIds,
     modifierGroupIds: dto.modifierGroupIds,
   };
 }
 
-export type ProductUpsertInput = Omit<ManagedProduct, "id">;
+export type ProductUpsertInput = Omit<ManagedProduct, "id" | "thumbnailUrl">;
 
 function toRequest(payload: ProductUpsertInput) {
   return {
@@ -67,6 +72,8 @@ function toRequest(payload: ProductUpsertInput) {
     badge: payload.badge?.trim() || null,
     rating: payload.rating ?? null,
     ratingCount: payload.ratingCount ?? null,
+    // Gửi id media (không gửi URL); null = không có ảnh đại diện.
+    thumbnailMediaId: payload.thumbnailMediaId ?? null,
     mediaIds: payload.mediaIds,
     modifierGroupIds: payload.modifierGroupIds,
   };
