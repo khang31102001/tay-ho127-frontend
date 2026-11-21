@@ -6,6 +6,7 @@ import {
   MenuHero,
   MenuGrid,
   fetchMenu,
+  fetchFeaturedMenu,
   type MenuResponse,
 } from "@/features/catalog/menu";
 import { buildMetadata } from "@/features/seo/utils/build-metadata";
@@ -22,17 +23,18 @@ export const metadata = buildMetadata({
  * lõi — luôn hiển thị, Admin chỉ đổi vị trí.
  */
 export default async function MenuPage() {
-  const [resp, slots]: [MenuResponse, Awaited<ReturnType<typeof listPageSlots>>] = await Promise.all([
-    fetchMenu(),
-    listPageSlots("thuc-don"),
-  ]);
+  const [resp, slots, featured]: [
+    MenuResponse,
+    Awaited<ReturnType<typeof listPageSlots>>,
+    Awaited<ReturnType<typeof fetchFeaturedMenu>>,
+  ] = await Promise.all([fetchMenu(), listPageSlots("thuc-don"), fetchFeaturedMenu()]);
   const groups = resp?.data?.menu?.groups || [];
   const contents = await loadSlotContents(slots);
   const hero = contents.get("hero");
 
   const blockByKey: Record<string, ReactNode> = {
     hero: hero?.heading && <MenuHero content={hero} />,
-    menu: <MenuGrid groups={groups} />,
+    menu: <MenuGrid groups={groups} featured={featured} />,
   };
 
   return (
