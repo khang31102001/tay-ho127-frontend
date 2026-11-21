@@ -21,6 +21,7 @@ export {
   type SlotImage,
   type SlotLink,
 } from "./services/page-slot.service";
+export { BannerSection } from "./components/BannerSection";
 export type {
   PublicArticle,
   PublicArticleCategory,

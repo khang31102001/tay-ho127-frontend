@@ -1,16 +1,24 @@
 /**
- * Registry vị trí hiển thị Banner trên Site — thêm vị trí mới chỉ cần thêm
- * 1 phần tử ở đây (giống SECTION_TYPE_OPTIONS của PageSection). Banner không
- * FK tới Page: Site tự query theo placement, tách rời khỏi 1 record Page cụ thể.
+ * Cách hiển thị banner trên Site. Mặc định "SECTIONS": banner hiện ở các section loại Banner của trang mà admin chọn
+ * (Trang → Section) — vị trí là dữ liệu, thêm section banner vào trang nào là banner hiện ở trang đó, không cần code.
+ * "ARTICLE_BANNER" còn lại cho trang chi tiết bài viết (template, chưa có section). Các vị trí cũ (HOME_HERO,
+ * HOME_PROMOTION, MENU_HERO) đã được chuyển sang "SECTIONS" và không còn chọn được.
  */
 export const BANNER_PLACEMENT_OPTIONS = [
-  { value: "HOME_HERO", label: "Trang chủ — Hero" },
-  { value: "HOME_PROMOTION", label: "Trang chủ — Khuyến mãi" },
-  { value: "MENU_HERO", label: "Thực đơn — Hero" },
+  { value: "SECTIONS", label: "Theo section của trang" },
   { value: "ARTICLE_BANNER", label: "Banner bài viết" },
 ] as const;
 
-export type BannerPlacement = (typeof BANNER_PLACEMENT_OPTIONS)[number]["value"];
+/** Giá trị Backend có thể trả về, kể cả vị trí cũ chưa còn chọn được. */
+export type BannerPlacement = (typeof BANNER_PLACEMENT_OPTIONS)[number]["value"] | "HOME_HERO" | "HOME_PROMOTION" | "MENU_HERO";
+
+/** Một section banner mà banner đang hiển thị: trang chứa nó + nhãn dễ đọc của section. */
+export type BannerSectionRef = {
+  sectionId: string;
+  pageId: string;
+  pageName: string;
+  sectionLabel: string;
+};
 
 export type ManagedBanner = {
   id: string;
@@ -29,4 +37,6 @@ export type ManagedBanner = {
   endAt: string | null;
   displayOrder: number;
   isActive: boolean;
+  /** Các section banner banner này hiển thị (chỉ có khi đọc từ Backend). */
+  sections: BannerSectionRef[];
 };

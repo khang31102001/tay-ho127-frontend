@@ -29,9 +29,9 @@ export const PAGE_SLOT_TEMPLATES: Record<string, PageSlotTemplate[]> = {
     { key: "story", sectionType: "story", label: "Câu chuyện thương hiệu", hint: "Bắt buộc Heading." },
     {
       key: "promotion",
-      sectionType: "promotion",
+      sectionType: "banner",
       label: "Ưu đãi (banner)",
-      hint: "Ảnh lấy từ Banner vị trí HOME_PROMOTION đang chạy; không có banner thì không hiện.",
+      hint: "Section banner: hiện các banner đang chạy được gắn vào section này (Nội dung → Banner → Hiển thị ở); không có banner thì không hiện.",
     },
     {
       key: "favorites",

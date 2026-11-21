@@ -24,8 +24,13 @@ const columns: DataExplorerColumn<ManagedBanner>[] = [
   { key: "name", header: "Tên banner" },
   {
     key: "placement",
-    header: "Vị trí",
-    render: (row) => PLACEMENT_LABEL[row.placement] ?? row.placement,
+    header: "Hiển thị ở",
+    render: (row) =>
+      row.placement === "SECTIONS"
+        ? row.sections.length > 0
+          ? row.sections.map((section) => `${section.pageName} › ${section.sectionLabel}`).join(", ")
+          : "Chưa gắn section"
+        : (PLACEMENT_LABEL[row.placement] ?? row.placement),
   },
   {
     key: "schedule",

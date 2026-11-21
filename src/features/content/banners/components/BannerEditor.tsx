@@ -9,6 +9,7 @@ import { MediaPicker } from "@/features/media/components/MediaPicker";
 
 import { useBannerEditor } from "../hooks/useBannerEditor";
 import { BANNER_PLACEMENT_OPTIONS, type BannerPlacement } from "../types/banner.types";
+import { BannerSectionPicker } from "./BannerSectionPicker";
 
 import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 type BannerEditorProps = {
@@ -20,6 +21,7 @@ export function BannerEditor({ id }: BannerEditorProps) {
     form,
     updateField,
     mediaOptions,
+    addUploadedMedia,
     isLoading,
     loadError,
     isEditMode,
@@ -55,6 +57,9 @@ export function BannerEditor({ id }: BannerEditorProps) {
           mediaType="image"
           label="Ảnh Desktop"
           mediaOptions={mediaOptions}
+          category="banners"
+          allowUpload
+          onMediaUploaded={addUploadedMedia}
           selectedId={form.desktopMediaId}
           onChange={(mediaId) => updateField("desktopMediaId", mediaId)}
         />
@@ -63,6 +68,9 @@ export function BannerEditor({ id }: BannerEditorProps) {
           mediaType="image"
           label="Ảnh Mobile"
           mediaOptions={mediaOptions}
+          category="banners"
+          allowUpload
+          onMediaUploaded={addUploadedMedia}
           selectedId={form.mobileMediaId}
           onChange={(mediaId) => updateField("mobileMediaId", mediaId)}
         />
@@ -124,7 +132,7 @@ export function BannerEditor({ id }: BannerEditorProps) {
       </div>
 
       <label className={adminFieldLabelClassName}>
-        Vị trí hiển thị (Placement)
+        Cách hiển thị
         <AdminSelect
           value={form.placement}
           onChange={(event) => updateField("placement", event.target.value as BannerPlacement)}
@@ -137,6 +145,16 @@ export function BannerEditor({ id }: BannerEditorProps) {
           ))}
         </AdminSelect>
       </label>
+
+      {form.placement === "SECTIONS" && (
+        <div>
+          <span className={adminFieldLabelClassName}>Hiển thị ở (Trang → Section banner)</span>
+          <p className="mb-2 mt-0.5 text-[12px] text-brand-muted">
+            Chọn một hay nhiều section; banner có thể dùng lại ở nhiều trang. Chưa chọn section nào thì banner chưa hiện ở đâu.
+          </p>
+          <BannerSectionPicker selectedIds={form.sectionIds} onChange={(ids) => updateField("sectionIds", ids)} />
+        </div>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-3">
         <label className={adminFieldLabelClassName}>

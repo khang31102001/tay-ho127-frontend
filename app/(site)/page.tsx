@@ -4,7 +4,6 @@ import type { Metadata } from "next";
 import {
   TopHero,
   StorySection,
-  PromotionZone,
   FavoriteSection,
   ExperienceSection,
   TestimonialsSection,
@@ -15,6 +14,7 @@ import {
   toHomeStory,
 } from "@/features/home";
 import { fetchFeaturedMenu } from "@/features/catalog/menu";
+import { BannerSection, type PublicPageSection } from "@/features/content/public";
 // Import thẳng service server-only (không qua barrel — barrel re-export cả UI Admin "use client").
 import { getSiteBrand } from "@/features/organization/brand-profile/services/brand-public.service";
 import { buildMetadata } from "@/features/seo/utils/build-metadata";
@@ -48,6 +48,19 @@ export async function generateMetadata(): Promise<Metadata> {
  * "stats" và "award" cùng nằm trong một khối nền (ExperienceSection): khối hiện ở vị trí ô nào đứng trước.
  * Dữ liệu "Món yêu thích" fetch ở server trước khi render, tránh FavoriteSection (Client Component) tự fetch.
  */
+/**
+ * Section loại "banner" (Admin → Nội dung → Banner chọn section này) hiện bằng khối banner chung. Ô "promotion" là dải ưu đãi
+ * toàn màn hình, chỉ hiện ảnh (ảnh ưu đãi đã có sẵn chữ và giá); section banner khác do Admin thêm hiện cả chữ/CTA của banner.
+ */
+function renderBannerSlot(slot: { key: string; section: PublicPageSection }) {
+  if (slot.section.sectionKind !== "banner") {
+    return null;
+  }
+
+  const isPromotion = slot.key === "promotion";
+  return <BannerSection section={slot.section} showText={!isPromotion} size={isPromotion ? "screen" : "banner"} />;
+}
+
 export default async function HomePage() {
   const [slots, brand, favoriteItems] = await Promise.all([listHomeSlots(), getSiteBrand(), fetchFeaturedMenu()]);
   const sectionOf = (key: string) => slots.find((slot) => slot.key === key)?.section;
@@ -67,7 +80,6 @@ export default async function HomePage() {
   const blockByKey: Record<string, ReactNode> = {
     hero: hero && <TopHero hero={hero} brand={brand} />,
     story: story && <StorySection story={story} />,
-    promotion: <PromotionZone />,
     favorites: <FavoriteSection items={favoriteItems} />,
     testimonials: <TestimonialsSection />,
   };
@@ -78,7 +90,7 @@ export default async function HomePage() {
   return (
     <>
       {slots.map((slot) => (
-        <Fragment key={slot.key}>{blockByKey[slot.key]}</Fragment>
+        <Fragment key={slot.key}>{blockByKey[slot.key] ?? renderBannerSlot(slot)}</Fragment>
       ))}
     </>
   );
