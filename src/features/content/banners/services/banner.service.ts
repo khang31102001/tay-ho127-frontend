@@ -32,7 +32,7 @@ type BannerDto = {
 };
 
 /** `sectionIds` = các section banner banner được hiển thị (gửi danh sách rỗng = gỡ khỏi mọi section). */
-export type BannerUpsertInput = Omit<ManagedBanner, "id" | "sections"> & { sectionIds: string[] };
+export type BannerUpsertInput = Omit<ManagedBanner, "id" | "sections" | "placement"> & { sectionIds: string[] };
 
 function toManagedBanner(dto: BannerDto): ManagedBanner {
   return {
@@ -64,7 +64,8 @@ function toRequest(payload: BannerUpsertInput) {
     subheading: payload.subheading ?? null,
     ctaLabel: payload.ctaLabel ?? null,
     ctaUrl: payload.ctaUrl ?? null,
-    placement: payload.placement,
+    // Vị trí luôn là các section banner đã chọn; không còn vị trí cố định.
+    placement: "SECTIONS",
     startAt: payload.startAt,
     endAt: payload.endAt,
     displayOrder: payload.displayOrder,

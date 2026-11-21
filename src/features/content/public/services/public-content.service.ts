@@ -84,16 +84,6 @@ export async function getPublicTaxonomy(): Promise<PublicTaxonomy> {
   }
 }
 
-/** Banner đang chạy của 1 vị trí (HOME_HERO | HOME_PROMOTION | MENU_HERO | ARTICLE_BANNER), theo thứ tự hiển thị. */
-export async function listActiveBanners(placement: string): Promise<PublicBanner[]> {
-  try {
-    return (await getJson<PublicBanner[]>(`/content/public/banners?placement=${encodeURIComponent(placement)}`)) ?? [];
-  } catch (error) {
-    console.error("Không tải được banner từ Backend:", error);
-    return [];
-  }
-}
-
 /**
  * Lần đọc thành công gần nhất theo từng page, trong bộ nhớ tiến trình server. Site render động (force-dynamic) nên
  * không có bản ISR cũ để dựa vào: Backend lỗi thoáng qua mà trả rỗng thì mọi khối "không có dữ liệu" sẽ biến mất.
