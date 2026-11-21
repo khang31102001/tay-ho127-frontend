@@ -39,4 +39,6 @@ export type ManagedMedia = {
   status: EntityStatus;
   /** Chỉ có ở danh sách Admin; media đọc từ API public/mock không mang trường này. */
   storage?: MediaStorage;
+  /** Nhóm kho ảnh (code, xem media-category.types.ts) — media mẫu (mock) không có. */
+  categoryCode?: string;
 };

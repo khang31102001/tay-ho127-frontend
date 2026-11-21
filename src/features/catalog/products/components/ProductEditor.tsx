@@ -10,7 +10,7 @@ import {
 import type { EntityStatus } from "@/shared/admin/templates/StatusBadge";
 import { useAdminAuth } from "@/features/admin-auth";
 import { MediaMultiPicker, MediaPicker } from "@/features/media/components/MediaPicker";
-import { RichTextEditor } from "@/shared/ui/RichTextEditor";
+import { MediaRichTextEditor } from "@/features/media/components/MediaRichTextEditor";
 import { Tabs, type TabItem } from "@/shared/ui/Tabs";
 import { SeoFieldsForm, StructuredDataSection } from "@/features/seo";
 
@@ -77,6 +77,7 @@ export function ProductEditor({ id }: ProductEditorProps) {
               form={seo.form}
               updateField={seo.updateField}
               mediaOptions={mediaOptions}
+              onMediaUploaded={addUploadedMedia}
               entityDefaults={{
                 title: form.name,
                 description: form.description ?? "",
@@ -208,9 +209,13 @@ export function ProductEditor({ id }: ProductEditorProps) {
       <div>
         <span className={adminFieldLabelClassName}>Mô tả chi tiết (tùy chọn)</span>
         <div className="mt-1.5">
-          <RichTextEditor
+          <MediaRichTextEditor
             value={form.content ?? ""}
             onChange={(html) => updateField("content", html)}
+            mediaOptions={mediaOptions}
+            isLoadingMedia={isLoadingOptions}
+            category="products"
+            onMediaUploaded={addUploadedMedia}
             placeholder="Giới thiệu chi tiết món ăn: nguyên liệu, cách làm, cách thưởng thức..."
             maxWords={PRODUCT_CONTENT_MAX_WORDS}
           />
@@ -222,6 +227,7 @@ export function ProductEditor({ id }: ProductEditorProps) {
         hint="Một ảnh, hiển thị trên thẻ món và đầu trang chi tiết. Để trống thì dùng ảnh đầu tiên của danh sách ảnh."
         mediaType="image"
         mediaOptions={thumbnailMediaOptions}
+        category="products"
         selectedId={form.thumbnailMediaId ?? null}
         onChange={(mediaId) => updateField("thumbnailMediaId", mediaId ?? undefined)}
         isLoading={isLoadingOptions}
@@ -234,6 +240,7 @@ export function ProductEditor({ id }: ProductEditorProps) {
         hint="Thư viện ảnh của món, hiển thị theo thứ tự bên dưới (dùng nút mũi tên để sắp xếp)."
         mediaType="image"
         mediaOptions={mediaOptions}
+        category="products"
         selectedIds={form.mediaIds}
         onChange={(mediaIds) => updateField("mediaIds", mediaIds)}
         isLoading={isLoadingOptions}

@@ -18,7 +18,7 @@ import { useSeoSettingsForm } from "../hooks/useSeoSettingsForm";
  * không cần chia Tabs như Brand Settings.
  */
 export function SeoSettingsForm() {
-  const { form, isLoading, mediaOptions, updateField, handleSave } = useSeoSettingsForm();
+  const { form, isLoading, mediaOptions, addUploadedMedia, updateField, handleSave } = useSeoSettingsForm();
   const [savedPopupOpen, setSavedPopupOpen] = useState(false);
 
   return (
@@ -60,6 +60,9 @@ export function SeoSettingsForm() {
               mediaType="image"
               label="OG Image mặc định"
               mediaOptions={mediaOptions}
+              category="seo"
+              allowUpload
+              onMediaUploaded={addUploadedMedia}
               selectedId={form.defaultOgImageMediaId}
               onChange={(mediaId) => updateField("defaultOgImageMediaId", mediaId)}
             />

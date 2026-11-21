@@ -14,6 +14,7 @@ import { StatusBadge } from "@/shared/admin/templates/StatusBadge";
 import { useAdminAuth } from "@/features/admin-auth";
 import { formatFileSize } from "@/core/utils/format-file-size";
 import { isNextImageCompatibleUrl } from "@/core/config/image-hosts";
+import { MEDIA_CATEGORIES, getMediaCategoryLabel } from "../types/media-category.types";
 import { MEDIA_STORAGE_LABELS, MEDIA_TYPE_OPTIONS, type ManagedMedia } from "../types/media.types";
 
 import { useMediaExplorer } from "../hooks/useMediaExplorer";
@@ -29,6 +30,11 @@ const STATUS_FILTER_OPTIONS: { value: LibraryMediaStatusFilter; label: string }[
 function mediaTypeLabel(type: ManagedMedia["type"]) {
   return MEDIA_TYPE_OPTIONS.find((option) => option.value === type)?.label ?? type;
 }
+
+const CATEGORY_FILTER_OPTIONS = [
+  { value: "all" as const, label: "Tất cả nhóm" },
+  ...MEDIA_CATEGORIES.map((category) => ({ value: category.code, label: category.label })),
+];
 
 const columns: DataExplorerColumn<ManagedMedia>[] = [
   {
@@ -60,6 +66,11 @@ const columns: DataExplorerColumn<ManagedMedia>[] = [
     render: (row) => mediaTypeLabel(row.type),
   },
   {
+    key: "category",
+    header: "Nhóm",
+    render: (row) => (row.categoryCode ? getMediaCategoryLabel(row.categoryCode) : "—"),
+  },
+  {
     key: "storage",
     header: "Nơi lưu",
     render: (row) => (row.storage ? MEDIA_STORAGE_LABELS[row.storage] : "—"),
@@ -78,7 +89,7 @@ const columns: DataExplorerColumn<ManagedMedia>[] = [
 ];
 
 export function MediaExplorer() {
-  const { loadPage, handleDelete, statusFilter, setStatusFilter, reload } = useMediaExplorer();
+  const { loadPage, handleDelete, statusFilter, setStatusFilter, categoryFilter, setCategoryFilter, reload } = useMediaExplorer();
   const { hasPermission } = useAdminAuth();
   const [purgeTargets, setPurgeTargets] = useState<{ media: ManagedMedia[]; clearSelection: () => void } | null>(null);
   const canPurge = hasPermission("media.purge");
@@ -98,12 +109,20 @@ export function MediaExplorer() {
       emptyState="Chưa có file media nào."
       totalLabel="file"
       filters={
-        <DataExplorerFilterSelect
-          ariaLabel="Lọc theo trạng thái"
-          value={statusFilter}
-          onChange={setStatusFilter}
-          options={STATUS_FILTER_OPTIONS}
-        />
+        <>
+          <DataExplorerFilterSelect
+            ariaLabel="Lọc theo nhóm kho ảnh"
+            value={categoryFilter}
+            onChange={setCategoryFilter}
+            options={CATEGORY_FILTER_OPTIONS}
+          />
+          <DataExplorerFilterSelect
+            ariaLabel="Lọc theo trạng thái"
+            value={statusFilter}
+            onChange={setStatusFilter}
+            options={STATUS_FILTER_OPTIONS}
+          />
+        </>
       }
       bulkActions={
         canPurge

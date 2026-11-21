@@ -7,6 +7,7 @@ import {
   listLibraryMediaPage,
   uploadLibraryMedia,
 } from "../services/media-library.service";
+import type { MediaCategoryCode } from "../types/media-category.types";
 import type { ManagedMedia, MediaType, MediaUploadStorage } from "../types/media.types";
 import {
   MEDIA_BATCH_CONCURRENCY,
@@ -61,7 +62,7 @@ async function findDuplicateInLibrary(file: File): Promise<ManagedMedia | null> 
  * State của tab "Upload" trong MediaPickerDialog: giữ file ở trình duyệt (xem trước bằng blob URL),
  * chỉ tải lên Media khi gọi `uploadSelected` (bấm Lưu). Đóng popup = bỏ hết, không tạo media nào.
  */
-export function useMediaPickerUpload(allowedTypes: MediaType[] | null) {
+export function useMediaPickerUpload(allowedTypes: MediaType[] | null, category?: MediaCategoryCode) {
   const [items, setItems] = useState<PendingUpload[]>([]);
   const nextKeyRef = useRef(0);
   const itemsRef = useRef(items);
@@ -145,7 +146,7 @@ export function useMediaPickerUpload(allowedTypes: MediaType[] | null) {
       updateItem(item.key, { isUploading: true, error: null });
       try {
         const duplicate = await findDuplicateInLibrary(item.file);
-        const media = duplicate ?? (await uploadLibraryMedia(item.file, storage));
+        const media = duplicate ?? (await uploadLibraryMedia(item.file, storage, undefined, category));
         done.set(item.key, media);
         updateItem(item.key, { isUploading: false, media, isReused: duplicate !== null });
       } catch (error) {

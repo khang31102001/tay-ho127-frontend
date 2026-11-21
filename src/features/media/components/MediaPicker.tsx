@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ArrowDown, ArrowUp, ImagePlus, X } from "lucide-react";
 
+import type { MediaCategoryCode } from "../types/media-category.types";
 import { adminFieldLabelClassName } from "@/shared/admin/templates/formFieldClassName";
 import type { ManagedMedia } from "@/features/media";
 
@@ -23,6 +24,11 @@ type MediaPickerBaseProps = {
   isLoading?: boolean;
   /** Bật tab "Upload ảnh vào Media" trong popup (mặc định tắt — chỉ chọn từ thư viện). */
   allowUpload?: boolean;
+  /**
+   * Nhóm kho ảnh của form đang mở (xem media-category.types.ts): popup mặc định lọc theo nhóm này và ảnh tải lên
+   * từ tab Upload được lưu vào nhóm này. Không truyền = không lọc, ảnh mới vào nhóm "Chung".
+   */
+  category?: MediaCategoryCode;
   /** Media vừa tải lên/dùng lại từ tab Upload — form thêm vào `mediaOptions` để hiển thị được ngay. */
   onMediaUploaded?: (media: ManagedMedia[]) => void;
   /** Dòng gợi ý dưới nhãn. */
@@ -71,6 +77,7 @@ export function MediaPicker({
   onChange,
   isLoading,
   allowUpload,
+  category,
   onMediaUploaded,
   hint,
   mediaType,
@@ -127,6 +134,7 @@ export function MediaPicker({
           initialSelectedIds={selectedId ? [selectedId] : []}
           isLoading={isLoading}
           allowUpload={allowUpload}
+          category={category}
           onClose={() => setIsOpen(false)}
           onConfirm={(ids, uploadedMedia) => {
             if (uploadedMedia.length > 0) onMediaUploaded?.(uploadedMedia);
@@ -150,6 +158,7 @@ export function MediaMultiPicker({
   onChange,
   isLoading,
   allowUpload,
+  category,
   onMediaUploaded,
   hint,
   mediaType,
@@ -231,6 +240,7 @@ export function MediaMultiPicker({
           multiple
           isLoading={isLoading}
           allowUpload={allowUpload}
+          category={category}
           onClose={() => setIsOpen(false)}
           onConfirm={(ids, uploadedMedia) => {
             if (uploadedMedia.length > 0) onMediaUploaded?.(uploadedMedia);

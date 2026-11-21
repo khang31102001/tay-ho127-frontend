@@ -1,7 +1,7 @@
 import { ADMIN_LIST_PAGE_SIZE, adminApi } from "@/core/api/admin-api";
 import type { PaginatedResult } from "@/core/api/api-types";
 
-import type { BannerPlacement, ManagedBanner } from "../types/banner.types";
+import type { BannerPlacement, BannerSectionRef, ManagedBanner } from "../types/banner.types";
 
 /**
  * Admin → Content → Banner, gọi Backend /api/v1/content/banners (quyền banners.*).
@@ -28,9 +28,11 @@ type BannerDto = {
   endAt: string | null;
   displayOrder: number;
   isActive: boolean;
+  sections?: BannerSectionRef[];
 };
 
-export type BannerUpsertInput = Omit<ManagedBanner, "id">;
+/** `sectionIds` = các section banner banner được hiển thị (gửi danh sách rỗng = gỡ khỏi mọi section). */
+export type BannerUpsertInput = Omit<ManagedBanner, "id" | "sections"> & { sectionIds: string[] };
 
 function toManagedBanner(dto: BannerDto): ManagedBanner {
   return {
@@ -48,6 +50,7 @@ function toManagedBanner(dto: BannerDto): ManagedBanner {
     endAt: dto.endAt,
     displayOrder: dto.displayOrder,
     isActive: dto.isActive,
+    sections: dto.sections ?? [],
   };
 }
 
@@ -66,6 +69,7 @@ function toRequest(payload: BannerUpsertInput) {
     endAt: payload.endAt,
     displayOrder: payload.displayOrder,
     isActive: payload.isActive,
+    sectionIds: payload.sectionIds,
   };
 }
 

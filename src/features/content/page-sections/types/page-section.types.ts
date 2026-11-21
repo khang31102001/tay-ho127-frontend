@@ -15,6 +15,7 @@ export const SECTION_TYPE_OPTIONS = [
   { value: "timeline", label: "Mốc thời gian" },
   { value: "faq", label: "Câu hỏi thường gặp" },
   { value: "core", label: "Nội dung chính của trang" },
+  { value: "banner", label: "Banner" },
 ] as const;
 
 export type SectionType = (typeof SECTION_TYPE_OPTIONS)[number]["value"];

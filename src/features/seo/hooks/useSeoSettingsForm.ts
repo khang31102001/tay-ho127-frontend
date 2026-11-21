@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import type { ManagedMedia } from "@/features/media";
-import { listMedia } from "@/features/media";
+import { listMedia, useMediaOptionsWithUploads } from "@/features/media";
 
 import { getSeoSettings, updateSeoSettings } from "../services/seo-settings.service";
 import type { ManagedSeoSettings, SeoSettingsFormValue } from "../types/seo-settings.types";
@@ -15,7 +15,8 @@ function toFormValue(settings: ManagedSeoSettings): SeoSettingsFormValue {
 
 export function useSeoSettingsForm() {
   const [form, setForm] = useState<SeoSettingsFormValue | null>(null);
-  const [mediaOptions, setMediaOptions] = useState<ManagedMedia[]>([]);
+  const [libraryMedia, setMediaOptions] = useState<ManagedMedia[]>([]);
+  const { mediaOptions, addUploadedMedia } = useMediaOptionsWithUploads(libraryMedia);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -41,5 +42,5 @@ export function useSeoSettingsForm() {
     setForm(toFormValue(updated));
   }
 
-  return { form, isLoading, mediaOptions, updateField, handleSave };
+  return { form, isLoading, mediaOptions, addUploadedMedia, updateField, handleSave };
 }

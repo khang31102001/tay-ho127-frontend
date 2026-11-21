@@ -30,6 +30,7 @@ export function CategoryEditor({ id }: CategoryEditorProps) {
     updateField,
     parentOptions,
     mediaOptions,
+    addUploadedMedia,
     seo,
     seoSettings,
     isLoading,
@@ -120,6 +121,7 @@ export function CategoryEditor({ id }: CategoryEditorProps) {
             form={seo.form}
             updateField={seo.updateField}
             mediaOptions={mediaOptions}
+            onMediaUploaded={addUploadedMedia}
             entityDefaults={{ title: form.name, description: "", imageMediaId: null }}
             settings={seoSettings}
             previewUrl={null}

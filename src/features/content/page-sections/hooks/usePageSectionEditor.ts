@@ -6,7 +6,7 @@ import { getPageById } from "@/features/content/pages";
 import { useAsyncData } from "@/shared/hooks/useAsyncData";
 import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 
-import { listMedia } from "@/features/media";
+import { listMedia, useMediaOptionsWithUploads } from "@/features/media";
 
 import type { PageSectionUpsertInput } from "../services/page-section.service";
 import {
@@ -52,6 +52,7 @@ export function usePageSectionEditor({ pageId, id, initialSlotKey }: UsePageSect
 
   const [form, setForm] = useState<PageSectionFormValue>(buildEmptyForm(pageId, 1));
   const mediaOptionsData = useAsyncData(listMedia, [], { fallbackError: "Không thể tải thư viện media." });
+  const { mediaOptions, addUploadedMedia } = useMediaOptionsWithUploads(mediaOptionsData.data ?? []);
   const page = useAsyncData(() => getPageById(pageId), [pageId], { fallbackError: "Không thể tải page." });
   const existing = useAsyncData(() => getSectionById(pageId, id ?? ""), [pageId, id], {
     enabled: isEditMode,
@@ -126,7 +127,8 @@ export function usePageSectionEditor({ pageId, id, initialSlotKey }: UsePageSect
     slotTemplates,
     takenSlotKeys,
     currentSlot,
-    mediaOptions: mediaOptionsData.data ?? [],
+    mediaOptions,
+    addUploadedMedia,
     isLoading: existing.isLoading || page.isLoading,
     loadError: existing.error ?? siblings.error ?? page.error,
     isEditMode,
