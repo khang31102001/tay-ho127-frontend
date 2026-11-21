@@ -1,282 +1,176 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { normalizeText } from "@/core/utils/normalize-text";
 import type { MenuResponse, UiProduct } from "../types/menu.types";
 
 /**
- * Các danh mục được hiển thị trên thanh bộ lọc.
- * `as const` giúp TypeScript hiểu đây là các giá trị cố định.
+ * Một section trên trang thực đơn = một danh mục cấp 2 của Catalog
+ * (hoặc section "Món yêu thích" lấy từ thực đơn `mon-yeu-thich`).
+ * Thứ tự và tên do Admin quản lý, không còn đoán theo từ khóa.
  */
-export const categories = [
-  "Tất cả",
-  "Món mặn",
-  "Món chay",
-  "Ăn kèm",
-] as const;
+export interface MenuSection {
+  id: string;
+  name: string;
+  items: UiProduct[];
+}
 
-export type MenuCategory = (typeof categories)[number];
+export const FAVORITES_SECTION_ID = "mon-yeu-thich";
 
-/**
- * Số sản phẩm hiển thị mặc định.
- */
-const INITIAL_VISIBLE_COUNT = 12;
+/** Vạch "đã cuộn tới section": nằm dưới header cố định + thanh tab sticky. */
+const SCROLL_SPY_ROOT_MARGIN = "-140px 0px -60% 0px";
 
-/**
- * Số sản phẩm hiển thị thêm sau mỗi lần bấm "Xem thêm".
- */
-const LOAD_MORE_COUNT = 12;
+/** Chiều cao header cố định + thanh tab sticky, để cuộn tới section không bị che. */
+export const SECTION_SCROLL_OFFSET_CLASS = "scroll-mt-32 md:scroll-mt-36";
 
-export function useMenuGrid(groups: MenuResponse["data"]["menu"]["groups"]) {
-  /**
-   * Từ khóa người dùng nhập vào ô tìm kiếm.
-   */
+export function useMenuGrid(
+  groups: MenuResponse["data"]["menu"]["groups"],
+  featured: UiProduct[],
+) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
 
-  /**
-   * Danh mục đang được chọn.
-   */
-  const [activeCategory, setActiveCategory] =
-    useState<MenuCategory>("Tất cả");
+  /** Chặn scroll-spy ghi đè tab vừa bấm trong lúc trang đang cuộn mượt. */
+  const isProgrammaticScrollRef = useRef(false);
+  const scrollTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  /**
-   * Số lượng sản phẩm đang được hiển thị.
-   */
-  const [visibleCount, setVisibleCount] = useState(
-    INITIAL_VISIBLE_COUNT,
-  );
+  /* 1. API → danh sách section (theo danh mục cấp 2) */
+  const sections = useMemo<MenuSection[]>(() => {
+    const result: MenuSection[] = [];
 
-  /* =======================================================
-   * 1. CHUYỂN DỮ LIỆU API THÀNH DANH SÁCH UIPRODUCT
-   * ===================================================== */
+    if (featured.length > 0) {
+      result.push({ id: FAVORITES_SECTION_ID, name: "Món yêu thích", items: featured });
+    }
 
-  const items = useMemo<UiProduct[]>(() => {
-    const mappedItems: UiProduct[] = [];
+    let runningId = 0;
 
     groups.forEach((group) => {
       (group.categories ?? []).forEach((category) => {
-        /**
-         * Chuẩn hóa tên category để xác định:
-         * - Món mặn
-         * - Món chay
-         * - Ăn kèm
-         */
-        const normalizedCategoryName = normalizeText(
-          category.name ?? "",
-        );
+        const items: UiProduct[] = [];
 
-        let mappedCategory: UiProduct["category"] =
-          "Món mặn";
+        (category.subCategories ?? []).forEach((subCategory) => {
+          (subCategory.products ?? []).forEach((product) => {
+            runningId += 1;
+            items.push({
+              id: runningId,
+              productId: product.id,
+              slug: product.slug || product.id,
+              name: product.name?.vi || product.name?.en || product.slug || "Sản phẩm chưa có tên",
+              category: category.name ?? "",
+              price: product.price?.amount ?? 0,
+              oldPrice: undefined,
+              badge: product.productType || undefined,
+              rating: 0,
+              ratingCount: 0,
+              image: product.imageUrl || "/images/banh-cuon-dish.jpg",
+            });
+          });
+        });
 
-        if (normalizedCategoryName.includes("chay")) {
-          mappedCategory = "Món chay";
-        } else if (
-          normalizedCategoryName.includes("an kem") ||
-          normalizedCategoryName.includes("them")
-        ) {
-          mappedCategory = "Ăn kèm";
+        if (items.length > 0) {
+          result.push({
+            id: category.id,
+            name: category.name ?? "Khác",
+            items,
+          });
         }
-
-        /**
-         * Lấy sản phẩm từ tất cả subCategories
-         * và đưa về cùng một mảng.
-         */
-        (category.subCategories ?? []).forEach(
-          (subCategory) => {
-            (subCategory.products ?? []).forEach(
-              (product) => {
-                mappedItems.push({
-                  /**
-                   * Hiện tại sử dụng số thứ tự làm id.
-                   * Sau này nên thay bằng product.id từ API
-                   * nếu API có trả về id duy nhất.
-                   */
-                  id: mappedItems.length + 1,
-
-                  productId: product.id,
-
-                  slug: product.slug || product.id,
-
-                  name:
-                    product.name?.vi ||
-                    product.name?.en ||
-                    product.slug ||
-                    "Sản phẩm chưa có tên",
-
-                  category: mappedCategory,
-
-                  price: product.price?.amount ?? 0,
-
-                  oldPrice: undefined,
-
-                  badge:
-                    product.productType || undefined,
-
-                  rating: 0,
-
-                  ratingCount: 0,
-
-                  image:
-                    product.imageUrl ||
-                    "/images/banh-cuon-dish.jpg",
-                });
-              },
-            );
-          },
-        );
       });
     });
 
-    return mappedItems;
-  }, [groups]);
+    return result;
+  }, [groups, featured]);
 
-  /* =======================================================
-   * 2. LỌC SẢN PHẨM THEO TỪ KHÓA VÀ DANH MỤC
-   * ===================================================== */
+  /* 2. Lọc theo từ khóa; section rỗng bị ẩn khỏi cả danh sách lẫn thanh tab */
+  const visibleSections = useMemo<MenuSection[]>(() => {
+    const keyword = normalizeText(searchTerm);
+    if (keyword === "") {
+      return sections;
+    }
 
-  const filteredItems = useMemo(() => {
-    const normalizedSearchTerm =
-      normalizeText(searchTerm);
+    return sections
+      .map((section) => ({
+        ...section,
+        items: section.items.filter((item) =>
+          normalizeText([item.name, section.name, item.badge ?? ""].join(" ")).includes(keyword),
+        ),
+      }))
+      .filter((section) => section.items.length > 0);
+  }, [sections, searchTerm]);
 
-    return items.filter((item) => {
-      /**
-       * Kiểm tra sản phẩm có thuộc danh mục đang chọn không.
-       */
-      const matchesCategory =
-        activeCategory === "Tất cả" ||
-        item.category === activeCategory;
-
-      /**
-       * Chuỗi dùng để tìm kiếm.
-       * Có thể bổ sung description hoặc slug vào đây
-       * khi UiProduct có thêm các field đó.
-       */
-      const searchableText = normalizeText(
-        [
-          item.name,
-          item.category,
-          item.badge ?? "",
-        ].join(" "),
-      );
-
-      /**
-       * Khi ô tìm kiếm trống, tất cả sản phẩm đều hợp lệ.
-       */
-      const matchesSearch =
-        normalizedSearchTerm === "" ||
-        searchableText.includes(normalizedSearchTerm);
-
-      return matchesCategory && matchesSearch;
-    });
-  }, [items, searchTerm, activeCategory]);
-
-  /* =======================================================
-   * 3. DANH SÁCH SẢN PHẨM ĐANG HIỂN THỊ
-   * ===================================================== */
-
-  /**
-   * Chỉ lấy số lượng sản phẩm theo visibleCount.
-   */
-  const visibleItems = filteredItems.slice(
-    0,
-    visibleCount,
+  const totalVisibleItems = useMemo(
+    () => visibleSections.reduce((sum, section) => sum + section.items.length, 0),
+    [visibleSections],
   );
 
-  /**
-   * Còn sản phẩm chưa được hiển thị hay không.
-   */
-  const hasMoreItems =
-    visibleCount < filteredItems.length;
+  /* 3. Scroll-spy: tab sáng theo section đang xem */
+  const sectionIds = useMemo(() => visibleSections.map((section) => section.id), [visibleSections]);
+  const sectionKey = sectionIds.join("|");
 
-  /**
-   * Có thể thu gọn hay không.
-   */
-  const canCollapse =
-    visibleCount > INITIAL_VISIBLE_COUNT;
+  useEffect(() => {
+    setActiveSectionId(sectionIds[0] ?? null);
 
-  /* =======================================================
-   * 4. CÁC HÀM XỬ LÝ SỰ KIỆN
-   * ===================================================== */
+    if (sectionIds.length === 0 || typeof IntersectionObserver === "undefined") {
+      return;
+    }
 
-  /**
-   * Xử lý khi người dùng nhập từ khóa.
-   *
-   * Khi tìm kiếm mới, danh sách tự quay lại
-   * số lượng mặc định là 12 sản phẩm.
-   */
-  function handleSearchChange(value: string) {
-    setSearchTerm(value);
-    setVisibleCount(INITIAL_VISIBLE_COUNT);
-  }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (isProgrammaticScrollRef.current) {
+          return;
+        }
 
-  /**
-   * Xử lý khi người dùng chọn danh mục.
-   *
-   * Khi đổi danh mục, danh sách tự quay lại
-   * số lượng mặc định là 12 sản phẩm.
-   */
-  function handleCategoryChange(
-    category: MenuCategory,
-  ) {
-    setActiveCategory(category);
-    setVisibleCount(INITIAL_VISIBLE_COUNT);
-  }
+        const inView = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
 
-  /**
-   * Hiển thị thêm 12 sản phẩm.
-   *
-   * Math.min giúp visibleCount không vượt quá
-   * tổng số sản phẩm sau khi lọc.
-   */
-  function handleLoadMore() {
-    setVisibleCount((currentCount) =>
-      Math.min(
-        currentCount + LOAD_MORE_COUNT,
-        filteredItems.length,
-      ),
+        if (inView) {
+          setActiveSectionId(inView.target.id.replace(/^menu-section-/, ""));
+        }
+      },
+      { rootMargin: SCROLL_SPY_ROOT_MARGIN },
     );
-  }
 
-  /**
-   * Thu gọn danh sách về 12 sản phẩm.
-   */
-  function handleCollapse() {
-    setVisibleCount(INITIAL_VISIBLE_COUNT);
-  }
+    sectionIds.forEach((id) => {
+      const element = document.getElementById(`menu-section-${id}`);
+      if (element) {
+        observer.observe(element);
+      }
+    });
 
-  /**
-   * Xóa nhanh từ khóa tìm kiếm.
-   */
-  function handleClearSearch() {
-    setSearchTerm("");
-    setVisibleCount(INITIAL_VISIBLE_COUNT);
-  }
+    return () => observer.disconnect();
+    // sectionKey đại diện cho sectionIds (mảng mới mỗi lần render).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sectionKey]);
 
-  /**
-   * Xóa bộ lọc + từ khóa, quay về trạng thái mặc định.
-   * Dùng cho nút "Xem tất cả món" khi không tìm thấy sản phẩm.
-   */
-  function resetFilters() {
-    setSearchTerm("");
-    setActiveCategory("Tất cả");
-    setVisibleCount(INITIAL_VISIBLE_COUNT);
-  }
+  useEffect(() => () => clearTimeout(scrollTimerRef.current), []);
+
+  /* 4. Handlers */
+  const handleSearchChange = useCallback((value: string) => setSearchTerm(value), []);
+  const handleClearSearch = useCallback(() => setSearchTerm(""), []);
+
+  const handleSectionSelect = useCallback((id: string) => {
+    const element = document.getElementById(`menu-section-${id}`);
+    if (!element) {
+      return;
+    }
+
+    setActiveSectionId(id);
+    isProgrammaticScrollRef.current = true;
+    clearTimeout(scrollTimerRef.current);
+    element.scrollIntoView({ behavior: "smooth", block: "start" });
+    scrollTimerRef.current = setTimeout(() => {
+      isProgrammaticScrollRef.current = false;
+    }, 800);
+  }, []);
 
   return {
-    items,
     searchTerm,
-    activeCategory,
-    visibleCount,
-    filteredItems,
-    visibleItems,
-    hasMoreItems,
-    canCollapse,
+    activeSectionId,
+    visibleSections,
+    totalVisibleItems,
     handleSearchChange,
-    handleCategoryChange,
-    handleLoadMore,
-    handleCollapse,
     handleClearSearch,
-    resetFilters,
+    handleSectionSelect,
   };
 }

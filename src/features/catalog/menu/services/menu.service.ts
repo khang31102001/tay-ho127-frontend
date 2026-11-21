@@ -6,7 +6,7 @@
  * (DataExplorer/DataEditor + các Editor/Explorer) vào bundle JS công khai —
  * đã đo được ~18kB gzip dư ra trên cả 2 trang.
  */
-import { loadPublicCatalog } from "@/features/catalog/public";
+import { getPublicProductContent, loadPublicCatalog } from "@/features/catalog/public";
 import type { ManagedMenu } from "@/features/catalog/menus/types/menu.types";
 import type { ManagedMenuProduct } from "@/features/catalog/menu-products/types/menu-product.types";
 import type { ManagedProduct } from "@/features/catalog/products/types/product.types";
@@ -73,12 +73,25 @@ function listMenuRows(menu: ManagedMenu | undefined, menuProducts: ManagedMenuPr
     .sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
-function resolveProductImage(
-  product: ManagedProduct,
-  mediaById: Map<string, ManagedMedia>,
-): string {
-  const media = product.mediaIds[0] ? mediaById.get(product.mediaIds[0]) : undefined;
-  return media?.url ?? DEFAULT_PRODUCT_IMAGE;
+/** Ảnh đại diện cho card: `thumbnailUrl` do Backend trả; chưa có thì dùng ảnh mặc định của FE. */
+function resolveProductImage(product: ManagedProduct): string {
+  return product.thumbnailUrl ?? DEFAULT_PRODUCT_IMAGE;
+}
+
+/**
+ * Danh sách ảnh trang chi tiết, đúng thứ tự `mediaIds` (key không tra được thì bỏ).
+ * >= 2 ảnh → gallery; ít hơn → 1 ảnh: ảnh đại diện, rồi ảnh duy nhất trong danh sách, rồi ảnh mặc định.
+ */
+function resolveProductGallery(product: ManagedProduct, mediaById: Map<string, ManagedMedia>): string[] {
+  const listed = product.mediaIds
+    .map((mediaId) => mediaById.get(mediaId)?.url)
+    .filter((url): url is string => Boolean(url));
+
+  if (listed.length >= 2) {
+    return listed;
+  }
+
+  return [product.thumbnailUrl ?? listed[0] ?? DEFAULT_PRODUCT_IMAGE];
 }
 
 /**
@@ -122,7 +135,7 @@ type MutableCategory = Omit<Category, "subCategories"> & { subCategories: Mutabl
 type MutableGroup = Omit<MenuGroup, "categories"> & { categories: MutableCategory[] };
 
 export async function fetchMenu(): Promise<MenuResponse> {
-  const { menus, menuProducts, productById, categoryById, mediaById } = await loadCatalogSnapshot();
+  const { menus, menuProducts, productById, categoryById } = await loadCatalogSnapshot();
 
   const siteMenu = menus.find((menu) => menu.code === SITE_MAIN_MENU_CODE);
   const linkedRows = listMenuRows(siteMenu, menuProducts);
@@ -176,7 +189,7 @@ export async function fetchMenu(): Promise<MenuResponse> {
       name: { vi: managedProduct.name },
       productType: managedProduct.badge,
       price: { amount: row.priceOverride ?? managedProduct.price },
-      imageUrl: resolveProductImage(managedProduct, mediaById),
+      imageUrl: resolveProductImage(managedProduct),
       isActive: managedProduct.status === "active",
     });
   });
@@ -199,7 +212,7 @@ export async function fetchMenu(): Promise<MenuResponse> {
 
 /** Danh sách phẳng cho carousel "Món yêu thích" ở trang chủ. */
 export async function fetchFeaturedMenu(): Promise<UiProduct[]> {
-  const { menus, menuProducts, productById, categoryById, mediaById } = await loadCatalogSnapshot();
+  const { menus, menuProducts, productById, categoryById } = await loadCatalogSnapshot();
 
   const favoritesMenu = menus.find((menu) => menu.code === SITE_FAVORITES_MENU_CODE);
   const linkedRows = listMenuRows(favoritesMenu, menuProducts);
@@ -225,7 +238,7 @@ export async function fetchFeaturedMenu(): Promise<UiProduct[]> {
       badge: managedProduct.badge,
       rating: managedProduct.rating ?? 0,
       ratingCount: managedProduct.ratingCount ?? 0,
-      image: resolveProductImage(managedProduct, mediaById),
+      image: resolveProductImage(managedProduct),
     });
   });
 
@@ -239,7 +252,7 @@ export async function fetchFeaturedMenu(): Promise<UiProduct[]> {
  * danh sách sản phẩm trong UI.
  */
 export async function fetchCrossSellProducts(): Promise<UiProduct[]> {
-  const { menus, menuProducts, productById, categoryById, mediaById } = await loadCatalogSnapshot();
+  const { menus, menuProducts, productById, categoryById } = await loadCatalogSnapshot();
 
   const crossSellMenu = menus.find((menu) => menu.code === SITE_CROSS_SELL_MENU_CODE);
   const linkedRows = listMenuRows(crossSellMenu, menuProducts);
@@ -265,7 +278,7 @@ export async function fetchCrossSellProducts(): Promise<UiProduct[]> {
       badge: managedProduct.badge,
       rating: managedProduct.rating ?? 0,
       ratingCount: managedProduct.ratingCount ?? 0,
-      image: resolveProductImage(managedProduct, mediaById),
+      image: resolveProductImage(managedProduct),
     });
   });
 
@@ -311,6 +324,7 @@ export async function getProductDetail(slug: string): Promise<ProductDetailData 
   const modifierGroups = managedProduct.modifierGroupIds
     .map((groupId) => allModifierGroups.find((group) => group.id === groupId))
     .filter((group): group is ManagedModifierGroup => group !== undefined);
+  const content = await getPublicProductContent(managedProduct.slug);
 
   const product: ProductDetail = {
     id: managedProduct.id,
@@ -322,8 +336,10 @@ export async function getProductDetail(slug: string): Promise<ProductDetailData 
     badge: managedProduct.badge,
     rating: managedProduct.rating ?? 0,
     ratingCount: managedProduct.ratingCount ?? 0,
-    image: resolveProductImage(managedProduct, mediaById),
+    image: resolveProductImage(managedProduct),
+    images: resolveProductGallery(managedProduct, mediaById),
     description: managedProduct.description,
+    content,
     modifierGroups,
   };
 
@@ -359,7 +375,7 @@ export async function getProductDetail(slug: string): Promise<ProductDetailData 
       badge: candidate.badge,
       rating: candidate.rating ?? 0,
       ratingCount: candidate.ratingCount ?? 0,
-      image: resolveProductImage(candidate, mediaById),
+      image: resolveProductImage(candidate),
     });
   }
 

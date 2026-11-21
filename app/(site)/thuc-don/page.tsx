@@ -3,7 +3,7 @@ import {
   MenuHero,
   MenuGrid,
   fetchMenu,
-  type MenuResponse,
+  fetchFeaturedMenu,
 } from "@/features/catalog/menu";
 import { buildMetadata } from "@/features/seo/utils/build-metadata";
 
@@ -17,13 +17,13 @@ export const metadata = buildMetadata({
 // Trang thực đơn: layout thứ hai theo yêu cầu.
 export default async function MenuPage() {
   // Render page menu bằng component tái sử dụng.
-    const resp: MenuResponse = await fetchMenu();
+  const [resp, featured] = await Promise.all([fetchMenu(), fetchFeaturedMenu()]);
   const groups = resp?.data?.menu?.groups || [];
   return (
     <>
       <MenuHero />
 
-      <MenuGrid groups={groups} />
+      <MenuGrid groups={groups} featured={featured} />
       {/* <CTASection /> */}
     </>
   );
