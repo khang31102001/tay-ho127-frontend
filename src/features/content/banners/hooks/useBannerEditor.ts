@@ -6,7 +6,7 @@ import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 import { useAsyncData } from "@/shared/hooks/useAsyncData";
 import { listMedia, useMediaOptionsWithUploads } from "@/features/media";
 
-import type { BannerPlacement, BannerSectionRef } from "../types/banner.types";
+import type { BannerSectionRef } from "../types/banner.types";
 import {
   createBanner,
   deleteBanner,
@@ -23,8 +23,7 @@ export type BannerFormValue = {
   subheading: string;
   ctaLabel: string;
   ctaUrl: string;
-  placement: BannerPlacement;
-  /** Section banner mà banner được hiển thị (kèm tên trang/section để hiện tóm tắt); chỉ dùng khi placement = SECTIONS. */
+  /** Section banner mà banner được hiển thị (kèm tên trang/section để hiện tóm tắt). */
   sections: BannerSectionRef[];
   /** "YYYY-MM-DD" cho input type="date", rỗng = không giới hạn. */
   startAt: string;
@@ -42,7 +41,6 @@ const EMPTY_FORM: BannerFormValue = {
   subheading: "",
   ctaLabel: "",
   ctaUrl: "",
-  placement: "SECTIONS",
   sections: [],
   startAt: "",
   endAt: "",
@@ -87,7 +85,6 @@ export function useBannerEditor({ id }: UseBannerEditorParams) {
       subheading: banner.subheading ?? "",
       ctaLabel: banner.ctaLabel ?? "",
       ctaUrl: banner.ctaUrl ?? "",
-      placement: banner.placement,
       sections: banner.sections,
       startAt: toDateInputValue(banner.startAt),
       endAt: toDateInputValue(banner.endAt),
@@ -114,9 +111,7 @@ export function useBannerEditor({ id }: UseBannerEditorParams) {
       subheading: form.subheading || undefined,
       ctaLabel: form.ctaLabel || undefined,
       ctaUrl: form.ctaUrl || undefined,
-      placement: form.placement,
-      // Banner bài viết không hiển thị qua section: gửi danh sách rỗng để gỡ liên kết cũ.
-      sectionIds: form.placement === "SECTIONS" ? form.sections.map((section) => section.sectionId) : [],
+      sectionIds: form.sections.map((section) => section.sectionId),
       startAt: toIsoOrNull(form.startAt),
       endAt: toIsoOrNull(form.endAt),
       displayOrder: form.displayOrder,

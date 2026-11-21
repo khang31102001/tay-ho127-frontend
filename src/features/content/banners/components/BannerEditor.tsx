@@ -1,7 +1,6 @@
 "use client";
 
 import { AdminCollapsibleSection } from "@/shared/admin/templates/AdminCollapsibleSection";
-import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
 import { DataEditor } from "@/shared/admin/templates/DataEditor/DataEditor";
 import {
   adminFieldInputClassName,
@@ -10,7 +9,6 @@ import {
 import { MediaPicker } from "@/features/media/components/MediaPicker";
 
 import { useBannerEditor, type BannerFormValue } from "../hooks/useBannerEditor";
-import { BANNER_PLACEMENT_OPTIONS, type BannerPlacement } from "../types/banner.types";
 import { BannerSectionPicker } from "./BannerSectionPicker";
 
 type BannerEditorProps = {
@@ -38,10 +36,6 @@ function summarizeText(form: BannerFormValue) {
 }
 
 function summarizePlacement(form: BannerFormValue) {
-  if (form.placement !== "SECTIONS") {
-    return { warning: null, summary: BANNER_PLACEMENT_OPTIONS.find((option) => option.value === form.placement)?.label ?? form.placement };
-  }
-
   if (form.sections.length === 0) return { warning: "Chưa chọn vị trí — banner chưa hiện ở đâu", summary: null };
 
   const shown = form.sections.slice(0, MAX_VISIBLE_PLACEMENT_CHIPS).map((section) => `${section.pageName} › ${section.sectionLabel}`);
@@ -200,24 +194,7 @@ export function BannerEditor({ id }: BannerEditorProps) {
         warning={placement.warning}
         defaultOpen={!isEditMode}
       >
-        <label className={adminFieldLabelClassName}>
-          Cách hiển thị
-          <AdminSelect
-            value={form.placement}
-            onChange={(event) => updateField("placement", event.target.value as BannerPlacement)}
-            className={adminFieldInputClassName}
-          >
-            {BANNER_PLACEMENT_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </AdminSelect>
-        </label>
-
-        {form.placement === "SECTIONS" && (
-          <BannerSectionPicker selected={form.sections} onChange={(sections) => updateField("sections", sections)} />
-        )}
+        <BannerSectionPicker selected={form.sections} onChange={(sections) => updateField("sections", sections)} />
       </AdminCollapsibleSection>
 
       <AdminCollapsibleSection title="4. Lịch chạy và thứ tự" summary={summarizeSchedule(form)}>
