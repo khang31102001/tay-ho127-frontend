@@ -1,23 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { LoaderCircle, Plus } from "lucide-react";
+import { LoaderCircle, Plus, X } from "lucide-react";
 
-import { adminFieldInputClassName } from "@/shared/admin/templates/formFieldClassName";
+import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
+import { adminButtonClassName, adminFieldInputClassName, adminFieldLabelClassName } from "@/shared/admin/templates/formFieldClassName";
 import { useAsyncData } from "@/shared/hooks/useAsyncData";
 import { listPages } from "@/features/content/pages/services/page.service";
 import { createSection, listSectionsByPageId } from "@/features/content/page-sections/services/page-section.service";
 import type { ManagedPageSection } from "@/features/content/page-sections/types/page-section.types";
 
-type PageWithBannerSections = {
-  pageId: string;
-  pageName: string;
-  sections: ManagedPageSection[];
-};
+import type { BannerSectionRef } from "../types/banner.types";
 
 type BannerSectionPickerProps = {
-  selectedIds: string[];
-  onChange: (sectionIds: string[]) => void;
+  selected: BannerSectionRef[];
+  onChange: (sections: BannerSectionRef[]) => void;
 };
 
 /** Khóa section ổn định để Site tìm theo thứ tự; duy nhất trong trang nhờ hậu tố thời gian. */
@@ -30,36 +27,39 @@ function sectionLabel(section: ManagedPageSection) {
 }
 
 /**
- * Chọn các section banner mà banner được hiển thị: Trang → Section (chỉ section loại Banner). Vị trí là dữ liệu: trang chưa có
- * section banner thì tạo ngay tại đây ("Thêm section banner"), banner hiện ở đúng chỗ section đó đứng trên trang.
+ * Chọn các section banner mà banner được hiển thị, gọn trong 3 bước: (1) chip các vị trí đã chọn (bấm × để gỡ), (2) chọn MỘT
+ * trang, (3) tick các section banner của trang đó. Trang chưa có section banner thì tạo ngay ("Thêm section banner vào trang
+ * này"). Vị trí là dữ liệu: banner hiện đúng chỗ section đó đứng trên trang.
  */
-export function BannerSectionPicker({ selectedIds, onChange }: BannerSectionPickerProps) {
-  const groups = useAsyncData<PageWithBannerSections[]>(
-    async () => {
-      const pages = await listPages();
-      return Promise.all(
-        pages.map(async (page) => ({
-          pageId: page.id,
-          pageName: page.name,
-          sections: (await listSectionsByPageId(page.id)).filter((section) => section.sectionType === "banner"),
-        })),
-      );
-    },
-    [],
-    { fallbackError: "Không thể tải danh sách trang và section." },
+export function BannerSectionPicker({ selected, onChange }: BannerSectionPickerProps) {
+  const pages = useAsyncData(listPages, [], { fallbackError: "Không thể tải danh sách trang." });
+  const [pageId, setPageId] = useState("");
+  const sections = useAsyncData(
+    async () => (await listSectionsByPageId(pageId)).filter((section) => section.sectionType === "banner"),
+    [pageId],
+    { enabled: pageId !== "", fallbackError: "Không thể tải các section của trang." },
   );
 
-  const [creatingPageId, setCreatingPageId] = useState<string | null>(null);
-  const [newName, setNewName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [isSavingNew, setIsSavingNew] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
-  function toggle(sectionId: string) {
-    onChange(selectedIds.includes(sectionId) ? selectedIds.filter((id) => id !== sectionId) : [...selectedIds, sectionId]);
+  const pageName = pages.data?.find((page) => page.id === pageId)?.name ?? "";
+  const isSelected = (sectionId: string) => selected.some((item) => item.sectionId === sectionId);
+
+  function toRef(section: ManagedPageSection): BannerSectionRef {
+    return { sectionId: section.id, pageId, pageName, sectionLabel: sectionLabel(section) };
   }
 
-  async function handleCreate(pageId: string) {
-    setIsCreating(true);
+  function toggle(section: ManagedPageSection) {
+    onChange(
+      isSelected(section.id) ? selected.filter((item) => item.sectionId !== section.id) : [...selected, toRef(section)],
+    );
+  }
+
+  async function handleCreate() {
+    setIsSavingNew(true);
     setCreateError(null);
     try {
       const siblings = await listSectionsByPageId(pageId);
@@ -73,71 +73,97 @@ export function BannerSectionPicker({ selectedIds, onChange }: BannerSectionPick
         galleryMediaIds: [],
         items: [],
       });
-      await groups.reload();
-      onChange([...selectedIds, created.id]);
-      setCreatingPageId(null);
+      await sections.reload();
+      onChange([...selected, toRef(created)]);
+      setIsCreating(false);
       setNewName("");
     } catch (error) {
       setCreateError(error instanceof Error ? error.message : "Không tạo được section banner.");
     } finally {
-      setIsCreating(false);
+      setIsSavingNew(false);
     }
-  }
-
-  if (groups.isLoading) {
-    return (
-      <p className="flex items-center gap-2 text-[13px] text-brand-muted">
-        <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
-        Đang tải trang và section...
-      </p>
-    );
-  }
-
-  if (groups.error) {
-    return <p className="text-[13px] text-brand-red">{groups.error}</p>;
   }
 
   return (
     <div className="space-y-3">
-      {(groups.data ?? []).map((group) => (
-        <div key={group.pageId} className="rounded-lg border border-brand-line p-3">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-[13px] font-black text-brand-greenDark">{group.pageName}</p>
-            <button
-              type="button"
-              onClick={() => {
-                setCreatingPageId(creatingPageId === group.pageId ? null : group.pageId);
-                setCreateError(null);
-              }}
-              className="inline-flex items-center gap-1 rounded-lg border border-brand-line px-2.5 py-1 text-[12px] font-bold text-brand-greenDark transition hover:bg-brand-green/5"
-            >
-              <Plus className="size-3.5" aria-hidden="true" />
-              Thêm section banner
-            </button>
-          </div>
+      <div>
+        <p className={adminFieldLabelClassName}>Đã chọn</p>
+        {selected.length === 0 ? (
+          <p className="mt-1.5 text-admin-sm text-admin-textSecondary">Chưa chọn vị trí nào — banner chưa hiện ở đâu trên Site.</p>
+        ) : (
+          <ul className="mt-1.5 flex flex-wrap gap-2">
+            {selected.map((item) => (
+              <li
+                key={item.sectionId}
+                className="inline-flex items-center gap-1.5 rounded-full bg-admin-primaryLight px-3 py-1 text-admin-sm font-semibold text-admin-primary"
+              >
+                {item.pageName} › {item.sectionLabel}
+                <button
+                  type="button"
+                  aria-label={`Gỡ ${item.pageName} › ${item.sectionLabel}`}
+                  onClick={() => onChange(selected.filter((other) => other.sectionId !== item.sectionId))}
+                  className="rounded-full hover:bg-admin-primary/10"
+                >
+                  <X className="size-3.5" aria-hidden="true" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
-          {group.sections.length === 0 ? (
-            <p className="mt-2 text-[12px] text-brand-muted">Trang này chưa có section banner.</p>
+      <label className={adminFieldLabelClassName}>
+        Thêm vào trang
+        <AdminSelect
+          value={pageId}
+          onChange={(event) => {
+            setPageId(event.target.value);
+            setIsCreating(false);
+            setCreateError(null);
+          }}
+          className={adminFieldInputClassName}
+        >
+          <option value="">{pages.isLoading ? "Đang tải trang..." : "Chọn trang..."}</option>
+          {(pages.data ?? []).map((page) => (
+            <option key={page.id} value={page.id}>
+              {page.name}
+            </option>
+          ))}
+        </AdminSelect>
+      </label>
+      {pages.error && <p className="text-admin-sm text-admin-dangerText">{pages.error}</p>}
+
+      {pageId !== "" && (
+        <div className="rounded-admin border border-admin-border p-3">
+          {sections.isLoading ? (
+            <p className="flex items-center gap-2 text-admin-sm text-admin-textSecondary">
+              <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
+              Đang tải section...
+            </p>
+          ) : sections.error ? (
+            <p className="text-admin-sm text-admin-dangerText">{sections.error}</p>
+          ) : (sections.data ?? []).length === 0 ? (
+            <p className="text-admin-sm text-admin-textSecondary">Trang này chưa có section banner.</p>
           ) : (
-            <ul className="mt-2 space-y-1.5">
-              {group.sections.map((section) => (
+            <ul className="space-y-1.5">
+              {(sections.data ?? []).map((section) => (
                 <li key={section.id}>
-                  <label className="flex items-center gap-2.5 text-[13px] text-brand-ink">
+                  <label className="flex items-center gap-2.5 text-admin-base text-admin-text">
                     <input
                       type="checkbox"
-                      checked={selectedIds.includes(section.id)}
-                      onChange={() => toggle(section.id)}
-                      className="size-4 shrink-0 accent-brand-green"
+                      checked={isSelected(section.id)}
+                      onChange={() => toggle(section)}
+                      className="size-4 shrink-0 accent-admin-primary"
                     />
                     {sectionLabel(section)}
-                    {!section.isVisible && <span className="text-[11px] text-brand-muted">(đang ẩn)</span>}
+                    {!section.isVisible && <span className="text-admin-xs text-admin-muted">(đang ẩn)</span>}
                   </label>
                 </li>
               ))}
             </ul>
           )}
 
-          {creatingPageId === group.pageId && (
+          {isCreating ? (
             <div className="mt-3 space-y-2">
               <div className="flex gap-2">
                 <input
@@ -145,25 +171,32 @@ export function BannerSectionPicker({ selectedIds, onChange }: BannerSectionPick
                   value={newName}
                   onChange={(event) => setNewName(event.target.value)}
                   placeholder="Tên section (vd. Ưu đãi cuối trang)"
-                  className={adminFieldInputClassName}
+                  className={`${adminFieldInputClassName} mt-0`}
                 />
-                <button
-                  type="button"
-                  disabled={isCreating}
-                  onClick={() => handleCreate(group.pageId)}
-                  className="shrink-0 rounded-lg bg-brand-green px-4 py-2 text-[13px] font-bold text-white transition hover:bg-brand-greenDark disabled:opacity-50"
-                >
-                  {isCreating ? "Đang tạo..." : "Tạo"}
+                <button type="button" disabled={isSavingNew} onClick={handleCreate} className={adminButtonClassName.primary}>
+                  {isSavingNew ? "Đang tạo..." : "Tạo"}
+                </button>
+                <button type="button" disabled={isSavingNew} onClick={() => setIsCreating(false)} className={adminButtonClassName.secondary}>
+                  Hủy
                 </button>
               </div>
-              <p className="text-[12px] text-brand-muted">
-                Section mới nằm cuối trang; đổi vị trí ở Nội dung → Trang → Sections. Site tự hiển thị banner của section.
+              <p className="text-admin-xs text-admin-textSecondary">
+                Section mới nằm cuối trang; đổi vị trí ở Nội dung → Page → Sections.
               </p>
-              {createError && <p className="text-[12px] text-brand-red">{createError}</p>}
+              {createError && <p className="text-admin-xs text-admin-dangerText">{createError}</p>}
             </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsCreating(true)}
+              className="mt-3 inline-flex items-center gap-1 text-admin-sm font-semibold text-admin-primary hover:underline"
+            >
+              <Plus className="size-3.5" aria-hidden="true" />
+              Thêm section banner vào trang này
+            </button>
           )}
         </div>
-      ))}
+      )}
     </div>
   );
 }

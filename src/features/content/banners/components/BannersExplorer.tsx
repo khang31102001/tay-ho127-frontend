@@ -3,11 +3,11 @@
 import { DataExplorer, type DataExplorerColumn } from "@/shared/admin/templates/DataExplorer/DataExplorer";
 
 import { useBannersExplorer } from "../hooks/useBannersExplorer";
-import { BANNER_PLACEMENT_OPTIONS, type ManagedBanner } from "../types/banner.types";
+import type { ManagedBanner } from "../types/banner.types";
 
-const PLACEMENT_LABEL = Object.fromEntries(
-  BANNER_PLACEMENT_OPTIONS.map((option) => [option.value, option.label]),
-) as Record<string, string>;
+function formatSections(banner: ManagedBanner): string {
+  return banner.sections.map((section) => `${section.pageName} › ${section.sectionLabel}`).join(", ");
+}
 
 function formatScheduleRange(banner: ManagedBanner): string {
   if (!banner.startAt && !banner.endAt) {
@@ -25,12 +25,7 @@ const columns: DataExplorerColumn<ManagedBanner>[] = [
   {
     key: "placement",
     header: "Hiển thị ở",
-    render: (row) =>
-      row.placement === "SECTIONS"
-        ? row.sections.length > 0
-          ? row.sections.map((section) => `${section.pageName} › ${section.sectionLabel}`).join(", ")
-          : "Chưa gắn section"
-        : (PLACEMENT_LABEL[row.placement] ?? row.placement),
+    render: (row) => formatSections(row) || "Chưa gắn section",
   },
   {
     key: "schedule",
@@ -65,7 +60,7 @@ export function BannersExplorer() {
       rows={rows}
       isLoading={isLoading}
       getRowId={(row) => row.id}
-      getSearchableText={(row) => `${row.name} ${PLACEMENT_LABEL[row.placement] ?? ""}`}
+      getSearchableText={(row) => `${row.name} ${formatSections(row)}`}
       searchPlaceholder="Tìm banner..."
       createHref="/admin/content/banners/new"
       createLabel="Thêm banner"

@@ -2,7 +2,6 @@
 export {
   getPublicTaxonomy,
   getPublishedArticleBySlug,
-  listActiveBanners,
   listPublishedArticles,
   listPublishedPages,
   listPublishedPageSections,

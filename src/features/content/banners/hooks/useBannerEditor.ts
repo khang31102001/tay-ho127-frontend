@@ -6,7 +6,7 @@ import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 import { useAsyncData } from "@/shared/hooks/useAsyncData";
 import { listMedia, useMediaOptionsWithUploads } from "@/features/media";
 
-import type { BannerPlacement } from "../types/banner.types";
+import type { BannerSectionRef } from "../types/banner.types";
 import {
   createBanner,
   deleteBanner,
@@ -23,9 +23,8 @@ export type BannerFormValue = {
   subheading: string;
   ctaLabel: string;
   ctaUrl: string;
-  placement: BannerPlacement;
-  /** Section banner banner được hiển thị (chỉ dùng khi placement = SECTIONS). */
-  sectionIds: string[];
+  /** Section banner mà banner được hiển thị (kèm tên trang/section để hiện tóm tắt). */
+  sections: BannerSectionRef[];
   /** "YYYY-MM-DD" cho input type="date", rỗng = không giới hạn. */
   startAt: string;
   endAt: string;
@@ -42,8 +41,7 @@ const EMPTY_FORM: BannerFormValue = {
   subheading: "",
   ctaLabel: "",
   ctaUrl: "",
-  placement: "SECTIONS",
-  sectionIds: [],
+  sections: [],
   startAt: "",
   endAt: "",
   displayOrder: 1,
@@ -87,8 +85,7 @@ export function useBannerEditor({ id }: UseBannerEditorParams) {
       subheading: banner.subheading ?? "",
       ctaLabel: banner.ctaLabel ?? "",
       ctaUrl: banner.ctaUrl ?? "",
-      placement: banner.placement,
-      sectionIds: banner.sections.map((section) => section.sectionId),
+      sections: banner.sections,
       startAt: toDateInputValue(banner.startAt),
       endAt: toDateInputValue(banner.endAt),
       displayOrder: banner.displayOrder,
@@ -114,9 +111,7 @@ export function useBannerEditor({ id }: UseBannerEditorParams) {
       subheading: form.subheading || undefined,
       ctaLabel: form.ctaLabel || undefined,
       ctaUrl: form.ctaUrl || undefined,
-      placement: form.placement,
-      // Banner bài viết không hiển thị qua section: gửi danh sách rỗng để gỡ liên kết cũ.
-      sectionIds: form.placement === "SECTIONS" ? form.sectionIds : [],
+      sectionIds: form.sections.map((section) => section.sectionId),
       startAt: toIsoOrNull(form.startAt),
       endAt: toIsoOrNull(form.endAt),
       displayOrder: form.displayOrder,
