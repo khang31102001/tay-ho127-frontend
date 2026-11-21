@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import type { ManagedMedia } from "@/features/media";
-import { listMedia } from "@/features/media";
+import { listMedia, useMediaOptionsWithUploads } from "@/features/media";
 
 import { getBrandProfile, updateBrandProfile } from "../services/brand-profile.service";
 import type { ManagedBrandProfile } from "../types/brand-profile.types";
@@ -18,7 +18,8 @@ function toFormValue(profile: ManagedBrandProfile): BrandProfileFormValue {
 
 export function useBrandProfileEditor() {
   const [form, setForm] = useState<BrandProfileFormValue | null>(null);
-  const [mediaOptions, setMediaOptions] = useState<ManagedMedia[]>([]);
+  const [libraryMedia, setMediaOptions] = useState<ManagedMedia[]>([]);
+  const { mediaOptions, addUploadedMedia } = useMediaOptionsWithUploads(libraryMedia);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -83,6 +84,7 @@ export function useBrandProfileEditor() {
     form,
     isLoading,
     mediaOptions,
+    addUploadedMedia,
     updateField,
     addSocialLink,
     updateSocialLink,

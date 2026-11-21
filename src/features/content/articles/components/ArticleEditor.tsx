@@ -11,7 +11,7 @@ import {
 } from "@/shared/admin/templates/formFieldClassName";
 import { SlugInput } from "@/shared/components/SlugInput";
 import { MediaPicker } from "@/features/media/components/MediaPicker";
-import { RichTextEditor } from "@/shared/ui/RichTextEditor";
+import { MediaRichTextEditor } from "@/features/media/components/MediaRichTextEditor";
 import type { PublishStatus } from "@/shared/components/PublishStatusBadge";
 import { Tabs, type TabItem } from "@/shared/ui/Tabs";
 import { SeoFieldsForm } from "@/features/seo";
@@ -35,6 +35,7 @@ export function ArticleEditor({ id }: ArticleEditorProps) {
     updateField,
     toggleTag,
     mediaOptions,
+    addUploadedMedia,
     categoryOptions,
     tagOptions,
     seo,
@@ -69,6 +70,7 @@ export function ArticleEditor({ id }: ArticleEditorProps) {
               form={seo.form}
               updateField={seo.updateField}
               mediaOptions={mediaOptions}
+              onMediaUploaded={addUploadedMedia}
               entityDefaults={{
                 title: form.title,
                 description: form.summary,
@@ -127,9 +129,12 @@ export function ArticleEditor({ id }: ArticleEditorProps) {
       <div>
         <span className={adminFieldLabelClassName}>Nội dung</span>
         <div className="mt-1.5">
-          <RichTextEditor
+          <MediaRichTextEditor
             value={form.content}
             onChange={(html) => updateField("content", html)}
+            mediaOptions={mediaOptions}
+            category="articles"
+            onMediaUploaded={addUploadedMedia}
             placeholder="Nội dung bài viết..."
             maxWords={ARTICLE_CONTENT_MAX_WORDS}
           />
@@ -140,6 +145,9 @@ export function ArticleEditor({ id }: ArticleEditorProps) {
         mediaType="image"
         label="Ảnh đại diện"
         mediaOptions={mediaOptions}
+        category="articles"
+        allowUpload
+        onMediaUploaded={addUploadedMedia}
         selectedId={form.featuredMediaId}
         onChange={(mediaId) => updateField("featuredMediaId", mediaId)}
       />

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import type { ManagedMedia, MediaType, MediaUploadStorage } from "../types/media.types";
 import { uploadLibraryMedia } from "../services/media-library.service";
+import type { MediaCategoryCode } from "../types/media-category.types";
 import {
   MEDIA_BATCH_CONCURRENCY,
   errorMessageOf,
@@ -40,8 +41,8 @@ function canUpload(item: MediaUploadItem) {
   return !item.isRejected && (item.status === "pending" || item.status === "error");
 }
 
-/** `storage` = nơi lưu đang chọn; áp dụng cho mọi file gửi đi từ lúc đó (kể cả khi bấm thử lại). */
-export function useMediaBulkUpload(storage: MediaUploadStorage) {
+/** `category` = nhóm kho ảnh của cả đợt upload. `storage` = nơi lưu đang chọn; áp dụng cho mọi file gửi đi từ lúc đó (kể cả khi bấm thử lại). */
+export function useMediaBulkUpload(storage: MediaUploadStorage, category: MediaCategoryCode) {
   const [items, setItems] = useState<MediaUploadItem[]>([]);
   const nextKeyRef = useRef(0);
   const itemsRef = useRef(items);
@@ -114,7 +115,7 @@ export function useMediaBulkUpload(storage: MediaUploadStorage) {
 
     await runWithConcurrency(targets, MEDIA_BATCH_CONCURRENCY, async (item) => {
       try {
-        const media = await uploadLibraryMedia(item.file, storage, item.altText.trim() || undefined);
+        const media = await uploadLibraryMedia(item.file, storage, item.altText.trim() || undefined, category);
         updateItem(item.key, { status: "success", media, type: media.type });
       } catch (error) {
         updateItem(item.key, { status: "error", error: errorMessageOf(error, "Tải file thất bại.") });

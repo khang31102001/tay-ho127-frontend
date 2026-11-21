@@ -33,6 +33,7 @@ export function PageSectionEditor({ pageId, id, initialSlotKey }: PageSectionEdi
     takenSlotKeys,
     currentSlot,
     mediaOptions,
+    addUploadedMedia,
     isLoading,
     loadError,
     isEditMode,
@@ -167,6 +168,9 @@ export function PageSectionEditor({ pageId, id, initialSlotKey }: PageSectionEdi
                 : "Ảnh minh họa (tùy chọn)"
         }
         mediaOptions={mediaOptions}
+        category="page-sections"
+        allowUpload
+        onMediaUploaded={addUploadedMedia}
         selectedId={form.mediaId ?? null}
         onChange={(mediaId) => updateField("mediaId", mediaId)}
       />
@@ -177,6 +181,9 @@ export function PageSectionEditor({ pageId, id, initialSlotKey }: PageSectionEdi
             label="Ảnh phụ — 2 ảnh cột trái, theo thứ tự trên → dưới (tùy chọn)"
             mediaType="image"
             mediaOptions={mediaOptions}
+            category="page-sections"
+            allowUpload
+            onMediaUploaded={addUploadedMedia}
             selectedIds={form.galleryMediaIds}
             onChange={(mediaIds) => updateField("galleryMediaIds", mediaIds)}
           />
@@ -192,6 +199,9 @@ export function PageSectionEditor({ pageId, id, initialSlotKey }: PageSectionEdi
             mediaType="image"
             label="Logo nhỏ phía trên tiêu đề, vd. logo MICHELIN 2026 (tùy chọn)"
             mediaOptions={mediaOptions}
+            category="page-sections"
+            allowUpload
+            onMediaUploaded={addUploadedMedia}
             selectedId={form.galleryMediaIds[0] ?? null}
             onChange={(mediaId) => updateField("galleryMediaIds", mediaId ? [mediaId] : [])}
           />

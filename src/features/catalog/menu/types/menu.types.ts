@@ -101,6 +101,8 @@ export type UiProduct = {
  */
 export type ProductDetail = Omit<UiProduct, "id" | "productId"> & {
   id: string;
+  /** Ảnh trang chi tiết, luôn có ít nhất 1 phần tử; >= 2 phần tử thì UI hiện gallery. `image` vẫn là ảnh đại diện (dùng cho giỏ hàng). */
+  images: string[];
   /** Mô tả ngắn (chữ thường). */
   description?: string;
   /** Mô tả chi tiết (HTML) — chỉ tải ở trang chi tiết, Site vẫn sanitize trước khi render. */

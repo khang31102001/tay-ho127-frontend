@@ -74,17 +74,33 @@ function listMenuRows(menu: ManagedMenu | undefined, menuProducts: ManagedMenuPr
     .sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
-function resolveProductImage(
-  product: ManagedProduct,
-  mediaById: Map<string, ManagedMedia>,
-): string {
-  // Ưu tiên ảnh đại diện; media đó không có trong danh sách public (quá 200 dòng) thì dùng URL Backend trả kèm.
+/** Ảnh đại diện (card, giỏ hàng): chưa có thì dùng ảnh mặc định của FE — không lấy ảnh trong danh sách ảnh. */
+function resolveThumbnailUrl(product: ManagedProduct, mediaById: Map<string, ManagedMedia>): string | undefined {
+  // media đó không có trong danh sách public (quá 200 dòng) thì dùng URL Backend trả kèm.
   const thumbnail = product.thumbnailMediaId ? mediaById.get(product.thumbnailMediaId) : undefined;
   if (thumbnail) return thumbnail.url;
   if (product.thumbnailUrl && isNextImageCompatibleUrl(product.thumbnailUrl)) return product.thumbnailUrl;
+  return undefined;
+}
 
-  const media = product.mediaIds[0] ? mediaById.get(product.mediaIds[0]) : undefined;
-  return media?.url ?? DEFAULT_PRODUCT_IMAGE;
+function resolveProductImage(product: ManagedProduct, mediaById: Map<string, ManagedMedia>): string {
+  return resolveThumbnailUrl(product, mediaById) ?? DEFAULT_PRODUCT_IMAGE;
+}
+
+/**
+ * Danh sách ảnh trang chi tiết, đúng thứ tự `mediaIds` (key không tra được thì bỏ).
+ * >= 2 ảnh → gallery; ít hơn → 1 ảnh: ảnh đại diện, rồi ảnh duy nhất trong danh sách, rồi ảnh mặc định.
+ */
+function resolveProductGallery(product: ManagedProduct, mediaById: Map<string, ManagedMedia>): string[] {
+  const listed = product.mediaIds
+    .map((mediaId) => mediaById.get(mediaId)?.url)
+    .filter((url): url is string => Boolean(url));
+
+  if (listed.length >= 2) {
+    return listed;
+  }
+
+  return [resolveThumbnailUrl(product, mediaById) ?? listed[0] ?? DEFAULT_PRODUCT_IMAGE];
 }
 
 /** Đi ngược categoryId (subCategory lá) lên category (giữa) để lấy tên dùng cho bộ lọc/badge. */
@@ -315,6 +331,7 @@ export async function getProductDetail(slug: string): Promise<ProductDetailData 
     rating: managedProduct.rating ?? 0,
     ratingCount: managedProduct.ratingCount ?? 0,
     image: resolveProductImage(managedProduct, mediaById),
+    images: resolveProductGallery(managedProduct, mediaById),
     description: managedProduct.description,
     content,
     modifierGroups,

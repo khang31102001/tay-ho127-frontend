@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 
 import { useAsyncData } from "@/shared/hooks/useAsyncData";
-import { listMedia } from "@/features/media";
+import { listMedia, useMediaOptionsWithUploads } from "@/features/media";
 
 import type { BannerPlacement } from "../types/banner.types";
 import {
@@ -24,6 +24,8 @@ export type BannerFormValue = {
   ctaLabel: string;
   ctaUrl: string;
   placement: BannerPlacement;
+  /** Section banner banner được hiển thị (chỉ dùng khi placement = SECTIONS). */
+  sectionIds: string[];
   /** "YYYY-MM-DD" cho input type="date", rỗng = không giới hạn. */
   startAt: string;
   endAt: string;
@@ -40,7 +42,8 @@ const EMPTY_FORM: BannerFormValue = {
   subheading: "",
   ctaLabel: "",
   ctaUrl: "",
-  placement: "HOME_HERO",
+  placement: "SECTIONS",
+  sectionIds: [],
   startAt: "",
   endAt: "",
   displayOrder: 1,
@@ -65,6 +68,7 @@ export function useBannerEditor({ id }: UseBannerEditorParams) {
 
   const [form, setForm] = useState<BannerFormValue>(EMPTY_FORM);
   const mediaOptionsData = useAsyncData(listMedia, [], { fallbackError: "Không thể tải thư viện media." });
+  const { mediaOptions, addUploadedMedia } = useMediaOptionsWithUploads(mediaOptionsData.data ?? []);
   const existing = useAsyncData(() => getBannerById(id ?? ""), [id], {
     enabled: isEditMode,
     fallbackError: "Không thể tải banner.",
@@ -84,6 +88,7 @@ export function useBannerEditor({ id }: UseBannerEditorParams) {
       ctaLabel: banner.ctaLabel ?? "",
       ctaUrl: banner.ctaUrl ?? "",
       placement: banner.placement,
+      sectionIds: banner.sections.map((section) => section.sectionId),
       startAt: toDateInputValue(banner.startAt),
       endAt: toDateInputValue(banner.endAt),
       displayOrder: banner.displayOrder,
@@ -110,6 +115,8 @@ export function useBannerEditor({ id }: UseBannerEditorParams) {
       ctaLabel: form.ctaLabel || undefined,
       ctaUrl: form.ctaUrl || undefined,
       placement: form.placement,
+      // Banner bài viết không hiển thị qua section: gửi danh sách rỗng để gỡ liên kết cũ.
+      sectionIds: form.placement === "SECTIONS" ? form.sectionIds : [],
       startAt: toIsoOrNull(form.startAt),
       endAt: toIsoOrNull(form.endAt),
       displayOrder: form.displayOrder,
@@ -136,7 +143,8 @@ export function useBannerEditor({ id }: UseBannerEditorParams) {
   return {
     form,
     updateField,
-    mediaOptions: mediaOptionsData.data ?? [],
+    mediaOptions,
+    addUploadedMedia,
     isLoading: existing.isLoading,
     loadError: existing.error,
     isEditMode,

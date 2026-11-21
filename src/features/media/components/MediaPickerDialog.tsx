@@ -10,6 +10,7 @@ import { BottomSheetDialog } from "@/shared/ui/BottomSheetDialog";
 import { Tabs, type TabItem } from "@/shared/ui/Tabs";
 import type { ManagedMedia, MediaType } from "@/features/media";
 
+import { MEDIA_CATEGORIES, getMediaCategoryLabel, type MediaCategoryCode } from "../types/media-category.types";
 import { PENDING_UPLOAD_PREFIX, useMediaPickerUpload, type PendingUpload } from "../hooks/useMediaPickerUpload";
 import { MEDIA_UPLOAD_ACCEPT, MEDIA_UPLOAD_MAX_BYTES } from "../services/media-library.service";
 
@@ -73,6 +74,8 @@ type MediaPickerDialogProps = {
    * id media thật. Tắt (mặc định) = popup chỉ chọn từ thư viện như trước.
    */
   allowUpload?: boolean;
+  /** Nhóm kho ảnh của form mở popup: lọc sẵn theo nhóm này (có nút Tất cả) và là nhóm của ảnh tải lên. */
+  category?: MediaCategoryCode;
   /** `uploadedMedia` = media vừa tạo/dùng lại từ tab Upload, để form thêm vào danh sách đang hiển thị. */
   onConfirm: (selectedIds: string[], uploadedMedia: ManagedMedia[]) => void;
   onClose: () => void;
@@ -91,6 +94,7 @@ export function MediaPickerDialog({
   multiple = false,
   isLoading = false,
   allowUpload = false,
+  category,
   onConfirm,
   onClose,
 }: MediaPickerDialogProps) {
@@ -100,17 +104,37 @@ export function MediaPickerDialog({
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const upload = useMediaPickerUpload(allowedTypes);
+  const [categoryFilter, setCategoryFilter] = useState<MediaCategoryCode | "all">(category ?? "all");
+  const upload = useMediaPickerUpload(allowedTypes, category);
+
+  const typedMedia = useMemo(
+    () => mediaOptions.filter((media) => !allowedTypes || allowedTypes.includes(media.type)),
+    [mediaOptions, allowedTypes],
+  );
+
+  // Chip nhóm: chỉ nhóm đang có ảnh (+ nhóm của form mở popup, dù chưa có ảnh để người dùng thấy mình đang lọc gì).
+  const categoryChips = useMemo(() => {
+    const counts = new Map<string, number>();
+    typedMedia.forEach((media) => {
+      if (media.categoryCode) counts.set(media.categoryCode, (counts.get(media.categoryCode) ?? 0) + 1);
+    });
+
+    return MEDIA_CATEGORIES.filter((item) => counts.has(item.code) || item.code === category).map((item) => ({
+      code: item.code,
+      label: item.label,
+      count: counts.get(item.code) ?? 0,
+    }));
+  }, [typedMedia, category]);
 
   const filteredMedia = useMemo(() => {
     const keyword = query.trim().toLowerCase();
 
-    return mediaOptions.filter((media) => {
-      if (allowedTypes && !allowedTypes.includes(media.type)) return false;
+    return typedMedia.filter((media) => {
+      if (categoryFilter !== "all" && media.categoryCode !== categoryFilter) return false;
       if (!keyword) return true;
       return `${media.fileName} ${media.altText ?? ""}`.toLowerCase().includes(keyword);
     });
-  }, [mediaOptions, allowedTypes, query]);
+  }, [typedMedia, categoryFilter, query]);
 
   const visibleMedia = filteredMedia.slice(0, visibleCount);
   const hiddenCount = filteredMedia.length - visibleMedia.length;
@@ -195,7 +219,7 @@ export function MediaPickerDialog({
         )}
 
         {activeTab === "library" && (
-          <div className="relative py-3">
+          <div className="relative pt-3">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-brand-muted" />
             <input
               type="search"
@@ -211,6 +235,26 @@ export function MediaPickerDialog({
             />
           </div>
         )}
+        {activeTab === "library" && categoryChips.length > 0 && (
+          <div className="flex flex-wrap gap-2 pb-3 pt-2" role="group" aria-label="Lọc theo nhóm kho ảnh">
+            <CategoryChip isActive={categoryFilter === "all"} onClick={() => setCategoryFilter("all")}>
+              Tất cả ({typedMedia.length})
+            </CategoryChip>
+            {categoryChips.map((chip) => (
+              <CategoryChip
+                key={chip.code}
+                isActive={categoryFilter === chip.code}
+                onClick={() => {
+                  setCategoryFilter(chip.code);
+                  setVisibleCount(PAGE_SIZE);
+                }}
+              >
+                {chip.label} ({chip.count})
+              </CategoryChip>
+            ))}
+          </div>
+        )}
+        {activeTab === "library" && categoryChips.length === 0 && <div className="pb-3" />}
         {activeTab === "upload" && <div className="pb-3" />}
       </div>
 
@@ -224,7 +268,11 @@ export function MediaPickerDialog({
             </div>
           ) : filteredMedia.length === 0 ? (
             <p className="py-10 text-center text-[13px] text-brand-muted">
-              {mediaOptions.length === 0 ? "Chưa có file nào trong thư viện Media." : "Không tìm thấy media phù hợp."}
+              {mediaOptions.length === 0
+                ? "Chưa có file nào trong thư viện Media."
+                : categoryFilter !== "all" && query.trim() === ""
+                  ? `Chưa có ảnh nào trong nhóm "${getMediaCategoryLabel(categoryFilter)}". Bấm "Tất cả" để xem toàn bộ thư viện, hoặc upload ảnh mới.`
+                  : "Không tìm thấy media phù hợp."}
             </p>
           ) : (
             <>
@@ -261,6 +309,7 @@ export function MediaPickerDialog({
             multiple={multiple}
             accept={allowedTypes?.length === 1 && allowedTypes[0] === "image" ? IMAGE_UPLOAD_ACCEPT : MEDIA_UPLOAD_ACCEPT}
             isSaving={isSaving}
+            categoryLabel={category ? getMediaCategoryLabel(category) : undefined}
             onFilesAdded={handleFilesAdded}
             onToggle={handleSelect}
             onRemove={handleRemovePending}
@@ -295,6 +344,24 @@ export function MediaPickerDialog({
         </div>
       </div>
     </BottomSheetDialog>
+  );
+}
+
+function CategoryChip({ isActive, onClick, children }: { isActive: boolean; onClick: () => void; children: ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={isActive}
+      className={cn(
+        "rounded-full border px-3 py-1 text-[12px] font-bold transition",
+        isActive
+          ? "border-brand-green bg-brand-green text-white"
+          : "border-brand-line text-brand-muted hover:border-brand-green/60 hover:text-brand-greenDark",
+      )}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -340,13 +407,15 @@ type UploadPanelProps = {
   multiple: boolean;
   accept: string;
   isSaving: boolean;
+  /** Nhóm kho ảnh mà ảnh tải lên sẽ thuộc về (không có = nhóm Chung). */
+  categoryLabel?: string;
   onFilesAdded: (files: Iterable<File>) => void;
   onToggle: (key: string) => void;
   onRemove: (key: string) => void;
 };
 
 /** Tab Upload: chọn file / kéo thả. File chỉ nằm ở trình duyệt cho tới khi bấm Lưu. */
-function UploadPanel({ items, selectedIds, multiple, accept, isSaving, onFilesAdded, onToggle, onRemove }: UploadPanelProps) {
+function UploadPanel({ items, selectedIds, multiple, accept, isSaving, categoryLabel, onFilesAdded, onToggle, onRemove }: UploadPanelProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -400,6 +469,7 @@ function UploadPanel({ items, selectedIds, multiple, accept, isSaving, onFilesAd
           {multiple ? " · chọn được nhiều file" : ""}
         </p>
         <p className="text-[12px] text-brand-muted">File chỉ được tải lên Media khi bấm Lưu.</p>
+        <p className="text-[12px] text-brand-muted">Ảnh được lưu vào nhóm kho ảnh: {categoryLabel ?? "Chung"}.</p>
         <input
           ref={fileInputRef}
           type="file"

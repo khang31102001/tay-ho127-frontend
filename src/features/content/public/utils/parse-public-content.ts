@@ -1,6 +1,7 @@
 import type {
   PublicArticle,
   PublicArticleSummary,
+  PublicBanner,
   PublicPageSection,
   PublicPageSectionItem,
   PublicTaxonomy,
@@ -106,6 +107,38 @@ function parseSectionItems(value: unknown): PublicPageSectionItem[] {
   });
 }
 
+/** Banner của section banner: bỏ qua từng banner hỏng (log) thay vì làm hỏng cả section. */
+function parseSectionBanners(data: unknown): PublicBanner[] {
+  if (!Array.isArray(data)) {
+    return [];
+  }
+
+  return data.flatMap((item, index) => {
+    const what = `Banner #${index}`;
+    try {
+      const raw = asObject(item, what);
+      return [
+        {
+          id: str(raw, "id", what),
+          name: str(raw, "name", what),
+          desktopMediaId: strOrNull(raw, "desktopMediaId"),
+          mobileMediaId: strOrNull(raw, "mobileMediaId"),
+          altText: strOrNull(raw, "altText") ?? "",
+          heading: strOrNull(raw, "heading"),
+          subheading: strOrNull(raw, "subheading"),
+          ctaLabel: strOrNull(raw, "ctaLabel"),
+          ctaUrl: strOrNull(raw, "ctaUrl"),
+          placement: strOrNull(raw, "placement") ?? "SECTIONS",
+          displayOrder: typeof raw.displayOrder === "number" ? raw.displayOrder : 0,
+        },
+      ];
+    } catch (error) {
+      console.error("Bỏ qua banner sai định dạng từ Backend:", error);
+      return [];
+    }
+  });
+}
+
 /** Danh sách section của page: bỏ qua từng section hỏng (log) thay vì làm hỏng cả trang. */
 export function parsePublicPageSectionList(data: unknown): PublicPageSection[] {
   if (!Array.isArray(data)) {
@@ -134,6 +167,7 @@ export function parsePublicPageSectionList(data: unknown): PublicPageSection[] {
           displayOrder: typeof displayOrder === "number" ? displayOrder : 0,
           galleryMediaIds: strArray(settings, "galleryMediaIds"),
           items: parseSectionItems(settings.items),
+          banners: parseSectionBanners(raw.banners),
         },
       ];
     } catch (error) {

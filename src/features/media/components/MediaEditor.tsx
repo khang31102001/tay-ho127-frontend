@@ -14,6 +14,7 @@ import { formatFileSize } from "@/core/utils/format-file-size";
 import { MEDIA_TYPE_OPTIONS, type MediaType } from "../types/media.types";
 
 import { useMediaEditor } from "../hooks/useMediaEditor";
+import { MediaCategorySelect } from "./MediaCategorySelect";
 import { MediaPurgeDialog } from "./MediaPurgeDialog";
 
 import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
@@ -106,6 +107,12 @@ export function MediaEditor({ id }: MediaEditorProps) {
           />
         </label>
       </div>
+
+      <MediaCategorySelect
+        value={form.categoryCode}
+        onChange={(code) => updateField("categoryCode", code)}
+        hint="Nhóm cho biết ảnh được thêm từ đâu, giúp lọc nhanh trong thư viện và popup chọn ảnh."
+      />
 
       <label className={adminFieldLabelClassName}>
         Alt text (tùy chọn)

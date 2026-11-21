@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useAsyncData } from "@/shared/hooks/useAsyncData";
 import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 
-import { listMedia } from "@/features/media";
+import { listMedia, useMediaOptionsWithUploads } from "@/features/media";
 import { listArticleCategories } from "@/features/content/article-categories";
 import { listArticleTags } from "@/features/content/article-tags";
 import {
@@ -56,6 +56,7 @@ export function useArticleEditor({ id }: UseArticleEditorParams) {
     [],
     { fallbackError: "Không thể tải media, danh mục và thẻ." },
   );
+  const { mediaOptions, addUploadedMedia } = useMediaOptionsWithUploads(options.data?.[0] ?? []);
   const existing = useAsyncData(() => getArticleById(id ?? ""), [id], {
     enabled: isEditMode,
     fallbackError: "Không thể tải bài viết.",
@@ -119,7 +120,8 @@ export function useArticleEditor({ id }: UseArticleEditorParams) {
     form,
     updateField,
     toggleTag,
-    mediaOptions: options.data?.[0] ?? [],
+    mediaOptions,
+    addUploadedMedia,
     categoryOptions: options.data?.[1] ?? [],
     tagOptions: options.data?.[2] ?? [],
     seo,

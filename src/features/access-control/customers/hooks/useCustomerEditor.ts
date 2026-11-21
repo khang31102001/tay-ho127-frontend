@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 
-import { listMedia } from "@/features/media";
+import { listMedia, useMediaOptionsWithUploads } from "@/features/media";
 import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
 import type { CustomerUpsertInput } from "../services/customer.service";
@@ -37,6 +37,7 @@ export function useCustomerEditor({ id }: UseCustomerEditorParams) {
   const [customerCode, setCustomerCode] = useState<string | null>(null);
 
   const media = useAsyncData(listMedia, [], { fallbackError: "Không thể tải thư viện media." });
+  const { mediaOptions, addUploadedMedia } = useMediaOptionsWithUploads(media.data ?? []);
   const existing = useAsyncData(() => getCustomerById(id ?? ""), [id], {
     enabled: isEditMode,
     fallbackError: "Không thể tải khách hàng.",
@@ -98,7 +99,8 @@ export function useCustomerEditor({ id }: UseCustomerEditorParams) {
     form,
     updateField,
     customerCode,
-    mediaOptions: media.data ?? [],
+    mediaOptions,
+    addUploadedMedia,
     isLoading: existing.isLoading,
     loadError: existing.error,
     isEditMode,

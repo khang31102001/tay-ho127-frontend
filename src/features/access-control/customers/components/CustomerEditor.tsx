@@ -25,6 +25,7 @@ export function CustomerEditor({ id }: CustomerEditorProps) {
     updateField,
     customerCode,
     mediaOptions,
+    addUploadedMedia,
     isLoading,
     loadError,
     isEditMode,
@@ -115,6 +116,9 @@ export function CustomerEditor({ id }: CustomerEditorProps) {
         mediaType="image"
         label="Ảnh đại diện (tùy chọn)"
         mediaOptions={mediaOptions}
+        category="customers"
+        allowUpload
+        onMediaUploaded={addUploadedMedia}
         selectedId={form.avatarMediaId ?? null}
         onChange={(mediaId) => updateField("avatarMediaId", mediaId)}
       />

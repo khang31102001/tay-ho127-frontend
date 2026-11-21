@@ -6,6 +6,7 @@ import { RotateCcw, X } from "lucide-react";
 import { cn } from "@/core/utils/cn";
 import { formatFileSize } from "@/core/utils/format-file-size";
 import { adminFieldLabelClassName } from "@/shared/admin/templates/formFieldClassName";
+import type { MediaCategoryCode } from "../types/media-category.types";
 import { MEDIA_TYPE_OPTIONS, type MediaType } from "../types/media.types";
 
 import { getUrlRowErrors, useMediaUrlImport } from "../hooks/useMediaUrlImport";
@@ -30,7 +31,7 @@ function FieldError({ message }: { message?: string }) {
 }
 
 /** Tab "Nhập URL": dán danh sách URL → mỗi URL thành một dòng media, kiểm tra rồi tạo hàng loạt. */
-export function MediaUrlImportPanel() {
+export function MediaUrlImportPanel({ category }: { category: MediaCategoryCode }) {
   const {
     rows,
     rawText,
@@ -46,7 +47,7 @@ export function MediaUrlImportPanel() {
     saveAll,
     retryRow,
     clearSaved,
-  } = useMediaUrlImport();
+  } = useMediaUrlImport(category);
   const [sharedAltText, setSharedAltText] = useState("");
   const [sharedType, setSharedType] = useState<MediaType>("image");
 

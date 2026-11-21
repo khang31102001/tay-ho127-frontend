@@ -26,7 +26,7 @@ const ENTITY_TYPE_LABEL: Record<SeoEntityType, string> = {
  * useSeoMetadataForm, xem ProductEditor.tsx).
  */
 export function SeoEditor({ entityType, entityId }: SeoEditorProps) {
-  const { entry, settings, mediaOptions, isLoading, form, updateField, hasOverride, save, reset, goToExplore } =
+  const { entry, settings, mediaOptions, addUploadedMedia, isLoading, form, updateField, hasOverride, save, reset, goToExplore } =
     useSeoEditorPage({ entityType, entityId });
 
   return (
@@ -48,6 +48,7 @@ export function SeoEditor({ entityType, entityId }: SeoEditorProps) {
           form={form}
           updateField={updateField}
           mediaOptions={mediaOptions}
+          onMediaUploaded={addUploadedMedia}
           entityDefaults={entry.defaults}
           settings={settings}
           previewUrl={entry.url}

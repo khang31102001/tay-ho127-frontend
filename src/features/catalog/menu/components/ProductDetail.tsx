@@ -9,7 +9,7 @@ import { RICH_TEXT_CONTENT_CLASS } from "@/shared/ui/rich-text-content";
 import type { ProductDetailData } from "../services/menu.service";
 import { CATEGORY_BADGE_CLASS } from "../constants/category-badge";
 import { ProductActions } from "./ProductActions";
-import { ProtectedProductImage } from "./ProtectedProductImage";
+import { ProductGallery } from "./ProductGallery";
 import { RelatedProducts } from "./RelatedProducts";
 
 type ProductDetailProps = {
@@ -35,25 +35,19 @@ export function ProductDetail({ data }: ProductDetailProps) {
         <Reveal type="fade-up" className="mt-6">
           <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
             {/* Ảnh sản phẩm */}
-            <div className="relative aspect-square w-full overflow-hidden rounded-card border border-brand-line bg-white shadow-soft">
-              <ProtectedProductImage
-                src={product.image}
-                alt={product.name}
-                fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover"
-                priority
-                logoClassName="w-[22%]"
-              />
-
-              <span
-                className={`absolute left-4 top-4 rounded px-3 py-1 text-xs font-black text-white ${
-                  CATEGORY_BADGE_CLASS[product.category] ?? "bg-brand-red"
-                }`}
-              >
-                {product.category}
-              </span>
-            </div>
+            <ProductGallery
+              images={product.images}
+              alt={product.name}
+              badge={
+                <span
+                  className={`absolute left-4 top-4 z-10 rounded px-3 py-1 text-xs font-black text-white ${
+                    CATEGORY_BADGE_CLASS[product.category] ?? "bg-brand-red"
+                  }`}
+                >
+                  {product.category}
+                </span>
+              }
+            />
 
             {/* Thông tin + hành động */}
             <div className="flex flex-col">

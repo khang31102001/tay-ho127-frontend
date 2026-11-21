@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 
 import type { ManagedMedia } from "@/features/media";
-import { listMedia } from "@/features/media";
+import { listMedia, useMediaOptionsWithUploads } from "@/features/media";
 
 import type { SeoEntityType } from "../types/seo-metadata.types";
 import type { ManagedSeoSettings } from "../types/seo-settings.types";
@@ -29,7 +29,8 @@ export function useSeoEditorPage({ entityType, entityId }: UseSeoEditorPageParam
 
   const [entry, setEntry] = useState<SeoDirectoryEntry | null>(null);
   const [settings, setSettings] = useState<ManagedSeoSettings | null>(null);
-  const [mediaOptions, setMediaOptions] = useState<ManagedMedia[]>([]);
+  const [libraryMedia, setMediaOptions] = useState<ManagedMedia[]>([]);
+  const { mediaOptions, addUploadedMedia } = useMediaOptionsWithUploads(libraryMedia);
   const [isEntryLoading, setIsEntryLoading] = useState(true);
 
   const seoForm = useSeoMetadataForm(entityType, entityId);
@@ -60,6 +61,7 @@ export function useSeoEditorPage({ entityType, entityId }: UseSeoEditorPageParam
     entry,
     settings,
     mediaOptions,
+    addUploadedMedia,
     goToExplore,
     ...seoForm,
     isLoading: isEntryLoading || seoForm.isLoading,

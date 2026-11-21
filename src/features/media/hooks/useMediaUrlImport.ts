@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 
 import type { ManagedMedia, MediaType } from "../types/media.types";
 import { createLibraryMedia } from "../services/media-library.service";
+import type { MediaCategoryCode } from "../types/media-category.types";
 import {
   MEDIA_ALT_TEXT_MAX_LENGTH,
   MEDIA_BATCH_CONCURRENCY,
@@ -68,7 +69,7 @@ function isEditable(row: MediaUrlImportRow) {
   return row.status === "pending" || row.status === "error";
 }
 
-export function useMediaUrlImport() {
+export function useMediaUrlImport(category: MediaCategoryCode) {
   const [rows, setRows] = useState<MediaUrlImportRow[]>([]);
   const [rawText, setRawText] = useState("");
   /** Chỉ tô đỏ ô thiếu sau lần bấm Lưu đầu tiên, tránh báo lỗi khi người dùng chưa kịp điền. */
@@ -162,6 +163,7 @@ export function useMediaUrlImport() {
           type: row.type,
           size: row.size,
           altText: row.altText.trim(),
+          categoryCode: category,
         });
         updateRow(row.key, { status: "success", media });
       } catch (error) {

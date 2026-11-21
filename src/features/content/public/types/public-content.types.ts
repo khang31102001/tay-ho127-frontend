@@ -46,7 +46,7 @@ export type PublicTaxonomy = {
 
 /**
  * Banner ĐANG CHẠY (Backend đã lọc bật/tắt và khoảng startAt–endAt). `placement` là vị trí
- * hiển thị: "HOME_HERO" | "HOME_PROMOTION" | "MENU_HERO" | "ARTICLE_BANNER".
+ * hiển thị: "SECTIONS" (banner của section banner trên trang) | "ARTICLE_BANNER" (và các vị trí cũ chưa còn dùng).
  */
 export type PublicBanner = {
   id: string;
@@ -66,7 +66,7 @@ export type PublicBanner = {
  * Section ĐANG HIỂN THỊ của 1 page đã xuất bản (Backend đã lọc isVisible), theo displayOrder Admin đã sắp.
  * `sectionKey`: ô (slot) trên trang mà section lấp vào ("hero", "story"...) — null = section tự do, Site không đặt.
  * `sectionKind`: "hero" | "introduction" | "promotion" | "highlight" | "testimonial" | "cta" | "story" | "award" |
- * "stats" | "timeline" | "faq" | "core".
+ * "stats" | "timeline" | "faq" | "core" | "banner".
  * `body` là văn bản thuần. `galleryMediaIds`: ảnh phụ theo thứ tự (rỗng nếu không có). `items`: các dòng của
  * section dạng danh sách (stats/timeline/faq), rỗng với loại khác.
  */
@@ -84,6 +84,8 @@ export type PublicPageSection = {
   displayOrder: number;
   galleryMediaIds: string[];
   items: PublicPageSectionItem[];
+  /** Chỉ với section loại "banner": các banner đang chạy gắn vào section, theo displayOrder; rỗng với loại khác. */
+  banners: PublicBanner[];
 };
 
 /** 1 dòng của section dạng danh sách — nghĩa từng field tùy loại (stats: label = nhãn, title = giá trị "60+";

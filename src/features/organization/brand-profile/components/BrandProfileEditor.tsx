@@ -23,7 +23,7 @@ const TABS: TabItem[] = [
  * panel trong CÙNG 1 form, nút Lưu luôn lưu toàn bộ dữ liệu bất kể tab nào đang active.
  */
 export function BrandProfileEditor() {
-  const { form, isLoading, mediaOptions, updateField, addSocialLink, updateSocialLink, removeSocialLink, handleSave } =
+  const { form, isLoading, mediaOptions, addUploadedMedia, updateField, addSocialLink, updateSocialLink, removeSocialLink, handleSave } =
     useBrandProfileEditor();
   const [activeTab, setActiveTab] = useState("general");
   const [savedPopupOpen, setSavedPopupOpen] = useState(false);
@@ -53,7 +53,12 @@ export function BrandProfileEditor() {
                 />
               )}
               {activeTab === "branding" && (
-                <BrandBrandingForm form={form} mediaOptions={mediaOptions} updateField={updateField} />
+                <BrandBrandingForm
+                  form={form}
+                  mediaOptions={mediaOptions}
+                  onMediaUploaded={addUploadedMedia}
+                  updateField={updateField}
+                />
               )}
             </div>
           </div>

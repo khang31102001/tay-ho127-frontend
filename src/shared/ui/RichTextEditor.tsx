@@ -41,6 +41,9 @@ import { cn } from "@/core/utils/cn";
 import { RICH_TEXT_CONTENT_CLASS } from "./rich-text-content";
 
 import { AdminSelect } from "@/shared/admin/templates/AdminSelect";
+/** Ảnh chèn vào nội dung: chỉ URL + alt (HTML không lưu id media). */
+export type RichTextImage = { src: string; alt?: string };
+
 type RichTextEditorProps = {
   value: string;
   /** Nhận HTML; chuỗi rỗng khi editor không còn nội dung. */
@@ -48,6 +51,12 @@ type RichTextEditorProps = {
   placeholder?: string;
   /** Giới hạn số từ — chặn gõ/dán vượt quá, Backend kiểm tra lại cùng con số. */
   maxWords?: number;
+  /**
+   * Nơi gọi tự cung cấp cách chọn ảnh (vd. popup Media): editor gọi hàm này khi bấm nút/menu Hình ảnh và truyền
+   * `insert` để nơi gọi chèn ảnh đã chọn. Không truyền = editor tự hỏi URL ảnh bằng hộp thoại. Menu Chèn luôn có
+   * "Hình ảnh từ URL" để chèn link ngoài.
+   */
+  onRequestImage?: (insert: (images: RichTextImage[]) => void) => void;
 };
 
 /**
@@ -56,7 +65,7 @@ type RichTextEditorProps = {
  * hình, menubar, toolbar, status bar (thẻ đang đứng + số từ). Không biết
  * Article/Product — domain nào cần rich text đều dùng lại component này.
  */
-export function RichTextEditor({ value, onChange, placeholder, maxWords }: RichTextEditorProps) {
+export function RichTextEditor({ value, onChange, placeholder, maxWords, onRequestImage }: RichTextEditorProps) {
   const [mode, setMode] = useState<"edit" | "preview">("edit");
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -118,6 +127,10 @@ export function RichTextEditor({ value, onChange, placeholder, maxWords }: RichT
     return <div className="h-[460px] rounded-lg border border-slate-300 bg-white" />;
   }
 
+  const handleImageAction = onRequestImage
+    ? () => onRequestImage((images) => insertImages(editor, images))
+    : () => promptImage(editor);
+
   const wordCount = countWords(editor.state.doc);
   const isAtLimit = maxWords !== undefined && wordCount >= maxWords;
 
@@ -154,8 +167,14 @@ export function RichTextEditor({ value, onChange, placeholder, maxWords }: RichT
         {mode === "edit" ? (
           <>
             <div className="border-b border-slate-200 shadow-[0_2px_6px_rgba(15,23,42,0.06)]">
-              <EditorMenubar editor={editor} onPreview={() => setMode("preview")} onToggleExpand={() => setIsExpanded((current) => !current)} />
-              <EditorToolbar editor={editor} />
+              <EditorMenubar
+                editor={editor}
+                onPreview={() => setMode("preview")}
+                onToggleExpand={() => setIsExpanded((current) => !current)}
+                onInsertImage={handleImageAction}
+                hasImageUrlItem={onRequestImage !== undefined}
+              />
+              <EditorToolbar editor={editor} onInsertImage={handleImageAction} />
             </div>
 
             <div
@@ -311,6 +330,18 @@ function promptImage(editor: Editor) {
   editor.chain().focus().setImage({ src: trimmedSrc, alt: alt.trim() }).run();
 }
 
+/** Chèn các ảnh đã chọn (đúng thứ tự) tại vị trí con trỏ — chỉ nhận URL http(s), trùng whitelist sanitize ở Backend và Site. */
+function insertImages(editor: Editor, images: RichTextImage[]) {
+  const nodes = images
+    .filter((image) => /^https?:\/\/\S+$/i.test(image.src))
+    .map((image) => ({ type: "image", attrs: { src: image.src, alt: image.alt?.trim() ?? "" } }));
+  if (nodes.length === 0) {
+    return;
+  }
+
+  editor.chain().focus().insertContent(nodes).run();
+}
+
 function insertTable(editor: Editor) {
   editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
 }
@@ -358,9 +389,12 @@ type EditorMenubarProps = {
   editor: Editor;
   onPreview: () => void;
   onToggleExpand: () => void;
+  onInsertImage: () => void;
+  /** Có nơi gọi cung cấp cách chọn ảnh → thêm mục chèn ảnh bằng URL vào menu Chèn. */
+  hasImageUrlItem: boolean;
 };
 
-function EditorMenubar({ editor, onPreview, onToggleExpand }: EditorMenubarProps) {
+function EditorMenubar({ editor, onPreview, onToggleExpand, onInsertImage, hasImageUrlItem }: EditorMenubarProps) {
   const chain = () => editor.chain().focus();
   const isInTable = editor.isActive("table");
 
@@ -385,7 +419,8 @@ function EditorMenubar({ editor, onPreview, onToggleExpand }: EditorMenubarProps
       label: "Chèn",
       items: [
         { label: "Liên kết", onSelect: () => promptLink(editor) },
-        { label: "Hình ảnh", onSelect: () => promptImage(editor) },
+        { label: "Hình ảnh", onSelect: onInsertImage },
+        ...(hasImageUrlItem ? [{ label: "Hình ảnh từ URL", onSelect: () => promptImage(editor) }] : []),
         { label: "Bảng 3×3", onSelect: () => insertTable(editor) },
         { label: "Đường kẻ ngang", onSelect: () => chain().setHorizontalRule().run() },
       ],
@@ -506,7 +541,7 @@ function DropdownMenu({ label, items, trigger }: { label: string; items: MenuIte
  * TOOLBAR
  * ======================================================= */
 
-function EditorToolbar({ editor }: { editor: Editor }) {
+function EditorToolbar({ editor, onInsertImage }: { editor: Editor; onInsertImage: () => void }) {
   const chain = () => editor.chain().focus();
   const isInList = editor.isActive("listItem");
 
@@ -580,7 +615,7 @@ function EditorToolbar({ editor }: { editor: Editor }) {
         <ToolbarButton label="Liên kết" isActive={editor.isActive("link")} onClick={() => promptLink(editor)}>
           <LinkIcon className="size-5" />
         </ToolbarButton>
-        <ToolbarButton label="Hình ảnh" onClick={() => promptImage(editor)}>
+        <ToolbarButton label="Hình ảnh" onClick={onInsertImage}>
           <ImageIcon className="size-5" />
         </ToolbarButton>
         <ToolbarButton label="Chèn bảng" isActive={editor.isActive("table")} onClick={() => insertTable(editor)}>
