@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 
 import { useAsyncData } from "@/shared/hooks/useAsyncData";
-import { listMedia } from "@/features/media";
+import { listMedia, useMediaOptionsWithUploads } from "@/features/media";
 import {
   getSeoSettings,
   isSeoFormEmpty,
@@ -52,6 +52,7 @@ export function useCategoryEditor({ id }: UseCategoryEditorParams) {
     [categories.data, id],
   );
   const mediaOptionsData = useAsyncData(listMedia, [], { fallbackError: "Không thể tải thư viện media." });
+  const { mediaOptions, addUploadedMedia } = useMediaOptionsWithUploads(mediaOptionsData.data ?? []);
   const seoSettingsData = useAsyncData(getSeoSettings, [], { fallbackError: "Không thể tải cài đặt SEO." });
 
   // Tab "SEO" — xem ghi chú trong features/seo/hooks/useSeoMetadataForm.ts.
@@ -97,7 +98,8 @@ export function useCategoryEditor({ id }: UseCategoryEditorParams) {
     form,
     updateField,
     parentOptions,
-    mediaOptions: mediaOptionsData.data ?? [],
+    mediaOptions,
+    addUploadedMedia,
     seo,
     seoSettings: seoSettingsData.data ?? null,
     isLoading: existing.isLoading || (isEditMode && seo.isLoading),

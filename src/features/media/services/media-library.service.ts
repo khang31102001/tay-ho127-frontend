@@ -3,6 +3,7 @@ import { adminApi } from "@/core/api/admin-api";
 import { ApiError, resolveErrorKind } from "@/core/api/api-error";
 import type { PagedQuery, PaginatedResult } from "@/core/api/api-types";
 
+import type { MediaCategoryCode } from "../types/media-category.types";
 import type { ManagedMedia, MediaStorage, MediaStorageOption, MediaType, MediaUploadStorage } from "../types/media.types";
 
 /**
@@ -21,6 +22,7 @@ type MediaDto = {
   size: number;
   status: string;
   storage: string;
+  categoryCode?: string | null;
   createdAtUtc: string;
   updatedAtUtc: string | null;
 };
@@ -35,25 +37,27 @@ function toManagedMedia(dto: MediaDto): ManagedMedia {
     size: dto.size,
     status: dto.status.toLowerCase() as EntityStatus,
     storage: dto.storage.toLowerCase() as MediaStorage,
+    categoryCode: dto.categoryCode ?? undefined,
   };
 }
 
-export type MediaUpsertInput = Pick<ManagedMedia, "fileName" | "url" | "type" | "altText" | "size">;
+export type MediaUpsertInput = Pick<ManagedMedia, "fileName" | "url" | "type" | "altText" | "size" | "categoryCode">;
 
 /** Lọc danh sách thư viện theo trạng thái — Backend nhận "Active" | "Inactive". */
 export type LibraryMediaStatusFilter = EntityStatus | "all";
 
 /** 1 trang thư viện media (mới tải lên trước) — Backend tìm theo tên file, lọc theo trạng thái. */
 export async function listLibraryMediaPage(
-  query: PagedQuery & { status?: LibraryMediaStatusFilter },
+  query: PagedQuery & { status?: LibraryMediaStatusFilter; category?: MediaCategoryCode | "all" },
   signal?: AbortSignal,
 ): Promise<PaginatedResult<ManagedMedia>> {
-  const { status, ...paging } = query;
+  const { status, category, ...paging } = query;
   const page = await adminApi.get<PaginatedResult<MediaDto>>("/media", {
     params: {
       sortDirection: "desc",
       ...paging,
       ...(status && status !== "all" ? { status: status === "active" ? "Active" : "Inactive" } : {}),
+      ...(category && category !== "all" ? { category } : {}),
     },
     signal,
   });
@@ -65,14 +69,18 @@ export async function getLibraryMediaById(id: string): Promise<ManagedMedia> {
 }
 
 export async function createLibraryMedia(input: MediaUpsertInput): Promise<ManagedMedia> {
-  const { fileName, url, type, altText, size } = input;
-  return toManagedMedia(await adminApi.post<MediaDto>("/media", { fileName, url, type, altText: altText || null, size }));
+  const { fileName, url, type, altText, size, categoryCode } = input;
+  return toManagedMedia(
+    await adminApi.post<MediaDto>("/media", { fileName, url, type, altText: altText || null, size, categoryCode: categoryCode || null }),
+  );
 }
 
 /** Backend không cho sửa dung lượng sau khi tạo. */
 export async function updateLibraryMedia(id: string, input: MediaUpsertInput): Promise<ManagedMedia> {
-  const { fileName, url, type, altText } = input;
-  return toManagedMedia(await adminApi.put<MediaDto>(`/media/${id}`, { fileName, url, type, altText: altText || null }));
+  const { fileName, url, type, altText, categoryCode } = input;
+  return toManagedMedia(
+    await adminApi.put<MediaDto>(`/media/${id}`, { fileName, url, type, altText: altText || null, categoryCode: categoryCode || null }),
+  );
 }
 
 export function deleteLibraryMedia(id: string): Promise<void> {
@@ -99,10 +107,18 @@ const UPLOAD_TIMEOUT_MS = 60_000;
  * Upload file thật lên Backend (qua BFF app/api/admin/media/upload). Backend tự xác định loại, dung
  * lượng và URL. Không dùng adminApi vì nó luôn gửi JSON; ở đây gửi FormData để trình duyệt tự đặt boundary.
  */
-export async function uploadLibraryMedia(file: File, storage: MediaUploadStorage, altText?: string): Promise<ManagedMedia> {
+export async function uploadLibraryMedia(
+  file: File,
+  storage: MediaUploadStorage,
+  altText?: string,
+  category?: MediaCategoryCode,
+): Promise<ManagedMedia> {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("storage", storage);
+  if (category) {
+    formData.append("category", category);
+  }
   if (altText) {
     formData.append("altText", altText);
   }

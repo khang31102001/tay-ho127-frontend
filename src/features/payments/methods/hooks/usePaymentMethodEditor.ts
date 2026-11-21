@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 
 import type { ManagedMedia } from "@/features/media";
-import { listMedia } from "@/features/media";
+import { listMedia, useMediaOptionsWithUploads } from "@/features/media";
 
 import {
   createPaymentMethod,
@@ -61,7 +61,8 @@ export function usePaymentMethodEditor({ id }: UsePaymentMethodEditorParams) {
   const isEditMode = id !== undefined;
 
   const [form, setForm] = useState<PaymentMethodFormValue>(EMPTY_FORM);
-  const [mediaOptions, setMediaOptions] = useState<ManagedMedia[]>([]);
+  const [libraryMedia, setMediaOptions] = useState<ManagedMedia[]>([]);
+  const { mediaOptions, addUploadedMedia } = useMediaOptionsWithUploads(libraryMedia);
   const [isLoading, setIsLoading] = useState(isEditMode);
 
   useEffect(() => {
@@ -154,6 +155,7 @@ export function usePaymentMethodEditor({ id }: UsePaymentMethodEditorParams) {
     form,
     updateField,
     mediaOptions,
+    addUploadedMedia,
     isLoading,
     isEditMode,
     handleSave,

@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { useState } from "react";
 
+import { DEFAULT_MEDIA_CATEGORY, getMediaCategoryLabel, type MediaCategoryCode } from "../types/media-category.types";
 import { MEDIA_STORAGE_LABELS, type MediaStorage } from "../types/media.types";
 import { useMediaBulkUpload } from "../hooks/useMediaBulkUpload";
 import { useMediaStorageOptions } from "../hooks/useMediaStorageOptions";
 
+import { MediaCategorySelect } from "./MediaCategorySelect";
 import { MediaStoragePicker } from "./MediaStoragePicker";
 import { MediaUploadPanel } from "./MediaUploadPanel";
 import { MediaUrlImportPanel } from "./MediaUrlImportPanel";
@@ -19,12 +21,13 @@ import { MediaUrlImportPanel } from "./MediaUrlImportPanel";
 export function MediaBulkCreator() {
   const storageOptions = useMediaStorageOptions();
   const [chosenStorage, setChosenStorage] = useState<MediaStorage | null>(null);
+  const [category, setCategory] = useState<MediaCategoryCode>(DEFAULT_MEDIA_CATEGORY);
 
   // Chưa bấm chọn thì dùng nơi mặc định của server (nếu nơi đó đang dùng được).
   const defaultStorage = storageOptions.data?.find((option) => option.isDefault && option.isAvailable)?.code ?? null;
   const storage = chosenStorage ?? defaultStorage;
 
-  const upload = useMediaBulkUpload(storage && storage !== "external" ? storage : "local");
+  const upload = useMediaBulkUpload(storage && storage !== "external" ? storage : "local", category);
   const isFileStorage = storage !== null && storage !== "external";
 
   return (
@@ -50,6 +53,15 @@ export function MediaBulkCreator() {
           disabled={upload.isUploading}
         />
 
+        <div className="max-w-sm">
+          <MediaCategorySelect
+            value={category}
+            onChange={setCategory}
+            disabled={upload.isUploading}
+            hint={`Ảnh thêm ở đây thuộc nhóm "${getMediaCategoryLabel(category)}" — dùng để lọc nhanh trong thư viện.`}
+          />
+        </div>
+
         <section className="space-y-3 border-t border-brand-line pt-5" aria-labelledby="media-create-step-2">
           <h2 id="media-create-step-2" className="text-[14px] font-black text-brand-greenDark">
             {storage === "external"
@@ -66,7 +78,7 @@ export function MediaBulkCreator() {
             <MediaUploadPanel upload={upload} />
           </div>
           <div hidden={storage !== "external"}>
-            <MediaUrlImportPanel />
+            <MediaUrlImportPanel category={category} />
           </div>
         </section>
       </div>

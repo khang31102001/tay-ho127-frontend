@@ -19,6 +19,8 @@ type SeoFieldsFormProps = {
   form: SeoMetadataFormValue;
   updateField: <K extends keyof SeoMetadataFormValue>(field: K, value: SeoMetadataFormValue[K]) => void;
   mediaOptions: ManagedMedia[];
+  /** Có truyền → popup chọn OG Image có tab Upload; media tải lên được báo về để nơi gọi thêm vào `mediaOptions`. */
+  onMediaUploaded?: (media: ManagedMedia[]) => void;
   entityDefaults: SeoEntityDefaults;
   settings: ManagedSeoSettings;
   /** null = entity chưa có trang public (vd. Category hôm nay) — ẩn phần canonical/preview URL thật. */
@@ -37,6 +39,7 @@ export function SeoFieldsForm({
   form,
   updateField,
   mediaOptions,
+  onMediaUploaded,
   entityDefaults,
   settings,
   previewUrl,
@@ -143,6 +146,9 @@ export function SeoFieldsForm({
           mediaType="image"
           label="OG Image"
           mediaOptions={mediaOptions}
+          category="seo"
+          allowUpload={onMediaUploaded !== undefined}
+          onMediaUploaded={onMediaUploaded}
           selectedId={form.ogImageMediaId}
           onChange={(mediaId) => updateField("ogImageMediaId", mediaId)}
         />
@@ -178,6 +184,9 @@ export function SeoFieldsForm({
           mediaType="image"
           label="Twitter Image"
           mediaOptions={mediaOptions}
+          category="seo"
+          allowUpload={onMediaUploaded !== undefined}
+          onMediaUploaded={onMediaUploaded}
           selectedId={form.twitterImageMediaId}
           onChange={(mediaId) => updateField("twitterImageMediaId", mediaId)}
         />

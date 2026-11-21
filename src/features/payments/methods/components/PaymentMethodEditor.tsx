@@ -13,7 +13,7 @@ type PaymentMethodEditorProps = {
 };
 
 export function PaymentMethodEditor({ id }: PaymentMethodEditorProps) {
-  const { form, updateField, mediaOptions, isLoading, isEditMode, handleSave, handleDelete, goToExplore } =
+  const { form, updateField, mediaOptions, addUploadedMedia, isLoading, isEditMode, handleSave, handleDelete, goToExplore } =
     usePaymentMethodEditor({ id });
 
   return (
@@ -65,6 +65,9 @@ export function PaymentMethodEditor({ id }: PaymentMethodEditorProps) {
         mediaType="image"
         label="Icon / Logo"
         mediaOptions={mediaOptions}
+        category="payments"
+        allowUpload
+        onMediaUploaded={addUploadedMedia}
         selectedId={form.iconMediaId}
         onChange={(mediaId) => updateField("iconMediaId", mediaId)}
       />

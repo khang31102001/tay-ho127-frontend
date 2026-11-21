@@ -25,6 +25,7 @@ type PublicMediaDto = {
   url: string;
   type: string;
   altText: string | null;
+  categoryCode?: string | null;
 };
 
 const PUBLIC_MEDIA_REVALIDATE_SECONDS = 60;
@@ -36,6 +37,7 @@ function toManagedMedia(dto: PublicMediaDto): ManagedMedia {
     url: dto.url,
     type: dto.type.toLowerCase() as MediaType,
     altText: dto.altText ?? undefined,
+    categoryCode: dto.categoryCode ?? undefined,
     // Endpoint công khai không trả dung lượng; chỉ media đang hoạt động được trả về.
     size: 0,
     status: "active",

@@ -17,6 +17,7 @@ const EMPTY_FORM: MediaFormValue = {
   type: "image",
   altText: "",
   size: 0,
+  categoryCode: "general",
 };
 
 type UseMediaEditorParams = {
@@ -36,8 +37,8 @@ export function useMediaEditor({ id }: UseMediaEditorParams) {
 
   useEffect(() => {
     if (!existing.data) return;
-    const { fileName, url, type, altText, size, status: currentStatus } = existing.data;
-    setForm({ fileName, url, type, altText, size });
+    const { fileName, url, type, altText, size, categoryCode, status: currentStatus } = existing.data;
+    setForm({ fileName, url, type, altText, size, categoryCode });
     setStatus(currentStatus);
   }, [existing.data]);
 

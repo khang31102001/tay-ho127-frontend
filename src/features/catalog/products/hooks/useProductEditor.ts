@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useNavigationRouter } from "@/providers/navigation-loading-provider";
 
 import { listCategories } from "@/features/catalog/categories";
-import { isLibraryMedia, listMedia, type ManagedMedia } from "@/features/media";
+import { isLibraryMedia, listMedia, useMediaOptionsWithUploads } from "@/features/media";
 import { listModifierGroups } from "@/features/catalog/modifier-groups";
 import { useAsyncData } from "@/shared/hooks/useAsyncData";
 
@@ -62,19 +62,11 @@ export function useProductEditor({ id }: UseProductEditorParams) {
 
   const [categoryOptions, libraryMedia, modifierGroupOptions] = options.data ?? [[], [], []];
 
-  // Media vừa tải lên trong popup chọn ảnh: thêm vào danh sách đang hiển thị mà không phải tải lại thư viện.
-  const [uploadedMedia, setUploadedMedia] = useState<ManagedMedia[]>([]);
-  const mediaOptions = [
-    ...uploadedMedia.filter((media) => !libraryMedia.some((existing) => existing.id === media.id)),
-    ...libraryMedia,
-  ];
+  const { mediaOptions, addUploadedMedia } = useMediaOptionsWithUploads(libraryMedia);
 
   // Ảnh đại diện là khóa ngoại tới media.media → chỉ chọn được media thật, không chọn ảnh mẫu đóng gói.
   const thumbnailMediaOptions = mediaOptions.filter(isLibraryMedia);
 
-  function addUploadedMedia(media: ManagedMedia[]) {
-    setUploadedMedia((previous) => [...media.filter((item) => !previous.some((p) => p.id === item.id)), ...previous]);
-  }
   const seoSettingsData = useAsyncData(getSeoSettings, [], { fallbackError: "Không thể tải cài đặt SEO." });
 
   // Tab "SEO" — xem ghi chú trong features/seo/hooks/useSeoMetadataForm.ts.
