@@ -103,6 +103,9 @@ function resolveProductGallery(product: ManagedProduct, mediaById: Map<string, M
   return [resolveThumbnailUrl(product, mediaById) ?? listed[0] ?? DEFAULT_PRODUCT_IMAGE];
 }
 
+/** Sản phẩm mà danh mục đã bị xóa (categoryId rỗng) được gom vào nhóm này trên Site. */
+const UNCATEGORIZED_NAME = "Chưa phân loại";
+
 /** Đi ngược categoryId (subCategory lá) lên category (giữa) để lấy tên dùng cho bộ lọc/badge. */
 function resolveParentCategory(
   categoryId: string | undefined,
@@ -155,7 +158,7 @@ export async function fetchMenu(): Promise<MenuResponse> {
     if (!categoryNode) {
       categoryNode = {
         id: categoryKey,
-        name: category?.name,
+        name: category?.name ?? UNCATEGORIZED_NAME,
         sortOrder: category?.sortOrder,
         subCategories: [],
       };
@@ -167,7 +170,7 @@ export async function fetchMenu(): Promise<MenuResponse> {
     if (!subCategoryNode) {
       subCategoryNode = {
         id: subCategoryKey,
-        name: subCategory?.name,
+        name: subCategory?.name ?? UNCATEGORIZED_NAME,
         sortOrder: subCategory?.sortOrder,
         products: [],
       };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import { StatusPopup } from "@/shared/components/StatusPopup";
 
@@ -44,6 +44,8 @@ export type DataExplorerProps<T> = {
   createLabel?: string;
   editHref?: (row: T) => string;
   onDelete?: (row: T) => Promise<void> | void;
+  /** Nội dung cảnh báo riêng của từng dòng trong popup xác nhận xóa (vd. số bản ghi liên kết bị ảnh hưởng). Lỗi/không trả = dùng câu mặc định. */
+  getDeleteDescription?: (row: T) => Promise<ReactNode | undefined> | ReactNode | undefined;
   /** Nội dung khi không có dữ liệu (chưa tìm kiếm). */
   emptyState?: ReactNode;
   /** Dropdown lọc nhanh trên toolbar (nên dùng DataExplorerFilterSelect). */
@@ -81,6 +83,7 @@ export function DataExplorer<T>({
   createLabel = "Thêm mới",
   editHref,
   onDelete,
+  getDeleteDescription,
   emptyState,
   filters,
   advancedFilters,
@@ -101,6 +104,24 @@ export function DataExplorer<T>({
 
   const [pendingDeleteRow, setPendingDeleteRow] = useState<T | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteDescription, setDeleteDescription] = useState<ReactNode>(null);
+
+  useEffect(() => {
+    setDeleteDescription(null);
+    if (!pendingDeleteRow || !getDeleteDescription) return;
+
+    let isCurrent = true;
+    Promise.resolve(getDeleteDescription(pendingDeleteRow))
+      .then((description) => {
+        if (isCurrent) setDeleteDescription(description ?? null);
+      })
+      .catch(() => {
+        // Không lấy được cảnh báo riêng thì vẫn cho xác nhận với câu mặc định.
+      });
+    return () => {
+      isCurrent = false;
+    };
+  }, [pendingDeleteRow, getDeleteDescription]);
 
   const isInitialLoading = explorer.isServerMode ? explorer.isInitialLoading : isLoading;
   const initialError = explorer.isServerMode ? explorer.initialError : isLoading ? null : loadError;
@@ -198,7 +219,7 @@ export function DataExplorer<T>({
         open={pendingDeleteRow !== null}
         status={deleteError ? "error" : "warning"}
         title={deleteError ? "Không thể xóa." : "Xác nhận xóa?"}
-        description={deleteError ?? "Hành động này không thể hoàn tác."}
+        description={deleteError ?? deleteDescription ?? "Hành động này không thể hoàn tác."}
         onOpenChange={(open) => {
           if (!open) {
             closeDeletePopup();

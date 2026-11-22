@@ -19,7 +19,8 @@ type ProductDto = {
   id: string;
   name: string;
   slug: string;
-  categoryId: string;
+  /** null = chưa phân loại (danh mục đã bị xóa). */
+  categoryId: string | null;
   price: number;
   oldPrice: number | null;
   description: string | null;
@@ -40,7 +41,8 @@ function toManagedProduct(dto: ProductDto): ManagedProduct {
     id: dto.id,
     name: dto.name,
     slug: dto.slug,
-    categoryId: dto.categoryId,
+    // "" = chưa phân loại: form bắt chọn lại danh mục, danh sách/Site hiển thị "Chưa phân loại".
+    categoryId: dto.categoryId ?? "",
     price: dto.price,
     oldPrice: dto.oldPrice ?? undefined,
     description: dto.description ?? undefined,

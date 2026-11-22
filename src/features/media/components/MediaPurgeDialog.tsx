@@ -38,8 +38,8 @@ function UsageList({ usages }: { usages: MediaUsage[] }) {
 }
 
 /**
- * Xác nhận + kết quả xóa vĩnh viễn media. Một media: kiểm tra trước nơi đang dùng (đang dùng thì không cho xóa).
- * Nhiều media: Backend tự bỏ qua media đang dùng, popup liệt kê lại sau khi xóa.
+ * Xác nhận + kết quả xóa vĩnh viễn media. Quy tắc xóa: nơi đang dùng media (sản phẩm, banner, bài viết...) tự được gỡ ảnh,
+ * không chặn. Chỉ ảnh chèn trong nội dung HTML (canDetach = false) mới chặn và phải gỡ tay.
  */
 export function MediaPurgeDialog({ media, onClose, onFinished }: MediaPurgeDialogProps) {
   const isSingle = media.length === 1;
@@ -76,9 +76,13 @@ export function MediaPurgeDialog({ media, onClose, onFinished }: MediaPurgeDialo
   }
 
   const isCheckingUsages = isSingle && usages === null && usageError === null;
-  const isInUse = isSingle && (usages?.length ?? 0) > 0;
+  const blockingUsages = (usages ?? []).filter((usage) => usage.canDetach === false);
+  const detachableUsages = (usages ?? []).filter((usage) => usage.canDetach !== false);
+  const isBlocked = isSingle && blockingUsages.length > 0;
+  const hasDetachable = isSingle && detachableUsages.length > 0;
   const deleted = results.filter((result) => result.status === "deleted");
   const skipped = results.filter((result) => result.status !== "deleted");
+  const detachedCount = deleted.reduce((total, result) => total + result.usages.length, 0);
 
   if (phase === "done") {
     return (
@@ -86,7 +90,13 @@ export function MediaPurgeDialog({ media, onClose, onFinished }: MediaPurgeDialo
         open
         status={skipped.length === 0 ? "success" : deleted.length === 0 ? "error" : "warning"}
         title={`Đã xóa vĩnh viễn ${deleted.length}/${results.length} media`}
-        description={skipped.length > 0 ? "Các media dưới đây chưa được xóa:" : "File đã bị xóa khỏi nơi lưu và thư viện."}
+        description={
+          skipped.length > 0
+            ? "Các media dưới đây chưa được xóa:"
+            : detachedCount > 0
+              ? `File đã bị xóa khỏi nơi lưu và thư viện; đã gỡ ảnh khỏi ${detachedCount} nơi đang dùng.`
+              : "File đã bị xóa khỏi nơi lưu và thư viện."
+        }
         onOpenChange={(open) => !open && onClose()}
         actions={[{ id: "close", label: "Đóng", variant: "secondary" }]}
       >
@@ -108,12 +118,14 @@ export function MediaPurgeDialog({ media, onClose, onFinished }: MediaPurgeDialo
   return (
     <StatusPopup
       open
-      status={isInUse ? "error" : "warning"}
+      status={isBlocked ? "error" : "warning"}
       title={isSingle ? `Xóa vĩnh viễn "${media[0].fileName}"?` : `Xóa vĩnh viễn ${media.length} media?`}
       description={
-        isInUse
-          ? "Media đang được sử dụng. Hãy gỡ media khỏi các nơi bên dưới rồi thử lại."
-          : "File sẽ bị xóa khỏi nơi lưu (Server/Cloud) và khỏi thư viện. Hành động này không thể hoàn tác."
+        isBlocked
+          ? "Ảnh đang được chèn trong nội dung (HTML) nên không tự gỡ được. Hãy xóa ảnh khỏi nội dung ở các nơi bên dưới rồi thử lại."
+          : hasDetachable
+            ? "Media đang được dùng. Khi xóa, các nơi bên dưới sẽ tự bỏ ảnh này. Hành động này không thể hoàn tác."
+            : "File sẽ bị xóa khỏi nơi lưu (Server/Cloud) và khỏi thư viện. Hành động này không thể hoàn tác."
       }
       onOpenChange={(open) => !open && onClose()}
       onActionError={(error) => setPurgeError(errorMessageOf(error, "Xóa vĩnh viễn thất bại, vui lòng thử lại."))}
@@ -123,7 +135,7 @@ export function MediaPurgeDialog({ media, onClose, onFinished }: MediaPurgeDialo
           id: "confirm",
           label: "Xóa vĩnh viễn",
           variant: "danger",
-          disabled: isCheckingUsages || isInUse,
+          disabled: isCheckingUsages || isBlocked,
           closeAfterClick: false,
           onClick: handleConfirm,
         },
@@ -137,10 +149,12 @@ export function MediaPurgeDialog({ media, onClose, onFinished }: MediaPurgeDialo
           </p>
         )}
         {usageError && <p className="text-brand-red">{usageError} Backend vẫn kiểm tra lại khi xóa.</p>}
-        {isInUse && usages && <UsageList usages={usages} />}
+        {usages && usages.length > 0 && <UsageList usages={usages} />}
         {purgeError && <p className="mt-2 font-medium text-brand-red">{purgeError}</p>}
         {!isSingle && (
-          <p className="text-brand-muted">Media đang được dùng (sản phẩm, bài viết, banner...) sẽ được bỏ qua và liệt kê sau khi xóa.</p>
+          <p className="text-brand-muted">
+            Media đang được dùng (sản phẩm, bài viết, banner...) sẽ tự được gỡ khỏi các nơi đó. Ảnh chèn trong nội dung HTML sẽ được bỏ qua và liệt kê sau khi xóa.
+          </p>
         )}
       </div>
     </StatusPopup>
