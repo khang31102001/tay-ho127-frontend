@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";
 
+import { ConfirmDeletePopup } from "@/shared/components/ConfirmDeletePopup";
 import type { ManagedMedia } from "@/features/media";
 import { MediaPicker } from "@/features/media/components/MediaPicker";
 import {
@@ -64,6 +66,7 @@ type PageSectionItemsFieldProps = {
 /** Danh sách dòng của section stats / timeline / faq; loại khác không có danh sách → không hiện gì. */
 export function PageSectionItemsField({ sectionType, items, mediaOptions, onChange }: PageSectionItemsFieldProps) {
   const config = ITEM_FIELDS[sectionType];
+  const [pendingDeleteIndex, setPendingDeleteIndex] = useState<number | null>(null);
   if (!config) {
     return null;
   }
@@ -111,7 +114,7 @@ export function PageSectionItemsField({ sectionType, items, mediaOptions, onChan
               <button
                 type="button"
                 aria-label="Xóa dòng"
-                onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))}
+                onClick={() => setPendingDeleteIndex(index)}
                 className="flex size-7 items-center justify-center rounded text-brand-red hover:bg-brand-red/10"
               >
                 <Trash2 className="size-3.5" />
@@ -165,6 +168,15 @@ export function PageSectionItemsField({ sectionType, items, mediaOptions, onChan
       >
         + Thêm dòng
       </button>
+
+      <ConfirmDeletePopup
+        open={pendingDeleteIndex !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingDeleteIndex(null);
+        }}
+        title="Xóa dòng này?"
+        onConfirm={() => onChange(items.filter((_, itemIndex) => itemIndex !== pendingDeleteIndex))}
+      />
     </fieldset>
   );
 }
