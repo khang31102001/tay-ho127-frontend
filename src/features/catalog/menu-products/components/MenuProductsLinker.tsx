@@ -24,10 +24,10 @@ export function MenuProductsLinker() {
         <h1 className="text-[20px] font-black text-brand-greenDark">Liên kết Thực đơn ↔ Sản phẩm</h1>
 
         <Link
-          href="/admin/catalog/menu-products"
+          href="/admin/catalog/products"
           className="text-[13px] font-bold text-brand-muted transition hover:text-brand-greenDark"
         >
-          ← Quay lại danh sách
+          ← Quay lại sản phẩm
         </Link>
       </div>
 
