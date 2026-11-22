@@ -1,11 +1,15 @@
 "use client";
 
+import Link from "next/link";
+import { ListChecks } from "lucide-react";
+
 import { DataExplorer, type DataExplorerColumn } from "@/shared/admin/templates/DataExplorer/DataExplorer";
 import { StatusBadge } from "@/shared/admin/templates/StatusBadge";
 import { ExportButton } from "@/shared/admin/import-export/ExportButton";
 import { ImportDialog } from "@/shared/admin/import-export/ImportDialog";
 import { formatCurrency } from "@/core/utils/format-currency";
 import { useAdminAuth } from "@/features/admin-auth";
+import { adminButtonClassName } from "@/shared/admin/templates/formFieldClassName";
 
 import { useProductsExplorer, type ProductRow } from "../hooks/useProductsExplorer";
 import { buildProductImportColumns } from "../import-export/product-import.config";
@@ -41,7 +45,16 @@ export function ProductsExplorer() {
   // Import vừa tạo vừa cập nhật sản phẩm — cần cả 2 quyền.
   const canImport = hasPermission("products.create") && hasPermission("products.update");
 
+  // Liên kết sản phẩm ↔ menu = thêm/sửa/xóa Menu-SP, cùng nhóm quyền sales-menus.*.
+  const canLinkMenu = hasPermission("sales-menus.update");
+
   return (
+    <div>
+      <p className="mb-3 text-[13px] text-admin-textSecondary">
+        Sản phẩm chỉ hiện ở trang <strong>Thực đơn</strong> của website khi đã được gắn vào một Menu. Dùng nút{" "}
+        <strong>Liên kết với menu</strong> để gắn sản phẩm vào menu.
+      </p>
+
     <DataExplorer<ProductRow>
       title="Quản lý sản phẩm"
       columns={columns}
@@ -58,6 +71,18 @@ export function ProductsExplorer() {
       emptyState="Chưa có sản phẩm nào."
       totalLabel="sản phẩm"
       onRetry={reload}
+      toolbarActions={
+        canLinkMenu ? (
+          <Link
+            href="/admin/catalog/menu-products/new"
+            title="Sản phẩm phải được gắn vào một Menu thì mới hiện ở trang Thực đơn (/thuc-don) của website."
+            className={adminButtonClassName.outline}
+          >
+            <ListChecks className="size-4" aria-hidden="true" />
+            Liên kết với menu
+          </Link>
+        ) : undefined
+      }
       utilities={
         <>
           <ExportButton
@@ -86,5 +111,6 @@ export function ProductsExplorer() {
         </>
       }
     />
+    </div>
   );
 }
