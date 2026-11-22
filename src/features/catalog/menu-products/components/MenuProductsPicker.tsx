@@ -4,6 +4,7 @@ import { useState } from "react";
 import { GripVertical, Search, X } from "lucide-react";
 
 import { cn } from "@/core/utils/cn";
+import { ConfirmDeletePopup } from "@/shared/components/ConfirmDeletePopup";
 import { formatCurrency } from "@/core/utils/format-currency";
 
 import { useMenuProductsPicker } from "../hooks/useMenuProductsPicker";
@@ -65,6 +66,7 @@ export function MenuProductsPicker({ menuId }: MenuProductsPickerProps) {
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
   const [armedIndex, setArmedIndex] = useState<number | null>(null);
+  const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null);
 
   const isDirty = changeCount > 0;
   // Kéo-thả chỉ đúng nghĩa khi đang thấy toàn bộ danh sách (không lọc).
@@ -208,7 +210,7 @@ export function MenuProductsPicker({ menuId }: MenuProductsPickerProps) {
 
                     <button
                       type="button"
-                      onClick={() => removeProduct(id)}
+                      onClick={() => setPendingRemoveId(id)}
                       aria-label={`Xóa ${product?.name ?? "sản phẩm"} khỏi thực đơn`}
                       className="shrink-0 rounded-full p-1.5 text-brand-muted transition hover:bg-red-50 hover:text-red-600"
                     >
@@ -281,6 +283,18 @@ export function MenuProductsPicker({ menuId }: MenuProductsPickerProps) {
           </button>
         </div>
       </div>
+
+      <ConfirmDeletePopup
+        open={pendingRemoveId !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingRemoveId(null);
+        }}
+        title="Gỡ sản phẩm khỏi thực đơn?"
+        description="Thay đổi chỉ được lưu khi bạn bấm “Lưu thực đơn”."
+        onConfirm={() => {
+          if (pendingRemoveId) removeProduct(pendingRemoveId);
+        }}
+      />
     </section>
   );
 }

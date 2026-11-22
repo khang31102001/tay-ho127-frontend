@@ -1,5 +1,9 @@
+"use client";
+
+import { useState } from "react";
 import { Trash2 } from "lucide-react";
 
+import { ConfirmDeletePopup } from "@/shared/components/ConfirmDeletePopup";
 import { adminFieldInputClassName, adminFieldLabelClassName } from "@/shared/admin/templates/formFieldClassName";
 
 import { SOCIAL_PLATFORM_OPTIONS } from "../types/social-link.types";
@@ -14,6 +18,8 @@ type BrandSocialFormProps = {
 };
 
 export function BrandSocialForm({ socialLinks, onAdd, onUpdate, onRemove }: BrandSocialFormProps) {
+  const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null);
+
   return (
     <div>
       <div className="flex items-center justify-between">
@@ -75,7 +81,7 @@ export function BrandSocialForm({ socialLinks, onAdd, onUpdate, onRemove }: Bran
               <button
                 type="button"
                 aria-label="Xóa liên kết"
-                onClick={() => onRemove(link.id)}
+                onClick={() => setPendingRemoveId(link.id)}
                 className="flex h-10 items-center justify-center rounded-lg px-3 text-brand-muted transition hover:bg-red-50 hover:text-red-600"
               >
                 <Trash2 className="size-4" />
@@ -84,6 +90,17 @@ export function BrandSocialForm({ socialLinks, onAdd, onUpdate, onRemove }: Bran
           ))}
         </div>
       )}
+
+      <ConfirmDeletePopup
+        open={pendingRemoveId !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingRemoveId(null);
+        }}
+        title="Xóa liên kết này?"
+        onConfirm={() => {
+          if (pendingRemoveId) onRemove(pendingRemoveId);
+        }}
+      />
     </div>
   );
 }

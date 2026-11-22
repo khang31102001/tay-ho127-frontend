@@ -52,7 +52,7 @@ export function CategoryEditor({ id }: CategoryEditorProps) {
       onSave={handleSave}
       onSaved={goToExplore}
       onDelete={isEditMode && hasPermission("categories.delete") ? handleDelete : undefined}
-      deleteConfirmDescription="Chỉ xóa được danh mục không còn danh mục con và sản phẩm. Hành động này không thể hoàn tác."
+      deleteConfirmDescription="Danh mục con được chuyển lên cấp trên, sản phẩm thuộc danh mục chuyển sang Chưa phân loại. Hành động này không thể hoàn tác."
       onDeleted={goToExplore}
     >
       <Tabs tabs={TABS} activeTab={activeTab} onChange={setActiveTab} />

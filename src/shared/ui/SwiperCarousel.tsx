@@ -3,11 +3,12 @@
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
+import "swiper/css/grid";
 
-import { Children, useId, type ReactNode } from "react";
+import { Children, useEffect, useId, useState, type ReactNode } from "react";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { A11y, Autoplay, Keyboard, Navigation, Pagination } from "swiper/modules";
+import { A11y, Autoplay, Grid, Keyboard, Navigation, Pagination } from "swiper/modules";
 import type { SwiperOptions } from "swiper/types";
 
 type SwiperCarouselProps = {
@@ -28,6 +29,12 @@ type SwiperCarouselProps = {
   rewind?: boolean;
   speed?: number;
   navigation?: boolean;
+  /**
+   * Số hàng slide (mặc định 1). > 1 dùng module Grid của Swiper: các item xếp
+   * theo hàng rồi mới sang cột kế, và Swiper không hỗ trợ `loop` cùng Grid nên
+   * dùng `rewind`. Đặt `slidesPerGroup` = số cột để mỗi lần nhảy là cả một trang.
+   */
+  rows?: number;
   /**
    * Vị trí nút prev/next: "side" = hai bên mép carousel (mặc định);
    * "bottom" = hàng dưới cùng hai bên pagination — dùng trên mobile khi
@@ -72,6 +79,7 @@ export function SwiperCarousel({
   rewind = false,
   speed = 500,
   navigation = false,
+  rows = 1,
   navigationPosition = "side",
   pagination = false,
   centeredSlides = false,
@@ -80,6 +88,18 @@ export function SwiperCarousel({
   slidesOffsetAfter,
   className = "",
 }: SwiperCarouselProps) {
+  /** Người dùng bật "giảm chuyển động" thì không tự nhảy slide. */
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setPrefersReducedMotion(query.matches);
+
+    const handleChange = (event: MediaQueryListEvent) => setPrefersReducedMotion(event.matches);
+    query.addEventListener("change", handleChange);
+    return () => query.removeEventListener("change", handleChange);
+  }, []);
+
   /**
    * Nút prev/next và khối pagination nằm ngoài <Swiper>, nên trỏ bằng
    * class selector duy nhất thay vì DOM ref — tránh race condition
@@ -131,7 +151,8 @@ export function SwiperCarousel({
   return (
     <div className={`relative ${className}`}>
       <Swiper
-        modules={[Navigation, Autoplay, Pagination, Keyboard, A11y]}
+        modules={[Navigation, Autoplay, Pagination, Keyboard, A11y, Grid]}
+        grid={rows > 1 ? { rows, fill: "row" } : undefined}
         slidesPerView={slidesPerView}
         slidesPerGroup={slidesPerGroup}
         spaceBetween={spaceBetween}
@@ -150,8 +171,8 @@ export function SwiperCarousel({
           paginationBulletMessage: "Đi tới mục {{index}}",
         }}
         autoplay={
-          autoplayDelay
-            ? { delay: autoplayDelay, disableOnInteraction: false }
+          autoplayDelay && !prefersReducedMotion
+            ? { delay: autoplayDelay, disableOnInteraction: false, pauseOnMouseEnter: rows > 1 }
             : false
         }
         navigation={

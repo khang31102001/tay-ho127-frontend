@@ -88,7 +88,18 @@ export type UiProduct = {
   image: string;
   /** Mô tả ngắn (chữ thường) — card Thực đơn cắt 1–2 dòng, ẩn trên điện thoại. */
   description?: string;
+  /** Danh mục cấp 2 của món (cột lọc ở /thuc-don); chỉ có ở dữ liệu từ `fetchMenuSections`. */
+  categoryId?: string;
+  categoryName?: string;
 };
+
+/** Một thực đơn bán (Menu của Backend) = một section ở /thuc-don. */
+export interface MenuSectionData {
+  id: string;
+  code: string;
+  name: string;
+  items: UiProduct[];
+}
 
 /**
  * Dữ liệu hiển thị cho trang chi tiết sản phẩm (`/thuc-don/[slug]`).

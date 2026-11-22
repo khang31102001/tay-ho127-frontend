@@ -2,13 +2,7 @@ import { Fragment, type ReactNode } from "react";
 
 import { listPageSlots, loadSlotContents, orderBlockKeys } from "@/features/content/public";
 // Import các thành phần trang thực đơn từ feature menu.
-import {
-  MenuHero,
-  MenuGrid,
-  fetchMenu,
-  fetchFeaturedMenu,
-  type MenuResponse,
-} from "@/features/catalog/menu";
+import { MenuHero, MenuGrid, fetchMenuSections } from "@/features/catalog/menu";
 import { buildMetadata } from "@/features/seo/utils/build-metadata";
 
 // Metadata riêng cho trang thực đơn — dữ liệu tĩnh nên build trực tiếp, không cần generateMetadata.
@@ -23,18 +17,14 @@ export const metadata = buildMetadata({
  * lõi — luôn hiển thị, Admin chỉ đổi vị trí.
  */
 export default async function MenuPage() {
-  const [resp, slots, featured]: [
-    MenuResponse,
-    Awaited<ReturnType<typeof listPageSlots>>,
-    Awaited<ReturnType<typeof fetchFeaturedMenu>>,
-  ] = await Promise.all([fetchMenu(), listPageSlots("thuc-don"), fetchFeaturedMenu()]);
-  const groups = resp?.data?.menu?.groups || [];
+  // Mỗi thực đơn đang hoạt động (Admin → Catalog → Thực đơn) là một section.
+  const [sections, slots] = await Promise.all([fetchMenuSections(), listPageSlots("thuc-don")]);
   const contents = await loadSlotContents(slots);
   const hero = contents.get("hero");
 
   const blockByKey: Record<string, ReactNode> = {
     hero: hero?.heading && <MenuHero content={hero} />,
-    menu: <MenuGrid groups={groups} featured={featured} />,
+    menu: <MenuGrid sections={sections} />,
   };
 
   return (
