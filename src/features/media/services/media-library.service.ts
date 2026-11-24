@@ -173,12 +173,16 @@ function extractProblemMessage(payload: unknown): string | null {
   return typeof message === "string" ? message : null;
 }
 
-/** Một nơi đang dùng media (GET /media/{id}/usages, kết quả "inUse" khi xóa vĩnh viễn). */
+/**
+ * Một nơi đang dùng media (GET /media/{id}/usages; kết quả "inUse" khi xóa vĩnh viễn; kết quả "deleted" liệt kê nơi vừa được gỡ).
+ * canDetach = false: ảnh chèn trong nội dung HTML, Backend không tự gỡ được nên vẫn chặn xóa.
+ */
 export type MediaUsage = {
   module: string;
   entityId: string;
   entityName: string;
   field: string;
+  canDetach?: boolean;
 };
 
 export type MediaPurgeStatus = "deleted" | "inUse" | "notFound" | "failed";

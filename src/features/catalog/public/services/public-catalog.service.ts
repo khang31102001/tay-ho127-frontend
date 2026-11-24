@@ -30,7 +30,7 @@ type PublicCatalogDto = {
     id: string;
     slug: string;
     name: string;
-    categoryId: string;
+    categoryId: string | null;
     price: number;
     oldPrice: number | null;
     description: string | null;
@@ -79,7 +79,7 @@ function toPublicCatalog(dto: PublicCatalogDto): PublicCatalog {
       id: product.id,
       slug: product.slug,
       name: product.name,
-      categoryId: product.categoryId,
+      categoryId: product.categoryId ?? "",
       price: product.price,
       oldPrice: product.oldPrice ?? undefined,
       description: product.description ?? undefined,

@@ -22,6 +22,7 @@ import type {
   Menu,
   MenuGroup,
   MenuResponse,
+  MenuSectionData,
   Product,
   ProductDetail,
   SubCategory,
@@ -103,6 +104,9 @@ function resolveProductGallery(product: ManagedProduct, mediaById: Map<string, M
   return [resolveThumbnailUrl(product, mediaById) ?? listed[0] ?? DEFAULT_PRODUCT_IMAGE];
 }
 
+/** Sản phẩm mà danh mục đã bị xóa (categoryId rỗng) được gom vào nhóm này trên Site. */
+const UNCATEGORIZED_NAME = "Chưa phân loại";
+
 /** Đi ngược categoryId (subCategory lá) lên category (giữa) để lấy tên dùng cho bộ lọc/badge. */
 function resolveParentCategory(
   categoryId: string | undefined,
@@ -155,7 +159,7 @@ export async function fetchMenu(): Promise<MenuResponse> {
     if (!categoryNode) {
       categoryNode = {
         id: categoryKey,
-        name: category?.name,
+        name: category?.name ?? UNCATEGORIZED_NAME,
         sortOrder: category?.sortOrder,
         subCategories: [],
       };
@@ -167,7 +171,7 @@ export async function fetchMenu(): Promise<MenuResponse> {
     if (!subCategoryNode) {
       subCategoryNode = {
         id: subCategoryKey,
-        name: subCategory?.name,
+        name: subCategory?.name ?? UNCATEGORIZED_NAME,
         sortOrder: subCategory?.sortOrder,
         products: [],
       };
@@ -200,6 +204,56 @@ export async function fetchMenu(): Promise<MenuResponse> {
     message: "Lấy thực đơn thành công",
     data: { menu },
   };
+}
+
+/**
+ * Các section của /thuc-don: MỌI thực đơn đang hoạt động do Admin quản lý
+ * (Catalog → Thực đơn), theo thứ tự Backend trả về — không code cứng theo `code`.
+ * Thực đơn không còn món nào bán được thì bị bỏ. Mỗi món mang danh mục cấp 2
+ * để cột bên trái lọc; thứ tự món theo "Thứ tự" Menu-SP của Admin.
+ */
+export async function fetchMenuSections(): Promise<MenuSectionData[]> {
+  const { menus, menuProducts, productById, categoryById, mediaById } = await loadCatalogSnapshot();
+
+  const sections: MenuSectionData[] = [];
+
+  menus
+    .filter((menu) => menu.status === "active")
+    .forEach((menu) => {
+      const items: UiProduct[] = [];
+
+      listMenuRows(menu, menuProducts).forEach((row) => {
+        const managedProduct = productById.get(row.productId);
+        if (!managedProduct || managedProduct.status !== "active") {
+          return;
+        }
+
+        const category = resolveParentCategory(managedProduct.categoryId, categoryById);
+
+        items.push({
+          id: items.length + 1,
+          productId: managedProduct.id,
+          slug: managedProduct.slug,
+          name: managedProduct.name,
+          category: resolveMenuCategoryBucket(category?.name ?? ""),
+          price: row.priceOverride ?? managedProduct.price,
+          oldPrice: managedProduct.oldPrice,
+          badge: managedProduct.badge,
+          rating: managedProduct.rating ?? 0,
+          ratingCount: managedProduct.ratingCount ?? 0,
+          image: resolveProductImage(managedProduct, mediaById),
+          description: managedProduct.description,
+          categoryId: category?.id ?? "unknown-category",
+          categoryName: category?.name ?? UNCATEGORIZED_NAME,
+        });
+      });
+
+      if (items.length > 0) {
+        sections.push({ id: menu.id, code: menu.code, name: menu.name, items });
+      }
+    });
+
+  return sections;
 }
 
 /** Danh sách phẳng cho carousel "Món yêu thích" ở trang chủ. */
@@ -301,12 +355,24 @@ export async function getProductDetail(slug: string): Promise<ProductDetailData 
     return null;
   }
 
-  const siteMenuRows = listMenuRows(
-    menus.find((menu) => menu.code === SITE_MAIN_MENU_CODE),
-    menuProducts,
-  );
+  // /thuc-don hiện mọi thực đơn đang hoạt động nên món thuộc thực đơn nào cũng
+  // có trang chi tiết; ưu tiên thực đơn chính để món liên quan giữ như trước.
+  const candidateMenus = menus
+    .filter((menu) => menu.status === "active")
+    .sort((a, b) => Number(b.code === SITE_MAIN_MENU_CODE) - Number(a.code === SITE_MAIN_MENU_CODE));
 
-  const currentRow = siteMenuRows.find((row) => row.productId === managedProduct.id);
+  let siteMenuRows: ManagedMenuProduct[] = [];
+  let currentRow: ManagedMenuProduct | undefined;
+
+  for (const menu of candidateMenus) {
+    const rows = listMenuRows(menu, menuProducts);
+    const found = rows.find((row) => row.productId === managedProduct.id);
+    if (found) {
+      siteMenuRows = rows;
+      currentRow = found;
+      break;
+    }
+  }
 
   if (!currentRow) {
     return null;

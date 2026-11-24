@@ -14,7 +14,7 @@ export function buildProductExportRows(
 
   return products.map((product) => ({
     ...product,
-    categoryName: categoryNameById.get(product.categoryId) ?? "",
+    categoryName: categoryNameById.get(product.categoryId) ?? "Chưa phân loại",
   }));
 }
 

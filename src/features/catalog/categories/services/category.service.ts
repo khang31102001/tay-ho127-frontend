@@ -57,6 +57,13 @@ export async function updateCategory(id: string, payload: Omit<ManagedCategory, 
   return toManagedCategory(await adminApi.put<CategoryDto>(`/catalog/categories/${id}`, toRequest(payload)));
 }
 
+export type CategoryDeleteImpact = { childCount: number; productCount: number };
+
+/** Xóa danh mục không bị chặn: con dời lên cấp trên, sản phẩm thành "chưa phân loại". */
+export function getCategoryDeleteImpact(id: string): Promise<CategoryDeleteImpact> {
+  return adminApi.get<CategoryDeleteImpact>(`/catalog/categories/${id}/delete-impact`);
+}
+
 export function deleteCategory(id: string): Promise<void> {
   return adminApi.delete<void>(`/catalog/categories/${id}`);
 }

@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 
 import { DataEditor } from "@/shared/admin/templates/DataEditor/DataEditor";
 import { adminFieldInputClassName, adminFieldLabelClassName } from "@/shared/admin/templates/formFieldClassName";
+import { ConfirmDeletePopup } from "@/shared/components/ConfirmDeletePopup";
 import { useAdminAuth } from "@/features/admin-auth";
 
 import { useModifierGroupEditor } from "../hooks/useModifierGroupEditor";
@@ -29,6 +31,7 @@ export function ModifierGroupEditor({ id }: ModifierGroupEditorProps) {
     goToExplore,
   } = useModifierGroupEditor({ id });
   const { hasPermission } = useAdminAuth();
+  const [pendingRemoveOptionId, setPendingRemoveOptionId] = useState<string | null>(null);
 
   return (
     <DataEditor
@@ -132,7 +135,7 @@ export function ModifierGroupEditor({ id }: ModifierGroupEditorProps) {
 
                 <button
                   type="button"
-                  onClick={() => removeOption(option.id)}
+                  onClick={() => setPendingRemoveOptionId(option.id)}
                   aria-label={`Xóa lựa chọn ${option.label || ""}`}
                   className="flex size-8 items-center justify-center rounded text-brand-muted transition hover:bg-red-50 hover:text-red-600"
                 >
@@ -143,6 +146,17 @@ export function ModifierGroupEditor({ id }: ModifierGroupEditorProps) {
           </div>
         )}
       </div>
+
+      <ConfirmDeletePopup
+        open={pendingRemoveOptionId !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingRemoveOptionId(null);
+        }}
+        title="Xóa lựa chọn này?"
+        onConfirm={() => {
+          if (pendingRemoveOptionId) removeOption(pendingRemoveOptionId);
+        }}
+      />
     </DataEditor>
   );
 }

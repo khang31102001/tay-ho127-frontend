@@ -1,27 +1,28 @@
 "use client";
 
-import { MenuItemCard } from "./MenuItemCard";
-import type { MenuResponse, UiProduct } from "../types/menu.types";
+import { MenuCategorySidebar } from "./MenuCategorySidebar";
+import { MenuSectionSwiper } from "./MenuSectionSwiper";
+import type { MenuSectionData } from "../types/menu.types";
 import { Container } from "@/shared/ui/Container";
 import MenuBackgroundDecoration from "@/shared/ui/MenuBackgroundDecoration";
-import { SECTION_SCROLL_OFFSET_CLASS, useMenuGrid } from "../hooks/useMenuGrid";
+import { useMenuGrid } from "../hooks/useMenuGrid";
 
 interface MenuGridProps {
-  groups: MenuResponse["data"]["menu"]["groups"];
-  /** Món của thực đơn `mon-yeu-thich`; rỗng thì không hiện section này. */
-  featured: UiProduct[];
+  /** Mỗi thực đơn đang hoạt động (Admin quản lý) là một section. */
+  sections: MenuSectionData[];
 }
 
-export default function MenuGrid({ groups, featured }: MenuGridProps) {
+export default function MenuGrid({ sections }: MenuGridProps) {
   const {
     searchTerm,
-    activeSectionId,
+    categories,
+    activeCategoryId,
     visibleSections,
     totalVisibleItems,
     handleSearchChange,
     handleClearSearch,
-    handleSectionSelect,
-  } = useMenuGrid(groups, featured);
+    handleCategorySelect,
+  } = useMenuGrid(sections);
 
   return (
     <section className="relative isolate w-full pb-32 pt-24">
@@ -82,56 +83,28 @@ export default function MenuGrid({ groups, featured }: MenuGridProps) {
         </div>
 
         {visibleSections.length > 0 ? (
-          <>
-            {/* Thanh tab sticky dưới header cố định (64px mobile / 68px md+) */}
-            <nav
-              aria-label="Danh mục món"
-              className="sticky top-[64px] z-30 -mx-4 mb-6 bg-brand-cream/95 px-4 py-2 backdrop-blur md:top-[68px]"
-            >
-              <ul className="flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {visibleSections.map((section) => {
-                  const isActive = section.id === activeSectionId;
+          <div className="lg:grid lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-8">
+            <MenuCategorySidebar
+              categories={categories}
+              activeCategoryId={activeCategoryId}
+              totalCount={totalVisibleItems}
+              onSelect={handleCategorySelect}
+            />
 
-                  return (
-                    <li key={section.id} className="shrink-0">
-                      <button
-                        type="button"
-                        aria-current={isActive ? "true" : undefined}
-                        onClick={() => handleSectionSelect(section.id)}
-                        className={`rounded-md border px-3 py-1.5 text-[13px] font-bold transition active:scale-95 ${
-                          isActive
-                            ? "border-brand-red bg-brand-red text-white"
-                            : "border-brand-red/50 bg-white text-brand-red hover:bg-brand-red/5"
-                        }`}
-                      >
-                        {section.name}
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </nav>
+            <div className="min-w-0">
+              {visibleSections.map((section) => (
+                <section key={section.id} className="mb-10">
+                  <h2 className="mb-3 text-[20px] font-extrabold text-brand-greenDark sm:text-[24px]">
+                    {section.name}
+                  </h2>
 
-            {visibleSections.map((section) => (
-              <div
-                key={section.id}
-                id={`menu-section-${section.id}`}
-                className={`mb-10 ${SECTION_SCROLL_OFFSET_CLASS}`}
-              >
-                <h2 className="mb-3 text-[20px] font-extrabold text-brand-greenDark sm:text-[24px]">
-                  {section.name}
-                </h2>
+                  <MenuSectionSwiper section={section} />
+                </section>
+              ))}
 
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
-                  {section.items.map((item) => (
-                    <MenuItemCard key={item.productId} item={item} />
-                  ))}
-                </div>
-              </div>
-            ))}
-
-            <p className="text-center text-xs text-gray-500">{totalVisibleItems} món</p>
-          </>
+              <p className="text-center text-xs text-gray-500">{totalVisibleItems} món</p>
+            </div>
+          </div>
         ) : (
           <div className="rounded-lg border border-dashed border-gray-300 bg-white/60 px-5 py-12 text-center">
             <p className="font-bold text-brand-green">Không tìm thấy món ăn</p>

@@ -128,8 +128,8 @@ export function MediaEditor({ id }: MediaEditorProps) {
         <section className="rounded-lg border border-admin-danger/40 px-4 py-3">
           <h3 className="text-[13px] font-bold text-admin-danger">Xóa vĩnh viễn</h3>
           <p className="mt-1 text-[12px] text-brand-muted">
-            Xóa file khỏi nơi lưu (Server/Cloud) và khỏi thư viện để giải phóng dung lượng. Không thể hoàn tác; media
-            đang được dùng ở sản phẩm, bài viết, banner... phải được gỡ trước.
+            Xóa file khỏi nơi lưu (Server/Cloud) và khỏi thư viện để giải phóng dung lượng. Không thể hoàn tác; nơi đang dùng media
+            (sản phẩm, bài viết, banner...) sẽ tự bỏ ảnh này, trừ ảnh chèn trong nội dung HTML phải gỡ tay trước.
           </p>
           <button
             type="button"
